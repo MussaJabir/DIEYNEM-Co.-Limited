@@ -1,0 +1,32 @@
+{% extends "public/base.html" %}
+
+{% block title %}Services &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}Electrical, ICT, fire-detection, HVAC, solar and rural-electrification services by DIEYNEM Co. Limited.{% endblock %}
+
+{% block content %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-6xl mx-auto px-4 py-16">
+    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">What we do</p>
+    <h1 class="font-heading text-4xl font-extrabold mt-3">Our Services</h1>
+    <p class="mt-4 text-navy-100 max-w-2xl">
+      End-to-end electrical, ICT, fire, HVAC, solar and power-infrastructure works &mdash;
+      supplied, installed, tested and commissioned.
+    </p>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-4 py-14">
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for service in services %}
+    <a href="{{ service.get_absolute_url }}"
+       class="block bg-white border border-slate-200 border-t-4 border-t-navy-600 rounded-xl p-6 hover:shadow-md transition">
+      <h2 class="font-heading font-bold text-navy-800 text-lg">{{ service.name }}</h2>
+      <p class="text-slate-600 text-sm mt-2">{{ service.short_description }}</p>
+      <span class="inline-block mt-4 text-amber-600 text-sm font-semibold">Learn more &rarr;</span>
+    </a>
+    {% empty %}
+    <p class="text-slate-500">Services will be listed here soon.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

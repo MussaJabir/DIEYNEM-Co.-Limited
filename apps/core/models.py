@@ -1,6 +1,27 @@
 from django.db import models
 
 
+class TimeStampedModel(models.Model):
+    """Abstract base adding created/updated timestamps."""
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class SEOModel(models.Model):
+    """Abstract base adding per-record SEO / social-share overrides."""
+
+    meta_title = models.CharField(max_length=200, blank=True)
+    meta_description = models.CharField(max_length=300, blank=True)
+    og_image = models.ImageField(upload_to="seo/", blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
 class SiteSetting(models.Model):
     """Singleton holding company-wide settings shown across the site.
 

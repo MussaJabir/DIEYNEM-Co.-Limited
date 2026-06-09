@@ -50,3 +50,4 @@ COMPANY PROFILE FOR DIEYNEM CO LTD - 2026.pdf
 .coverage
 htmlcov/
 .ruff_cache/
+.playwright-mcp/
