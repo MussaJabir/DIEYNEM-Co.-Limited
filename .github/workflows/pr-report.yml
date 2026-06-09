@@ -1,12 +1,21 @@
 name: PR Report
 
-# Generates a branded PDF report for every MERGED pull request.
+# Generates a branded PDF report for a merged pull request and commits it to the
+# `reports` branch. Can also be run manually (workflow_dispatch) to (re)generate
+# a report for any PR number — useful for backfilling or re-running.
+#
 # Note: PRs are authored and accepted by the same account, so GitHub disables
 # self-"Approve"; merging is the effective approval, so we trigger on merge.
 
 on:
   pull_request:
     types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to (re)generate a report for"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -16,12 +25,21 @@ permissions:
 jobs:
   report:
     name: generate-pr-report
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Determine PR number
+        id: pr
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "number=${{ github.event.inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -40,13 +58,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NUM=${{ github.event.pull_request.number }}
-          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          NUM="${{ steps.pr.outputs.number }}"
           gh pr view "$NUM" --repo "${{ github.repository }}" \
-            --json number,title,author,headRefName,baseRefName,body,additions,deletions,changedFiles,mergedBy,mergedAt,commits,files,url \
+            --json number,title,author,headRefName,baseRefName,body,additions,deletions,changedFiles,mergedBy,mergedAt,commits,files,url,headRefOid \
             > pr.json
-          gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/check-runs" \
-            > checks.json || echo '{"check_runs":[]}' > checks.json
+          HEAD_SHA="$(python -c "import json; print(json.load(open('pr.json')).get('headRefOid', ''))")"
+          if [ -n "$HEAD_SHA" ]; then
+            gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/check-runs" \
+              > checks.json || echo '{"check_runs":[]}' > checks.json
+          else
+            echo '{"check_runs":[]}' > checks.json
+          fi
 
       - name: Generate PDF report
         env:
@@ -70,12 +92,14 @@ jobs:
           mkdir -p reports
           cp "$RUNNER_TEMP/$BNAME" "reports/$BNAME"
           git add "reports/$BNAME"
-          git commit -m "report: PR #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}"
+          git commit -m "report: PR #${{ steps.pr.outputs.number }} ($BNAME)" || {
+            echo "No changes to commit (report already up to date)."; exit 0;
+          }
           git push origin reports
 
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pr-${{ github.event.pull_request.number }}-report
+          name: pr-${{ steps.pr.outputs.number }}-report
           path: report_output/*.pdf
           if-no-files-found: error
