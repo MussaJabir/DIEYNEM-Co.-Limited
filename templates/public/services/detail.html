@@ -1,0 +1,37 @@
+{% extends "public/base.html" %}
+
+{% block title %}{{ service.meta_title|default:service.name }} &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}{{ service.meta_description|default:service.short_description }}{% endblock %}
+
+{% block content %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-5xl mx-auto px-4 py-16">
+    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">
+      <a href="{% url 'services:list' %}" class="hover:underline">Services</a>
+    </p>
+    <h1 class="font-heading text-4xl font-extrabold mt-3">{{ service.name }}</h1>
+    {% if service.short_description %}
+    <p class="mt-4 text-navy-100 max-w-2xl text-lg">{{ service.short_description }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="max-w-5xl mx-auto px-4 py-14 grid gap-10 lg:grid-cols-3">
+  <div class="lg:col-span-2 text-slate-700 leading-relaxed">
+    {% if service.full_description %}{{ service.full_description|linebreaks }}{% else %}<p>{{ service.short_description }}</p>{% endif %}
+  </div>
+  <div>
+    {% if service.capability_list %}
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+      <h2 class="font-heading font-bold text-navy-800 mb-3">Capabilities</h2>
+      <ul class="space-y-2">
+        {% for cap in service.capability_list %}
+        <li class="flex gap-2 text-sm text-slate-700"><span class="text-navy-600 font-bold">&#10003;</span><span>{{ cap }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <a href="/#contact" class="block text-center mt-4 bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Request a Quotation</a>
+  </div>
+</section>
+{% endblock %}

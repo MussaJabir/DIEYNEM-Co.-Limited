@@ -17,9 +17,9 @@
       <a href="{% url 'home' %}" class="font-heading text-xl font-extrabold tracking-tight">DIEYNEM<span class="text-amber-500">.</span></a>
       <nav class="hidden md:flex gap-6 text-sm text-navy-100">
         <a href="{% url 'home' %}" class="hover:text-white">Home</a>
-        <a href="#services" class="hover:text-white">Services</a>
-        <a href="#projects" class="hover:text-white">Projects</a>
-        <a href="#contact" class="hover:text-white">Contact</a>
+        <a href="{% url 'services:list' %}" class="hover:text-white">Services</a>
+        <a href="/#projects" class="hover:text-white">Projects</a>
+        <a href="/#contact" class="hover:text-white">Contact</a>
       </nav>
       <a href="#contact" class="bg-amber-500 text-navy-950 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-600">Request Quotation</a>
     </div>
