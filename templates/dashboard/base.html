@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard &middot; DIEYNEM{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+</head>
+<body class="font-sans bg-slate-50 text-slate-900 antialiased">
+<div class="flex min-h-screen">
+  <aside class="w-64 bg-navy-900 text-navy-100 flex-shrink-0 hidden md:flex flex-col">
+    <div class="px-5 py-5 border-b border-navy-800">
+      <span class="font-heading text-white text-lg font-extrabold">DIEYNEM<span class="text-amber-500">.</span></span>
+      <p class="text-xs text-navy-400 mt-1">Admin Dashboard</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+      {% url 'dashboard:overview' as overview_url %}
+      <a href="{{ overview_url }}" class="block px-3 py-2 rounded-lg {% if request.path == overview_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Overview</a>
+
+      <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Content</p>
+      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Projects <span class="text-[10px]">(Phase&nbsp;1)</span></span>
+      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Services <span class="text-[10px]">(Phase&nbsp;1)</span></span>
+      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Certificates <span class="text-[10px]">(Phase&nbsp;1)</span></span>
+      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Inquiries <span class="text-[10px]">(Phase&nbsp;1)</span></span>
+
+      {% if is_administrator %}
+      <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Admin</p>
+      {% url 'dashboard:settings' as settings_url %}
+      <a href="{{ settings_url }}" class="block px-3 py-2 rounded-lg {% if request.path == settings_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Site Settings</a>
+      {% endif %}
+    </nav>
+    <div class="px-3 py-4 border-t border-navy-800 text-sm">
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+        <button type="submit" class="w-full text-left px-3 py-2 rounded-lg hover:bg-navy-800">Log out</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+      <h1 class="font-heading text-lg font-bold text-navy-800">{% block heading %}Dashboard{% endblock %}</h1>
+      <span class="text-sm text-slate-500">{{ request.user.username }}</span>
+    </header>
+    <main class="p-6 flex-1">{% block dashboard_content %}{% endblock %}</main>
+  </div>
+</div>
+</body>
+</html>

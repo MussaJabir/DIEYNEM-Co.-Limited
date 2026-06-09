@@ -5,6 +5,7 @@ Reads `pr.json` (from `gh pr view`) and `checks.json` (from the GitHub
 check-runs API) in the current directory, renders the HTML template, and writes
 `report_output/PR-<number>-<slug>.pdf`.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -66,7 +67,7 @@ def main() -> None:
         "test_label": test_label,
         "test_state": test_state,
         "check_runs": check_runs,
-        "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "generated": dt.datetime.now(dt.UTC).strftime("%Y-%m-%d %H:%M UTC"),
     }
 
     template_path = pathlib.Path(".github/scripts/report_template.html")
