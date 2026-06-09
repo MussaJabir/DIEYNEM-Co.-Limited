@@ -1,0 +1,6 @@
+Django==5.2.15
+django-environ==0.13.0
+psycopg[binary]==3.3.4
+gunicorn==26.0.0
+whitenoise==6.12.0
+Pillow==12.2.0
