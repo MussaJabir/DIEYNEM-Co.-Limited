@@ -46,4 +46,32 @@
   <div class="mt-8"><a href="{% url 'services:list' %}" class="text-amber-600 font-semibold">View all services &rarr;</a></div>
 </section>
 {% endif %}
+
+{% if featured_projects %}
+<section id="projects" class="bg-slate-50 border-t border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-16">
+    <p class="text-amber-600 font-semibold uppercase tracking-widest text-sm">Our work</p>
+    <h2 class="font-heading text-3xl font-extrabold text-navy-800 mt-2">Featured Projects</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+      {% for project in featured_projects %}
+      <a href="{{ project.get_absolute_url }}" class="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition">
+        {% if project.hero_image %}
+          <img src="{{ project.hero_image.url }}" alt="{{ project.title }}" class="w-full h-40 object-cover">
+        {% else %}
+          <div class="w-full h-40 bg-navy-800 flex items-center justify-center"><span class="font-heading text-white/30 font-extrabold text-2xl">DIEYNEM</span></div>
+        {% endif %}
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            {% if project.status == 'ongoing' %}<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Ongoing</span>{% else %}<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Completed</span>{% endif %}
+          </div>
+          <h3 class="font-heading font-bold text-navy-800 leading-snug">{{ project.title }}</h3>
+          <p class="text-slate-500 text-sm mt-2">{{ project.location }}{% if project.year_display %} &middot; {{ project.year_display }}{% endif %}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="mt-8"><a href="{% url 'projects:list' %}" class="text-amber-600 font-semibold">View all projects &rarr;</a></div>
+  </div>
+</section>
+{% endif %}
 {% endblock %}

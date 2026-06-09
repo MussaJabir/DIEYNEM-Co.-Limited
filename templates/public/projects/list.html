@@ -1,0 +1,53 @@
+{% extends "public/base.html" %}
+
+{% block title %}Projects &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}Documented and certified projects by DIEYNEM Co. Limited across electrical, ICT, fire, HVAC, solar and power infrastructure in Tanzania and Uganda.{% endblock %}
+
+{% block content %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-6xl mx-auto px-4 py-16">
+    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">Our work</p>
+    <h1 class="font-heading text-4xl font-extrabold mt-3">Project Portfolio</h1>
+    <p class="mt-4 text-navy-100 max-w-2xl">
+      Documented and certified projects across electrical, ICT, fire, HVAC, solar and
+      power infrastructure &mdash; in Tanzania and Uganda.
+    </p>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-4 py-12">
+  <div class="flex flex-wrap gap-2 mb-8 text-sm">
+    <a href="{% url 'projects:list' %}" class="px-4 py-2 rounded-lg font-semibold {% if not active_status %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">All</a>
+    <a href="?status=completed" class="px-4 py-2 rounded-lg font-semibold {% if active_status == 'completed' %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">Completed</a>
+    <a href="?status=ongoing" class="px-4 py-2 rounded-lg font-semibold {% if active_status == 'ongoing' %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">Ongoing</a>
+  </div>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for project in projects %}
+    <a href="{{ project.get_absolute_url }}" class="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition">
+      {% if project.hero_image %}
+        <img src="{{ project.hero_image.url }}" alt="{{ project.title }}" class="w-full h-40 object-cover">
+      {% else %}
+        <div class="w-full h-40 bg-navy-800 flex items-center justify-center">
+          <span class="font-heading text-white/30 font-extrabold text-2xl">DIEYNEM</span>
+        </div>
+      {% endif %}
+      <div class="p-5">
+        <div class="flex items-center gap-2 mb-2">
+          {% if project.status == 'ongoing' %}
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Ongoing</span>
+          {% else %}
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Completed</span>
+          {% endif %}
+          {% if project.sector %}<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{{ project.get_sector_display }}</span>{% endif %}
+        </div>
+        <h2 class="font-heading font-bold text-navy-800 leading-snug">{{ project.title }}</h2>
+        <p class="text-slate-500 text-sm mt-2">{{ project.location }}{% if project.year_display %} &middot; {{ project.year_display }}{% endif %}</p>
+      </div>
+    </a>
+    {% empty %}
+    <p class="text-slate-500">Projects will appear here soon.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -12,4 +12,9 @@ urlpatterns = [
     path("services/new/", views.ServiceCreateView.as_view(), name="service_create"),
     path("services/<int:pk>/edit/", views.ServiceUpdateView.as_view(), name="service_update"),
     path("services/<int:pk>/delete/", views.ServiceDeleteView.as_view(), name="service_delete"),
+    # Projects
+    path("projects/", views.ProjectListView.as_view(), name="project_list"),
+    path("projects/new/", views.ProjectCreateView.as_view(), name="project_create"),
+    path("projects/<int:pk>/edit/", views.ProjectUpdateView.as_view(), name="project_update"),
+    path("projects/<int:pk>/delete/", views.ProjectDeleteView.as_view(), name="project_delete"),
 ]

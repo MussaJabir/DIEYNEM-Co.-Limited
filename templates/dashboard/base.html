@@ -22,7 +22,8 @@
       <a href="{{ overview_url }}" class="block px-3 py-2 rounded-lg {% if request.path == overview_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Overview</a>
 
       <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Content</p>
-      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Projects <span class="text-[10px]">(Phase&nbsp;1)</span></span>
+      {% url 'dashboard:project_list' as projects_url %}
+      <a href="{{ projects_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/projects' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Projects</a>
       {% url 'dashboard:service_list' as services_url %}
       <a href="{{ services_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/services' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Services</a>
       <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Certificates <span class="text-[10px]">(Phase&nbsp;1)</span></span>

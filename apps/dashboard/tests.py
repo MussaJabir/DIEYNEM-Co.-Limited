@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.core.models import SiteSetting
+from apps.projects.models import Project
 from apps.services.models import Service
 
 
@@ -106,3 +107,72 @@ class ServiceDashboardTests(TestCase):
         response = self.client.post(reverse("dashboard:service_delete", args=[service.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Service.objects.filter(pk=service.pk).exists())
+
+
+class ProjectDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {
+            "title": "New Project",
+            "status": "completed",
+            "client_name": "",
+            "main_contractor": "",
+            "consultant": "",
+            "location": "",
+            "country": "Tanzania",
+            "sector": "",
+            "role": "",
+            "year_start": "",
+            "year_end": "",
+            "completion_date": "",
+            "overview": "",
+            "scope_of_work": "",
+            "technical_highlights": "",
+            "outcome": "",
+            "contract_value": "",
+            "contract_value_visible": "on",
+            "order": 0,
+            "meta_title": "",
+            "meta_description": "",
+            # Empty inline image formset
+            "images-TOTAL_FORMS": "0",
+            "images-INITIAL_FORMS": "0",
+            "images-MIN_NUM_FORMS": "0",
+            "images-MAX_NUM_FORMS": "1000",
+        }
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_create(self):
+        response = self.client.post(reverse("dashboard:project_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Project.objects.filter(title="New Project").exists())
+
+    def test_editor_can_update(self):
+        project = Project.objects.create(title="Old Project")
+        response = self.client.post(
+            reverse("dashboard:project_update", args=[project.pk]),
+            self._form_data(title="Renamed Project"),
+        )
+        self.assertEqual(response.status_code, 302)
+        project.refresh_from_db()
+        self.assertEqual(project.title, "Renamed Project")
+
+    def test_editor_can_delete(self):
+        project = Project.objects.create(title="ToDelete")
+        response = self.client.post(reverse("dashboard:project_delete", args=[project.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Project.objects.filter(pk=project.pk).exists())
