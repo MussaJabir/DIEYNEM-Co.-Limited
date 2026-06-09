@@ -39,6 +39,7 @@ Thumbs.db
 
 # ---- Project working files (not for the repo) ----
 .work/
+report_output/
 prompt.txt
 # Source company-profile PDF (30 MB — kept local, not committed)
 COMPANY PROFILE FOR DIEYNEM CO LTD - 2026.pdf
