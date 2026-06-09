@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Lint (ruff)
+        run: |
+          if python -c "import ruff" 2>/dev/null || command -v ruff >/dev/null 2>&1; then
+            ruff check .
+          else
+            echo "ruff not installed yet — skipping (added in phase0/setup)."
+          fi
+
+      - name: Format check (black)
+        run: |
+          if command -v black >/dev/null 2>&1; then
+            black --check .
+          else
+            echo "black not installed yet — skipping (added in phase0/setup)."
+          fi
+
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+        run: |
+          if [ -f manage.py ]; then
+            python manage.py migrate --noinput
+            python manage.py test --verbosity 2
+          else
+            echo "No Django project yet (manage.py missing) — skipping tests."
+          fi

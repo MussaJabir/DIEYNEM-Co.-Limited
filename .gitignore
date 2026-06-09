@@ -1,0 +1,51 @@
+# ---- Python / Django ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.sqlite3
+db.sqlite3
+*.log
+local_settings.py
+/staticfiles/
+/media/
+
+# ---- Virtual environments ----
+venv/
+.venv/
+env/
+ENV/
+
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+
+# ---- Node / Tailwind ----
+node_modules/
+/static/css/tailwind.out.css
+/theme/static/css/dist/
+npm-debug.log*
+yarn-error.log*
+package-lock.json.lock
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Project working files (not for the repo) ----
+.work/
+prompt.txt
+# Source company-profile PDF (30 MB — kept local, not committed)
+COMPANY PROFILE FOR DIEYNEM CO LTD - 2026.pdf
+*.orig
+
+# ---- Test / coverage ----
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/

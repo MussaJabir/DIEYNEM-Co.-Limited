@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 20mm 18mm;
+    @bottom-center {
+      content: "DIEYNEM Co. Limited — Pull Request Report";
+      font-size: 8pt; color: #64748B;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt; color: #64748B;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "DejaVu Sans", "Inter", sans-serif;
+    color: #0F172A; font-size: 10pt; line-height: 1.5; margin: 0;
+  }
+  .header {
+    background: #0C1B30; color: #fff; padding: 18px 22px; border-radius: 10px;
+    border-left: 6px solid #F59E0B; margin-bottom: 18px;
+  }
+  .header .brand { font-size: 9pt; letter-spacing: 2px; text-transform: uppercase; color: #8FB3DC; }
+  .header h1 { margin: 4px 0 2px; font-size: 17pt; }
+  .header .sub { font-size: 9pt; color: #DCE8F5; }
+  h2 {
+    font-size: 11pt; color: #173A66; margin: 20px 0 8px;
+    border-bottom: 2px solid #E2E8F0; padding-bottom: 4px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  .meta td { padding: 5px 8px; vertical-align: top; border-bottom: 1px solid #F1F5F9; }
+  .meta td.k { width: 28%; color: #475569; font-weight: 600; }
+  .chip {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .pass    { background: #DCFCE7; color: #16A34A; }
+  .fail    { background: #FEE2E2; color: #DC2626; }
+  .pending { background: #FEF3C7; color: #D97706; }
+  .neutral { background: #F1F5F9; color: #475569; }
+  .stats { margin: 6px 0 0; }
+  .stats .box {
+    display: inline-block; width: 31%; margin-right: 1.5%; padding: 10px 12px;
+    background: #EEF4FB; border: 1px solid #DCE8F5; border-radius: 8px; text-align: center;
+  }
+  .stats .box .n { font-size: 16pt; font-weight: 800; color: #1E4E86; }
+  .stats .box .l { font-size: 8pt; color: #475569; text-transform: uppercase; letter-spacing: .5px; }
+  .add { color: #16A34A; font-weight: 700; }
+  .del { color: #DC2626; font-weight: 700; }
+  .files td, .commits td { padding: 4px 8px; border-bottom: 1px solid #F1F5F9; font-size: 9pt; }
+  .files th, .commits th {
+    text-align: left; background: #F8FAFC; color: #334155; padding: 5px 8px;
+    font-size: 8pt; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #E2E8F0;
+  }
+  .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt; color: #475569; }
+  .desc { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; font-size: 9pt; }
+  .muted { color: #94A3B8; font-size: 8.5pt; }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="brand">DIEYNEM Co. Limited · Development Report</div>
+    <h1>PR #{{ pr.number }} — {{ pr.title }}</h1>
+    <div class="sub">{{ repo }} &nbsp;·&nbsp; {{ pr.headRefName }} → {{ pr.baseRefName }}</div>
+  </div>
+
+  <h2>Overview</h2>
+  <table class="meta">
+    <tr><td class="k">Pull Request</td><td>#{{ pr.number }} — {{ pr.title }}</td></tr>
+    <tr><td class="k">Author</td><td>{{ author }}</td></tr>
+    <tr><td class="k">Source branch</td><td class="mono">{{ pr.headRefName }}</td></tr>
+    <tr><td class="k">Target branch</td><td class="mono">{{ pr.baseRefName }}</td></tr>
+    <tr><td class="k">Merged by</td><td>{{ merged_by }}{% if merged_at %} on {{ merged_at }}{% endif %}</td></tr>
+    <tr><td class="k">Test / CI status</td><td><span class="chip {{ test_state }}">{{ test_label }}</span></td></tr>
+    <tr><td class="k">Link</td><td class="mono">{{ pr.url }}</td></tr>
+  </table>
+
+  <h2>Change summary</h2>
+  <div class="stats">
+    <div class="box"><div class="n">{{ changed_files }}</div><div class="l">Files changed</div></div>
+    <div class="box"><div class="n add">+{{ additions }}</div><div class="l">Additions</div></div>
+    <div class="box"><div class="n del">−{{ deletions }}</div><div class="l">Deletions</div></div>
+  </div>
+
+  <h2>Description</h2>
+  <div class="desc">{{ body }}</div>
+
+  <h2>Commits ({{ commits|length }})</h2>
+  {% if commits %}
+  <table class="commits">
+    <tr><th style="width:14%">SHA</th><th>Message</th><th style="width:22%">Author</th></tr>
+    {% for c in commits %}
+    <tr>
+      <td class="mono">{{ (c.oid or "")[:7] }}</td>
+      <td>{{ c.messageHeadline or c.messageBody or "—" }}</td>
+      <td>{% if c.authors %}{{ c.authors[0].login or c.authors[0].name or "—" }}{% else %}—{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No commit data available.</p>{% endif %}
+
+  <h2>Files changed ({{ files|length }})</h2>
+  {% if files %}
+  <table class="files">
+    <tr><th>Path</th><th style="width:12%">+</th><th style="width:12%">−</th></tr>
+    {% for f in files %}
+    <tr>
+      <td class="mono">{{ f.path }}</td>
+      <td class="add">+{{ f.additions }}</td>
+      <td class="del">−{{ f.deletions }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No file data available.</p>{% endif %}
+
+  {% if check_runs %}
+  <h2>Checks</h2>
+  <table class="files">
+    <tr><th>Check</th><th style="width:22%">Status</th><th style="width:22%">Conclusion</th></tr>
+    {% for r in check_runs %}
+    <tr><td>{{ r.name }}</td><td>{{ r.status }}</td><td>{{ r.conclusion or "—" }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+
+  <p class="muted" style="margin-top:24px">Generated automatically on {{ generated }} · DIEYNEM Co. Limited</p>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+name: PR Report
+
+# Generates a branded PDF report for every MERGED pull request.
+# Note: PRs are authored and accepted by the same account, so GitHub disables
+# self-"Approve"; merging is the effective approval, so we trigger on merge.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: read
+  checks: read
+
+jobs:
+  report:
+    name: generate-pr-report
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PDF tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-2.0-0 \
+            libffi-dev libcairo2 libpangoft2-1.0-0 fonts-dejavu-core
+          pip install -r .github/scripts/requirements.txt
+
+      - name: Gather PR data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NUM=${{ github.event.pull_request.number }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          gh pr view "$NUM" --repo "${{ github.repository }}" \
+            --json number,title,author,headRefName,baseRefName,body,additions,deletions,changedFiles,mergedBy,mergedAt,commits,files,url \
+            > pr.json
+          gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/check-runs" \
+            > checks.json || echo '{"check_runs":[]}' > checks.json
+
+      - name: Generate PDF report
+        env:
+          REPO: ${{ github.repository }}
+        run: python .github/scripts/generate_report.py
+
+      - name: Commit report to the reports branch
+        run: |
+          PDF="$(ls report_output/*.pdf | head -1)"
+          BNAME="$(basename "$PDF")"
+          cp "$PDF" "$RUNNER_TEMP/$BNAME"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin reports || true
+          if git show-ref --verify --quiet refs/remotes/origin/reports; then
+            git checkout -B reports origin/reports
+          else
+            git checkout --orphan reports
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+          mkdir -p reports
+          cp "$RUNNER_TEMP/$BNAME" "reports/$BNAME"
+          git add "reports/$BNAME"
+          git commit -m "report: PR #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}"
+          git push origin reports
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ github.event.pull_request.number }}-report
+          path: report_output/*.pdf
+          if-no-files-found: error
