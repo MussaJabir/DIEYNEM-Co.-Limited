@@ -29,11 +29,19 @@
 
   <footer class="bg-navy-950 text-navy-300 mt-20">
     <div class="max-w-6xl mx-auto px-4 py-10 text-sm">
-      <p class="font-heading text-white font-bold text-lg">DIEYNEM Co. Limited</p>
-      <p class="mt-1 text-amber-500">Quality is our Motto</p>
-      <p class="mt-3">P.O. Box 38075, Dar es Salaam, Tanzania</p>
-      <p>info@dieynem.co.tz &middot; +255 22 2171512</p>
-      <p class="mt-4 text-navy-400">&copy; {% now "Y" %} DIEYNEM Co. Limited. All rights reserved.</p>
+      <p class="font-heading text-white font-bold text-lg">{{ site.company_name }}</p>
+      {% if site.motto %}<p class="mt-1 text-amber-500">{{ site.motto }}</p>{% endif %}
+      {% if site.po_box %}<p class="mt-3">{{ site.po_box }}</p>{% endif %}
+      {% if site.physical_address %}<p>{{ site.physical_address }}</p>{% endif %}
+      {% if site.email_list %}<p class="mt-2">{{ site.email_list|join:" &middot; " }}</p>{% endif %}
+      {% if site.phone_list %}<p>{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
+      {% if site.social_links %}
+      <p class="mt-3">
+        {% for name, url in site.social_links %}<a href="{{ url }}" class="hover:text-white underline">{{ name }}</a>{% if not forloop.last %} &middot; {% endif %}{% endfor %}
+      </p>
+      {% endif %}
+      {% if site.footer_text %}<p class="mt-3 text-navy-400">{{ site.footer_text }}</p>{% endif %}
+      <p class="mt-4 text-navy-400">&copy; {% now "Y" %} {{ site.company_name }}. All rights reserved.</p>
     </div>
   </footer>
 </body>

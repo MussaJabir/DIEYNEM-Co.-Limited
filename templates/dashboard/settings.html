@@ -4,12 +4,71 @@
 {% block heading %}Site Settings{% endblock %}
 
 {% block dashboard_content %}
-<div class="bg-white border border-slate-200 rounded-xl p-6">
-  <span class="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-warn">Administrator only</span>
-  <p class="text-slate-600 text-sm mt-3">
-    The Site Settings form (company contacts, address, logos, social links and SEO
-    defaults) is implemented in Phase&nbsp;2. This page confirms the Administrator-only
-    access control is in place.
-  </p>
+<div class="max-w-3xl">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="mb-4 rounded-lg bg-ok/10 border border-ok/30 text-ok px-4 py-2 text-sm">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-red-50 border border-red-200 text-danger px-4 py-2 text-sm">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <section class="bg-white border border-slate-200 rounded-xl p-6">
+      <h2 class="font-heading font-bold text-navy-800 mb-1">Company identity</h2>
+      <p class="text-xs text-slate-500 mb-4">Shown across the public site and in the footer.</p>
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% for field in form %}
+          {% if field.name == "company_name" or field.name == "motto" or field.name == "logo" or field.name == "default_og_image" %}
+            <div{% if field.name == "default_og_image" %} class="sm:col-span-2"{% endif %}>
+              <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<p class="text-xs text-slate-400 mt-1">{{ field.help_text }}</p>{% endif %}
+              {% for error in field.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-xl p-6">
+      <h2 class="font-heading font-bold text-navy-800 mb-4">Contact details</h2>
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% for field in form %}
+          {% if field.name == "po_box" or field.name == "physical_address" or field.name == "phones" or field.name == "emails" or field.name == "map_embed" %}
+            <div{% if field.name == "physical_address" or field.name == "map_embed" %} class="sm:col-span-2"{% endif %}>
+              <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<p class="text-xs text-slate-400 mt-1">{{ field.help_text }}</p>{% endif %}
+              {% for error in field.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-xl p-6">
+      <h2 class="font-heading font-bold text-navy-800 mb-4">Social &amp; footer</h2>
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% for field in form %}
+          {% if field.name == "facebook_url" or field.name == "instagram_url" or field.name == "linkedin_url" or field.name == "footer_text" %}
+            <div{% if field.name == "footer_text" %} class="sm:col-span-2"{% endif %}>
+              <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+
+    <div class="flex justify-end">
+      <button type="submit" class="bg-navy-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-navy-700">Save settings</button>
+    </div>
+  </form>
 </div>
 {% endblock %}

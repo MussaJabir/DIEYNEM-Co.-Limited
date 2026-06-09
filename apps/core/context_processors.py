@@ -1,3 +1,6 @@
+from .models import SiteSetting
+
+
 def user_roles(request):
     """Expose role flags to templates (used by the dashboard shell)."""
     user = getattr(request, "user", None)
@@ -7,3 +10,8 @@ def user_roles(request):
         and (user.is_superuser or user.groups.filter(name="Administrator").exists())
     )
     return {"is_administrator": is_administrator}
+
+
+def site_settings(request):
+    """Expose the singleton SiteSetting to all templates as ``site``."""
+    return {"site": SiteSetting.load()}
