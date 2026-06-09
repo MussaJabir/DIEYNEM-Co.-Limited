@@ -1,0 +1,62 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}New{% endif %} project &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}{% if form.instance.pk %}Edit project{% else %}New project{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-3xl">
+  <form method="post" enctype="multipart/form-data" class="space-y-5">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-red-50 border border-red-200 text-danger px-4 py-2 text-sm">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+      <h2 class="font-heading font-bold text-navy-800">Project details</h2>
+      {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">
+          {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+        </label>
+        {% if field.field.widget.input_type == "checkbox" %}
+          <div class="flex items-center gap-2">{{ field }}{% if field.help_text %}<span class="text-sm text-slate-600">{{ field.help_text }}</span>{% endif %}</div>
+        {% else %}
+          {{ field }}
+          {% if field.help_text %}<p class="text-xs text-slate-400 mt-1">{{ field.help_text }}</p>{% endif %}
+        {% endif %}
+        {% for error in field.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-6">
+      <h2 class="font-heading font-bold text-navy-800 mb-1">Project images</h2>
+      <p class="text-xs text-slate-500 mb-4">Add site photos for the case-study gallery. Leave empty rows blank.</p>
+      {{ image_formset.management_form }}
+      <div class="space-y-4">
+        {% for imgform in image_formset %}
+        <div class="border border-slate-200 rounded-lg p-4">
+          {{ imgform.id }}
+          {% for field in imgform.visible_fields %}
+          <div class="mb-3">
+            <label class="block text-xs font-medium text-slate-600 mb-1">{{ field.label }}</label>
+            {% if field.field.widget.input_type == "checkbox" %}
+              <div>{{ field }}</div>
+            {% else %}
+              {{ field }}
+            {% endif %}
+            {% for error in field.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <a href="{% url 'dashboard:project_list' %}" class="text-slate-500 text-sm font-semibold px-4 py-2.5">Cancel</a>
+      <button type="submit" class="bg-navy-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-navy-700">Save project</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

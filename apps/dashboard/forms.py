@@ -1,6 +1,8 @@
 from django import forms
+from django.forms import inlineformset_factory
 
 from apps.core.models import SiteSetting
+from apps.projects.models import Project, ProjectImage
 from apps.services.models import Service
 
 INPUT_CLASS = (
@@ -64,3 +66,54 @@ class ServiceForm(StyledModelForm):
             "meta_title",
             "meta_description",
         ]
+
+
+class ProjectForm(StyledModelForm):
+    class Meta:
+        model = Project
+        fields = [
+            "title",
+            "status",
+            "client_name",
+            "main_contractor",
+            "consultant",
+            "location",
+            "country",
+            "sector",
+            "role",
+            "year_start",
+            "year_end",
+            "completion_date",
+            "overview",
+            "scope_of_work",
+            "technical_highlights",
+            "outcome",
+            "contract_value",
+            "contract_value_visible",
+            "related_services",
+            "hero_image",
+            "is_featured",
+            "is_published",
+            "order",
+            "meta_title",
+            "meta_description",
+        ]
+        widgets = {
+            "completion_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+
+class ProjectImageForm(StyledModelForm):
+    class Meta:
+        model = ProjectImage
+        fields = ["image", "caption", "date_taken", "show_in_gallery", "order"]
+        widgets = {"date_taken": forms.DateInput(attrs={"type": "date"})}
+
+
+ProjectImageFormSet = inlineformset_factory(
+    Project,
+    ProjectImage,
+    form=ProjectImageForm,
+    extra=2,
+    can_delete=True,
+)

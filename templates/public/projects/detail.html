@@ -1,0 +1,92 @@
+{% extends "public/base.html" %}
+
+{% block title %}{{ project.meta_title|default:project.title }} &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}{{ project.meta_description|default:project.overview|truncatewords:30 }}{% endblock %}
+
+{% block content %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-5xl mx-auto px-4 py-16">
+    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">
+      <a href="{% url 'projects:list' %}" class="hover:underline">Projects</a>
+    </p>
+    <div class="mt-3">
+      {% if project.status == 'ongoing' %}
+        <span class="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-amber-500 text-navy-950">Ongoing</span>
+      {% else %}
+        <span class="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-ok text-white">Completed</span>
+      {% endif %}
+    </div>
+    <h1 class="font-heading text-4xl font-extrabold mt-3">{{ project.title }}</h1>
+    {% if project.overview %}<p class="mt-4 text-navy-100 max-w-2xl text-lg">{{ project.overview }}</p>{% endif %}
+  </div>
+</section>
+
+<section class="max-w-5xl mx-auto px-4 py-12 grid gap-10 lg:grid-cols-3">
+  <div class="lg:col-span-2 space-y-8">
+    {% if project.scope_list %}
+    <div>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-3">Scope of work</h2>
+      <ul class="space-y-2">
+        {% for item in project.scope_list %}<li class="flex gap-2 text-slate-700"><span class="text-navy-600 font-bold">&#10003;</span><span>{{ item }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if project.highlight_list %}
+    <div>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-3">Technical highlights</h2>
+      <ul class="space-y-2">
+        {% for item in project.highlight_list %}<li class="flex gap-2 text-slate-700"><span class="text-amber-500 font-bold">&#9889;</span><span>{{ item }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if project.images.all %}
+    <div>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-3">Gallery</h2>
+      <div class="grid grid-cols-2 gap-3">
+        {% for img in project.images.all %}
+        <figure>
+          <img src="{{ img.image.url }}" alt="{{ img.caption }}" class="rounded-lg w-full h-40 object-cover">
+          {% if img.caption %}<figcaption class="text-xs text-slate-500 mt-1">{{ img.caption }}</figcaption>{% endif %}
+        </figure>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if project.outcome %}
+    <div>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-3">Outcome</h2>
+      <p class="text-slate-700">{{ project.outcome }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-4">
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 text-sm">
+      <h2 class="font-heading font-bold text-navy-800 mb-3">Project details</h2>
+      <dl class="space-y-3">
+        {% if project.client_name %}<div><dt class="text-slate-500">Client / employer</dt><dd class="text-slate-800 font-medium">{{ project.client_name }}</dd></div>{% endif %}
+        {% if project.main_contractor %}<div><dt class="text-slate-500">Main contractor</dt><dd class="text-slate-800">{{ project.main_contractor }}</dd></div>{% endif %}
+        {% if project.consultant %}<div><dt class="text-slate-500">Consultant</dt><dd class="text-slate-800">{{ project.consultant }}</dd></div>{% endif %}
+        {% if project.location %}<div><dt class="text-slate-500">Location</dt><dd class="text-slate-800">{{ project.location }}, {{ project.country }}</dd></div>{% endif %}
+        {% if project.year_display %}<div><dt class="text-slate-500">Year</dt><dd class="text-slate-800">{{ project.year_display }}</dd></div>{% endif %}
+        {% if project.role %}<div><dt class="text-slate-500">Our role</dt><dd class="text-slate-800">{{ project.get_role_display }}</dd></div>{% endif %}
+        {% if project.show_value %}<div><dt class="text-slate-500">Contract value</dt><dd class="text-slate-800 font-semibold">{{ project.contract_value }}</dd></div>{% endif %}
+      </dl>
+    </div>
+
+    {% if project.related_services.all %}
+    <div class="bg-white border border-slate-200 rounded-xl p-5">
+      <h2 class="font-heading font-bold text-navy-800 mb-3 text-sm">Systems installed</h2>
+      <div class="flex flex-wrap gap-2">
+        {% for svc in project.related_services.all %}<a href="{{ svc.get_absolute_url }}" class="text-xs px-2.5 py-1 rounded-full bg-navy-50 text-navy-700 hover:bg-navy-100">{{ svc.name }}</a>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <a href="/#contact" class="block text-center bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Request a similar project</a>
+  </aside>
+</section>
+{% endblock %}
