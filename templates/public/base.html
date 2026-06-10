@@ -10,38 +10,83 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+  <style>
+    [x-cloak]{display:none!important}
+    [data-reveal]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+    [data-reveal].is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){
+      [data-reveal]{opacity:1!important;transform:none!important;transition:none!important}
+    }
+  </style>
+  <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
+  <script defer src="{% static 'js/alpine.min.js' %}"></script>
+  <script defer src="{% static 'js/public.js' %}"></script>
 </head>
 <body class="font-sans text-slate-900 bg-white antialiased">
-  <header class="bg-navy-900 text-white">
+  <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <a href="{% url 'home' %}" class="font-heading text-xl font-extrabold tracking-tight">DIEYNEM<span class="text-amber-500">.</span></a>
-      <nav class="hidden md:flex gap-6 text-sm text-navy-100">
-        <a href="{% url 'home' %}" class="hover:text-white">Home</a>
-        <a href="{% url 'services:list' %}" class="hover:text-white">Services</a>
-        <a href="{% url 'projects:list' %}" class="hover:text-white">Projects</a>
-        <a href="{% url 'leads:quote' %}" class="hover:text-white">Contact</a>
+      <nav class="hidden md:flex gap-7 text-sm text-navy-100">
+        <a href="{% url 'home' %}" class="hover:text-white transition-colors">Home</a>
+        <a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a>
+        <a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a>
+        <a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">Certifications</a>
+        <a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">Contact</a>
       </nav>
-      <a href="{% url 'leads:quote' %}" class="bg-amber-500 text-navy-950 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-600">Request Quotation</a>
+      <div class="flex items-center gap-2">
+        <a href="{% url 'leads:quote' %}" class="hidden sm:inline-block bg-amber-500 text-navy-950 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors">Request Quotation</a>
+        <button type="button" @click="open = !open" class="md:hidden p-2 -mr-1 rounded-lg hover:bg-navy-800 transition-colors" :aria-expanded="open" aria-label="Toggle menu">
+          <svg x-show="!open" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          <svg x-show="open" x-cloak class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
     </div>
+    <!-- Mobile menu -->
+    <nav x-show="open" x-cloak x-transition.opacity class="md:hidden border-t border-navy-800 px-4 py-3 space-y-1 text-navy-100">
+      <a href="{% url 'home' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Home</a>
+      <a href="{% url 'services:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Services</a>
+      <a href="{% url 'projects:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Projects</a>
+      <a href="{% url 'credentials:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Certifications</a>
+      <a href="{% url 'leads:quote' %}" @click="open=false" class="block px-3 py-2 rounded-lg bg-amber-500 text-navy-950 font-semibold text-center mt-2">Request Quotation</a>
+    </nav>
   </header>
 
   <main>{% block content %}{% endblock %}</main>
 
   <footer class="bg-navy-950 text-navy-300 mt-20">
-    <div class="max-w-6xl mx-auto px-4 py-10 text-sm">
-      <p class="font-heading text-white font-bold text-lg">{{ site.company_name }}</p>
-      {% if site.motto %}<p class="mt-1 text-amber-500">{{ site.motto }}</p>{% endif %}
-      {% if site.po_box %}<p class="mt-3">{{ site.po_box }}</p>{% endif %}
-      {% if site.physical_address %}<p>{{ site.physical_address }}</p>{% endif %}
-      {% if site.email_list %}<p class="mt-2">{{ site.email_list|join:" &middot; " }}</p>{% endif %}
-      {% if site.phone_list %}<p>{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
-      {% if site.social_links %}
-      <p class="mt-3">
-        {% for name, url in site.social_links %}<a href="{{ url }}" class="hover:text-white underline">{{ name }}</a>{% if not forloop.last %} &middot; {% endif %}{% endfor %}
-      </p>
-      {% endif %}
-      {% if site.footer_text %}<p class="mt-3 text-navy-400">{{ site.footer_text }}</p>{% endif %}
-      <p class="mt-4 text-navy-400">&copy; {% now "Y" %} {{ site.company_name }}. All rights reserved.</p>
+    <div class="max-w-6xl mx-auto px-4 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+      <div class="lg:col-span-2">
+        <p class="font-heading text-white font-extrabold text-xl">{{ site.company_name }}<span class="text-amber-500">.</span></p>
+        {% if site.motto %}<p class="mt-2 text-amber-500 font-medium">{{ site.motto }}</p>{% endif %}
+        <p class="mt-3 max-w-sm text-navy-400">Class One electrical, ICT, fire, HVAC, solar and power-infrastructure contractor serving government, institutional and corporate clients across Tanzania.</p>
+        {% if site.social_links %}
+        <p class="mt-4 flex flex-wrap gap-x-3">
+          {% for name, url in site.social_links %}<a href="{{ url }}" class="hover:text-white underline">{{ name }}</a>{% endfor %}
+        </p>
+        {% endif %}
+      </div>
+      <div>
+        <p class="font-heading text-white font-bold mb-3">Explore</p>
+        <ul class="space-y-2">
+          <li><a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a></li>
+          <li><a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a></li>
+          <li><a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">Certifications</a></li>
+          <li><a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">Request a Quotation</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-heading text-white font-bold mb-3">Contact</p>
+        {% if site.po_box %}<p>{{ site.po_box }}</p>{% endif %}
+        {% if site.physical_address %}<p class="mt-1 text-navy-400">{{ site.physical_address }}</p>{% endif %}
+        {% if site.phone_list %}<p class="mt-2">{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
+        {% if site.email_list %}<p class="mt-1">{% for e in site.email_list %}<a href="mailto:{{ e }}" class="hover:text-white underline">{{ e }}</a>{% if not forloop.last %} &middot; {% endif %}{% endfor %}</p>{% endif %}
+      </div>
+    </div>
+    <div class="border-t border-navy-800">
+      <div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between text-navy-400 text-xs">
+        <p>&copy; {% now "Y" %} {{ site.company_name }}. All rights reserved.</p>
+        {% if site.footer_text %}<p>{{ site.footer_text }}</p>{% endif %}
+      </div>
     </div>
   </footer>
 </body>
