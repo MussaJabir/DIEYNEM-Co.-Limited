@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Inquiry from {{ object.name }} &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Inquiry{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-3xl grid gap-6 lg:grid-cols-3">
+  <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6">
+    <div class="flex items-center justify-between">
+      <h2 class="font-heading font-bold text-navy-800 text-lg">{{ object.name }}</h2>
+      {% include "dashboard/inquiries/_status_chip.html" with status=object.status label=object.get_status_display %}
+    </div>
+    <dl class="mt-4 text-sm space-y-2">
+      {% if object.company %}<div><dt class="text-slate-500">Company</dt><dd class="text-slate-800">{{ object.company }}</dd></div>{% endif %}
+      <div><dt class="text-slate-500">Email</dt><dd class="text-slate-800">{{ object.email }}</dd></div>
+      {% if object.phone %}<div><dt class="text-slate-500">Phone</dt><dd class="text-slate-800">{{ object.phone }}</dd></div>{% endif %}
+      {% if object.service_interest %}<div><dt class="text-slate-500">Service of interest</dt><dd class="text-slate-800">{{ object.service_interest }}</dd></div>{% endif %}
+      {% if object.project_type %}<div><dt class="text-slate-500">Project type</dt><dd class="text-slate-800">{{ object.project_type }}</dd></div>{% endif %}
+      <div><dt class="text-slate-500">Received</dt><dd class="text-slate-800">{{ object.created_at|date:"d M Y, H:i" }}</dd></div>
+    </dl>
+    <div class="mt-4">
+      <p class="text-slate-500 text-sm">Message</p>
+      <p class="mt-1 text-slate-800 text-sm whitespace-pre-wrap bg-slate-50 border border-slate-200 rounded-lg p-3">{{ object.message }}</p>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl p-6">
+    <h2 class="font-heading font-bold text-navy-800 mb-3">Manage</h2>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Status</label>
+        {{ form.status }}
+      </div>
+      <div>
+        <label for="{{ form.internal_notes.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Internal notes</label>
+        {{ form.internal_notes }}
+      </div>
+      <button type="submit" class="w-full bg-navy-600 text-white font-semibold py-2.5 rounded-lg hover:bg-navy-700">Save</button>
+      <a href="{% url 'dashboard:inquiry_list' %}" class="block text-center text-slate-500 text-sm">Back to inbox</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

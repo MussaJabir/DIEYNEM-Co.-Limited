@@ -86,7 +86,7 @@
     </div>
     {% endif %}
 
-    <a href="/#contact" class="block text-center bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Request a similar project</a>
+    <a href="{% url 'leads:quote' %}" class="block text-center bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Request a similar project</a>
   </aside>
 </section>
 {% endblock %}

@@ -1,0 +1,16 @@
+New inquiry from the DIEYNEM website
+=====================================
+
+Name:                {{ inquiry.name }}
+Company:             {{ inquiry.company|default:"—" }}
+Email:               {{ inquiry.email }}
+Phone:               {{ inquiry.phone|default:"—" }}
+Service of interest: {{ inquiry.service_interest|default:"—" }}
+Project type:        {{ inquiry.project_type|default:"—" }}
+
+Message:
+{{ inquiry.message }}
+
+-------------------------------------
+Received: {{ inquiry.created_at }}
+Manage this lead: /dashboard/inquiries/{{ inquiry.pk }}/

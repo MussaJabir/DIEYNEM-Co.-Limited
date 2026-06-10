@@ -30,11 +30,11 @@
     <p class="text-xs text-slate-400 mt-1">expired / expiring</p>
   </a>
   {% endif %}
-  <div class="bg-white border border-slate-200 rounded-xl p-5">
+  <a href="{% url 'dashboard:inquiry_list' %}?status=new" class="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
     <p class="text-xs uppercase tracking-wider text-slate-500">New inquiries</p>
-    <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">&mdash;</p>
-    <p class="text-xs text-slate-400 mt-1">Available next</p>
-  </div>
+    <p class="font-heading text-3xl font-extrabold {% if new_inquiries_count %}text-info{% else %}text-navy-700{% endif %} mt-1 tabular-nums">{{ new_inquiries_count }}</p>
+    <p class="text-xs text-slate-400 mt-1">awaiting response</p>
+  </a>
 </div>
 
 <div class="mt-6 bg-white border border-slate-200 rounded-xl p-6">

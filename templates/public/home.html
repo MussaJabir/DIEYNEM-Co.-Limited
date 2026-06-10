@@ -14,8 +14,8 @@
       and rural-electrification works for government, institutional and corporate clients.
     </p>
     <div class="mt-8 flex flex-wrap gap-4">
-      <a href="#contact" class="bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Request a Quotation</a>
-      <a href="#projects" class="border border-navy-400 text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-800">View Projects</a>
+      <a href="{% url 'leads:quote' %}" class="bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Request a Quotation</a>
+      <a href="{% url 'projects:list' %}" class="border border-navy-400 text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-800">View Projects</a>
     </div>
   </div>
 </section>

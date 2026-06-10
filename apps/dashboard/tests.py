@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from apps.core.models import SiteSetting
 from apps.credentials.models import Certificate
+from apps.leads.models import Inquiry
 from apps.projects.models import Project
 from apps.services.models import Service
 
@@ -225,3 +226,35 @@ class CertificateDashboardTests(TestCase):
         response = self.client.post(reverse("dashboard:certificate_delete", args=[cert.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Certificate.objects.filter(pk=cert.pk).exists())
+
+
+class InquiryDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        self.inquiry = Inquiry.objects.create(name="Lead", email="lead@x.tz", message="Hello")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:inquiry_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:inquiry_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_update_status(self):
+        response = self.client.post(
+            reverse("dashboard:inquiry_detail", args=[self.inquiry.pk]),
+            {"status": "contacted", "internal_notes": "Called them."},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.inquiry.refresh_from_db()
+        self.assertEqual(self.inquiry.status, "contacted")
+        self.assertEqual(self.inquiry.internal_notes, "Called them.")
+
+    def test_editor_can_delete(self):
+        response = self.client.post(reverse("dashboard:inquiry_delete", args=[self.inquiry.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Inquiry.objects.filter(pk=self.inquiry.pk).exists())

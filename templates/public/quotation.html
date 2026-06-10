@@ -1,0 +1,80 @@
+{% extends "public/base.html" %}
+
+{% block title %}Request a Quotation &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}Request a quotation or invite DIEYNEM Co. Limited to tender for your electrical, ICT, fire, HVAC, solar or power-infrastructure project.{% endblock %}
+
+{% block content %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-5xl mx-auto px-4 py-16">
+    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">Get in touch</p>
+    <h1 class="font-heading text-4xl font-extrabold mt-3">Request a Quotation</h1>
+    <p class="mt-4 text-navy-100 max-w-2xl">
+      Tell us about your project &mdash; electrical, ICT, fire, HVAC, solar or power
+      infrastructure &mdash; and our team will respond with a quotation or tender response.
+    </p>
+  </div>
+</section>
+
+<section id="contact" class="max-w-5xl mx-auto px-4 py-12 grid gap-10 lg:grid-cols-3">
+  <div class="lg:col-span-2">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="rounded-lg bg-red-50 border border-red-200 text-danger px-4 py-2 text-sm">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Name <span class="text-danger">*</span></label>
+          {{ form.name }}
+          {% for e in form.name.errors %}<p class="text-xs text-danger mt-1">{{ e }}</p>{% endfor %}
+        </div>
+        <div>
+          <label for="{{ form.company.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Company / organisation</label>
+          {{ form.company }}
+        </div>
+        <div>
+          <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Email <span class="text-danger">*</span></label>
+          {{ form.email }}
+          {% for e in form.email.errors %}<p class="text-xs text-danger mt-1">{{ e }}</p>{% endfor %}
+        </div>
+        <div>
+          <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+          {{ form.phone }}
+        </div>
+        <div>
+          <label for="{{ form.service_interest.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Service of interest</label>
+          {{ form.service_interest }}
+        </div>
+        <div>
+          <label for="{{ form.project_type.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Project type</label>
+          {{ form.project_type }}
+        </div>
+      </div>
+
+      <div>
+        <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">Message <span class="text-danger">*</span></label>
+        {{ form.message }}
+        {% for e in form.message.errors %}<p class="text-xs text-danger mt-1">{{ e }}</p>{% endfor %}
+      </div>
+
+      {# Honeypot: hidden from real users #}
+      <div class="hidden" aria-hidden="true">
+        <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>{{ form.website }}
+      </div>
+
+      <button type="submit" class="bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Send request</button>
+    </form>
+  </div>
+
+  <aside>
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-sm">
+      <h2 class="font-heading font-bold text-navy-800 mb-3">Contact</h2>
+      {% if site.po_box %}<p class="text-slate-700">{{ site.po_box }}</p>{% endif %}
+      {% if site.physical_address %}<p class="text-slate-600 mt-1">{{ site.physical_address }}</p>{% endif %}
+      {% if site.email_list %}<p class="mt-3 text-slate-700">{{ site.email_list|join:" &middot; " }}</p>{% endif %}
+      {% if site.phone_list %}<p class="text-slate-700">{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
+    </div>
+  </aside>
+</section>
+{% endblock %}
