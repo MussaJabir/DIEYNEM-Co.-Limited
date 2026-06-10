@@ -4,6 +4,12 @@ from django.urls import reverse
 
 from apps.core.models import SiteSetting
 from apps.credentials.models import Certificate
+from apps.dashboard.forms import (
+    CertificateForm,
+    ProjectForm,
+    ServiceForm,
+    SiteSettingForm,
+)
 from apps.leads.models import Inquiry
 from apps.projects.models import Project
 from apps.services.models import Service
@@ -258,3 +264,59 @@ class InquiryDashboardTests(TestCase):
         response = self.client.post(reverse("dashboard:inquiry_delete", args=[self.inquiry.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Inquiry.objects.filter(pk=self.inquiry.pk).exists())
+
+
+class DashboardFormLayoutTests(TestCase):
+    """Two-column fieldset rendering for the dashboard forms."""
+
+    def test_fieldsets_render_every_field(self):
+        # Guards against a field being dropped from a form's ``fieldsets``.
+        for form_cls in (ProjectForm, ServiceForm, CertificateForm, SiteSettingForm):
+            form = form_cls()
+            rendered = {
+                item["field"].name
+                for section in form.iter_fieldsets()
+                for item in section["fields"]
+            }
+            self.assertEqual(
+                rendered,
+                set(form.fields),
+                msg=f"{form_cls.__name__}.fieldsets must render every field",
+            )
+
+    def test_form_without_fieldsets_renders_one_section(self):
+        SiteSettingForm.fieldsets, saved = [], SiteSettingForm.fieldsets
+        try:
+            sections = list(SiteSettingForm().iter_fieldsets())
+        finally:
+            SiteSettingForm.fieldsets = saved
+        self.assertEqual(len(sections), 1)
+        self.assertIsNone(sections[0]["legend"])
+
+    def test_project_form_renders_grouped_sections(self):
+        editor = User.objects.create_user("editor", password="pass12345")
+        editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:project_create"))
+        self.assertEqual(response.status_code, 200)
+        # Section legends present.
+        self.assertContains(response, "Basics")
+        self.assertContains(response, "Story")
+        # Every key input still rendered.
+        self.assertContains(response, 'name="title"')
+        self.assertContains(response, 'name="overview"')
+        self.assertContains(response, 'name="meta_description"')
+        # Sticky save bar with submit-spinner wiring.
+        self.assertContains(response, "Save project")
+        self.assertContains(response, "saving = true")
+        # Collapsible accordion sections.
+        self.assertContains(response, ':aria-expanded="open"')
+
+    def test_section_flags_errors_for_auto_open(self):
+        # A bound form missing a required field marks that section so the
+        # template can open it automatically.
+        form = ProjectForm(data={"status": "completed", "country": "Tanzania", "order": "0"})
+        self.assertFalse(form.is_valid())  # title is required
+        sections = {s["legend"]: s["has_errors"] for s in form.iter_fieldsets()}
+        self.assertTrue(sections["Basics"], "Basics holds the missing title")
+        self.assertFalse(sections["Story"], "Story fields are all optional")
