@@ -1,0 +1,59 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Certificates &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Certificates{% endblock %}
+
+{% block dashboard_content %}
+{% if messages %}{% for message in messages %}
+  <div class="mb-4 rounded-lg bg-ok/10 border border-ok/30 text-ok px-4 py-2 text-sm">{{ message }}</div>
+{% endfor %}{% endif %}
+
+{% if attention %}
+<div class="mb-4 rounded-lg bg-amber-100 border border-amber-400 text-warn px-4 py-3 text-sm">
+  <strong>Attention:</strong> {{ attention|length }} certificate{{ attention|length|pluralize }} expired or expiring within 60 days &mdash;
+  {% for c in attention %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Upload the renewed document.
+</div>
+{% endif %}
+
+<div class="flex justify-between items-center mb-4">
+  <p class="text-sm text-slate-500">{{ certificates|length }} certificate{{ certificates|length|pluralize }}</p>
+  <a href="{% url 'dashboard:certificate_create' %}" class="bg-navy-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-700">+ New certificate</a>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-slate-600 text-left">
+      <tr>
+        <th class="px-4 py-3 font-semibold">Name</th>
+        <th class="px-4 py-3 font-semibold">Category</th>
+        <th class="px-4 py-3 font-semibold">Valid to</th>
+        <th class="px-4 py-3 font-semibold">Status</th>
+        <th class="px-4 py-3 font-semibold text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cert in certificates %}
+      <tr class="border-t border-slate-100">
+        <td class="px-4 py-3">
+          <span class="font-medium text-slate-900">{{ cert.name }}</span>
+          {% if not cert.is_published %}<span class="ml-2 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Hidden</span>{% endif %}
+        </td>
+        <td class="px-4 py-3 text-slate-500">{{ cert.get_category_display }}</td>
+        <td class="px-4 py-3 text-slate-500">{% if cert.valid_to %}{{ cert.valid_to|date:"d M Y" }}{% else %}&mdash;{% endif %}</td>
+        <td class="px-4 py-3">
+          {% if cert.status == 'expired' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-danger/10 text-danger">Expired</span>
+          {% elif cert.status == 'expiring' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Expiring</span>
+          {% else %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Current</span>{% endif %}
+        </td>
+        <td class="px-4 py-3 text-right whitespace-nowrap">
+          <a href="{% url 'dashboard:certificate_update' cert.pk %}" class="text-navy-600 font-semibold hover:underline">Edit</a>
+          <a href="{% url 'dashboard:certificate_delete' cert.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">No certificates yet. <a href="{% url 'dashboard:certificate_create' %}" class="text-navy-600 underline">Add one</a>.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

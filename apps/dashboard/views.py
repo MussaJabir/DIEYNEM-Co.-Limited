@@ -9,15 +9,32 @@ from django.views.generic import (
 )
 
 from apps.core.models import SiteSetting
+from apps.credentials.models import Certificate
 from apps.projects.models import Project
 from apps.services.models import Service
 
-from .forms import ProjectForm, ProjectImageFormSet, ServiceForm, SiteSettingForm
+from .forms import (
+    CertificateForm,
+    ProjectForm,
+    ProjectImageFormSet,
+    ServiceForm,
+    SiteSettingForm,
+)
 from .mixins import AdministratorRequiredMixin, DashboardAccessMixin
 
 
 class OverviewView(DashboardAccessMixin, TemplateView):
     template_name = "dashboard/overview.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["projects_count"] = Project.objects.count()
+        context["ongoing_count"] = Project.objects.ongoing().count()
+        context["services_count"] = Service.objects.count()
+        attention = Certificate.objects.needs_attention()
+        context["certs_attention"] = attention
+        context["certs_attention_count"] = attention.count()
+        return context
 
 
 class SettingsView(AdministratorRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -121,3 +138,39 @@ class ProjectDeleteView(DashboardAccessMixin, DeleteView):
     model = Project
     template_name = "dashboard/projects/confirm_delete.html"
     success_url = reverse_lazy("dashboard:project_list")
+
+
+# --- Certificates CRUD (Administrator only) ---
+
+
+class CertificateListView(AdministratorRequiredMixin, ListView):
+    model = Certificate
+    template_name = "dashboard/certificates/list.html"
+    context_object_name = "certificates"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["attention"] = Certificate.objects.needs_attention()
+        return context
+
+
+class CertificateCreateView(AdministratorRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Certificate
+    form_class = CertificateForm
+    template_name = "dashboard/certificates/form.html"
+    success_url = reverse_lazy("dashboard:certificate_list")
+    success_message = "Certificate created."
+
+
+class CertificateUpdateView(AdministratorRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Certificate
+    form_class = CertificateForm
+    template_name = "dashboard/certificates/form.html"
+    success_url = reverse_lazy("dashboard:certificate_list")
+    success_message = "Certificate updated."
+
+
+class CertificateDeleteView(AdministratorRequiredMixin, DeleteView):
+    model = Certificate
+    template_name = "dashboard/certificates/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:certificate_list")

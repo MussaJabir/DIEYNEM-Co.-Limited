@@ -26,8 +26,11 @@
       <a href="{{ projects_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/projects' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Projects</a>
       {% url 'dashboard:service_list' as services_url %}
       <a href="{{ services_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/services' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Services</a>
-      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Certificates <span class="text-[10px]">(Phase&nbsp;1)</span></span>
-      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Inquiries <span class="text-[10px]">(Phase&nbsp;1)</span></span>
+      {% if is_administrator %}
+      {% url 'dashboard:certificate_list' as certificates_url %}
+      <a href="{{ certificates_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/certificates' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Certificates</a>
+      {% endif %}
+      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Inquiries <span class="text-[10px]">(next)</span></span>
 
       {% if is_administrator %}
       <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Admin</p>

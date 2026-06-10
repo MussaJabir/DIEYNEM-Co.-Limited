@@ -2,6 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 
 from apps.core.models import SiteSetting
+from apps.credentials.models import Certificate
 from apps.projects.models import Project, ProjectImage
 from apps.services.models import Service
 
@@ -117,3 +118,27 @@ ProjectImageFormSet = inlineformset_factory(
     extra=2,
     can_delete=True,
 )
+
+
+class CertificateForm(StyledModelForm):
+    class Meta:
+        model = Certificate
+        fields = [
+            "name",
+            "category",
+            "issuer",
+            "number",
+            "description",
+            "issue_date",
+            "valid_to",
+            "file",
+            "display_image",
+            "downloadable",
+            "related_project",
+            "is_published",
+            "order",
+        ]
+        widgets = {
+            "issue_date": forms.DateInput(attrs={"type": "date"}),
+            "valid_to": forms.DateInput(attrs={"type": "date"}),
+        }

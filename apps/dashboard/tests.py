@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.core.models import SiteSetting
+from apps.credentials.models import Certificate
 from apps.projects.models import Project
 from apps.services.models import Service
 
@@ -176,3 +177,51 @@ class ProjectDashboardTests(TestCase):
         response = self.client.post(reverse("dashboard:project_delete", args=[project.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Project.objects.filter(pk=project.pk).exists())
+
+
+class CertificateDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.administrator = User.objects.create_user("boss", password="pass12345")
+        self.administrator.groups.add(Group.objects.get(name="Administrator"))
+
+    def _form_data(self, **overrides):
+        data = {
+            "name": "New Certificate",
+            "category": "registration",
+            "issuer": "",
+            "number": "",
+            "description": "",
+            "issue_date": "",
+            "valid_to": "",
+            "downloadable": "on",
+            "related_project": "",
+            "is_published": "on",
+            "order": 0,
+        }
+        data.update(overrides)
+        return data
+
+    def test_editor_denied(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:certificate_list"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_administrator_can_list(self):
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:certificate_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_administrator_can_create(self):
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.post(reverse("dashboard:certificate_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Certificate.objects.filter(name="New Certificate").exists())
+
+    def test_administrator_can_delete(self):
+        self.client.login(username="boss", password="pass12345")
+        cert = Certificate.objects.create(name="ToDelete", category="safety")
+        response = self.client.post(reverse("dashboard:certificate_delete", args=[cert.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Certificate.objects.filter(pk=cert.pk).exists())
