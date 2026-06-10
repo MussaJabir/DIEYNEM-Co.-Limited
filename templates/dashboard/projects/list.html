@@ -4,9 +4,6 @@
 {% block heading %}Projects{% endblock %}
 
 {% block dashboard_content %}
-{% if messages %}{% for message in messages %}
-  <div class="mb-4 rounded-lg bg-ok/10 border border-ok/30 text-ok px-4 py-2 text-sm">{{ message }}</div>
-{% endfor %}{% endif %}
 
 <div class="flex justify-between items-center mb-4">
   <p class="text-sm text-slate-500">{{ projects|length }} project{{ projects|length|pluralize }}</p>

@@ -5,12 +5,6 @@
 
 {% block dashboard_content %}
 <div class="max-w-3xl">
-  {% if messages %}
-    {% for message in messages %}
-      <div class="mb-4 rounded-lg bg-ok/10 border border-ok/30 text-ok px-4 py-2 text-sm">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 

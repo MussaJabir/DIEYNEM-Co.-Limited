@@ -1,6 +1,8 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
+
+from apps.leads.models import Inquiry
 
 from .models import SiteSetting
 
@@ -53,3 +55,48 @@ class SiteSettingTests(TestCase):
         setting.linkedin_url = ""
         names = [name for name, _ in setting.social_links]
         self.assertEqual(names, ["Facebook"])
+
+
+class DashboardShellTests(TestCase):
+    """Sidebar badge context processor and role-based shell rendering."""
+
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.administrator = User.objects.create_user("boss", password="pass12345")
+        self.administrator.groups.add(Group.objects.get(name="Administrator"))
+
+    def test_badge_counts_absent_on_public_pages(self):
+        Inquiry.objects.create(name="A", email="a@x.tz", message="hi")
+        response = self.client.get(reverse("home"))
+        self.assertIsNone(response.context.get("new_inquiries_count"))
+
+    def test_new_inquiry_count_available_to_dashboard_staff(self):
+        Inquiry.objects.create(name="A", email="a@x.tz", message="hi")
+        Inquiry.objects.create(name="B", email="b@x.tz", message="hi")
+        # Read by a quoted inquiry should not be counted as "new".
+        Inquiry.objects.create(name="C", email="c@x.tz", message="hi", status=Inquiry.Status.QUOTED)
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(response.context["new_inquiries_count"], 2)
+
+    def test_certificate_attention_is_administrator_only(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertIsNone(response.context.get("certs_attention_count"))
+
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertIn("certs_attention_count", response.context)
+
+    def test_sidebar_hides_admin_links_for_editor(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertContains(response, "Projects")
+        self.assertNotContains(response, "Site Settings")
+
+    def test_sidebar_shows_admin_links_and_role_for_administrator(self):
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertContains(response, "Site Settings")
+        self.assertContains(response, "Administrator")
