@@ -9,7 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
-  <style>[x-cloak]{display:none!important}</style>
+  <style>
+    [x-cloak]{display:none!important}
+    .htmx-indicator{opacity:0;transition:opacity .2s ease}
+    .htmx-request .htmx-indicator,.htmx-request.htmx-indicator{opacity:1}
+  </style>
+  <script defer src="{% static 'js/htmx.min.js' %}"></script>
   <script defer src="{% static 'js/dashboard.js' %}"></script>
   <script defer src="{% static 'js/alpine.min.js' %}"></script>
 </head>

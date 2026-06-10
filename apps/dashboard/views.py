@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -9,7 +13,7 @@ from django.views.generic import (
 )
 
 from apps.core.models import SiteSetting
-from apps.credentials.models import Certificate
+from apps.credentials.models import EXPIRY_WARNING_DAYS, Certificate
 from apps.leads.models import Inquiry
 from apps.projects.models import Project
 from apps.services.models import Service
@@ -23,6 +27,50 @@ from .forms import (
     SiteSettingForm,
 )
 from .mixins import AdministratorRequiredMixin, DashboardAccessMixin
+
+
+class FilterableListMixin:
+    """Adds search, per-view filtering, pagination and HTMX partial rendering.
+
+    Combine with an access mixin and ``ListView``. Set ``search_fields`` for
+    a case-insensitive ``q`` search, override ``apply_filters`` for dropdown
+    filters, and set ``partial_template_name`` so HTMX requests get only the
+    results fragment (the page swaps it into ``#results``).
+    """
+
+    paginate_by = 12
+    search_fields: list[str] = []
+    partial_template_name: str | None = None
+
+    def get_search_query(self):
+        return self.request.GET.get("q", "").strip()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        term = self.get_search_query()
+        if term and self.search_fields:
+            condition = Q()
+            for field in self.search_fields:
+                condition |= Q(**{f"{field}__icontains": term})
+            queryset = queryset.filter(condition)
+        return self.apply_filters(queryset)
+
+    def apply_filters(self, queryset):
+        return queryset
+
+    def get_template_names(self):
+        if self.partial_template_name and self.request.headers.get("HX-Request"):
+            return [self.partial_template_name]
+        return [self.template_name]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["q"] = self.get_search_query()
+        # Querystring (minus page) so pagination links keep active filters.
+        params = self.request.GET.copy()
+        params.pop("page", None)
+        context["querystring"] = params.urlencode()
+        return context
 
 
 class OverviewView(DashboardAccessMixin, TemplateView):
@@ -54,10 +102,28 @@ class SettingsView(AdministratorRequiredMixin, SuccessMessageMixin, UpdateView):
 # --- Services CRUD (Editor + Administrator) ---
 
 
-class ServiceListView(DashboardAccessMixin, ListView):
+class ServiceListView(FilterableListMixin, DashboardAccessMixin, ListView):
     model = Service
     template_name = "dashboard/services/list.html"
+    partial_template_name = "dashboard/services/_table.html"
     context_object_name = "services"
+    search_fields = ["name", "short_description"]
+
+    def apply_filters(self, queryset):
+        published = self.request.GET.get("published")
+        if published == "published":
+            queryset = queryset.filter(is_published=True)
+        elif published == "draft":
+            queryset = queryset.filter(is_published=False)
+        if self.request.GET.get("featured") == "1":
+            queryset = queryset.filter(is_featured=True)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["active_published"] = self.request.GET.get("published", "")
+        context["active_featured"] = self.request.GET.get("featured", "")
+        return context
 
 
 class ServiceCreateView(DashboardAccessMixin, SuccessMessageMixin, CreateView):
@@ -85,10 +151,35 @@ class ServiceDeleteView(DashboardAccessMixin, DeleteView):
 # --- Projects CRUD (Editor + Administrator) ---
 
 
-class ProjectListView(DashboardAccessMixin, ListView):
+class ProjectListView(FilterableListMixin, DashboardAccessMixin, ListView):
     model = Project
     template_name = "dashboard/projects/list.html"
+    partial_template_name = "dashboard/projects/_table.html"
     context_object_name = "projects"
+    search_fields = ["title", "location", "client_name"]
+
+    def apply_filters(self, queryset):
+        status = self.request.GET.get("status")
+        if status in Project.Status.values:
+            queryset = queryset.filter(status=status)
+        sector = self.request.GET.get("sector")
+        if sector in Project.Sector.values:
+            queryset = queryset.filter(sector=sector)
+        published = self.request.GET.get("published")
+        if published == "published":
+            queryset = queryset.filter(is_published=True)
+        elif published == "draft":
+            queryset = queryset.filter(is_published=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["statuses"] = Project.Status.choices
+        context["sectors"] = Project.Sector.choices
+        context["active_status"] = self.request.GET.get("status", "")
+        context["active_sector"] = self.request.GET.get("sector", "")
+        context["active_published"] = self.request.GET.get("published", "")
+        return context
 
 
 class ProjectImageFormSetMixin:
@@ -146,14 +237,42 @@ class ProjectDeleteView(DashboardAccessMixin, DeleteView):
 # --- Certificates CRUD (Administrator only) ---
 
 
-class CertificateListView(AdministratorRequiredMixin, ListView):
+class CertificateListView(FilterableListMixin, AdministratorRequiredMixin, ListView):
     model = Certificate
     template_name = "dashboard/certificates/list.html"
+    partial_template_name = "dashboard/certificates/_table.html"
     context_object_name = "certificates"
+    search_fields = ["name", "issuer", "number"]
+
+    def apply_filters(self, queryset):
+        category = self.request.GET.get("category")
+        if category in Certificate.Category.values:
+            queryset = queryset.filter(category=category)
+        validity = self.request.GET.get("validity")
+        today = timezone.localdate()
+        horizon = today + timedelta(days=EXPIRY_WARNING_DAYS)
+        if validity == "expired":
+            queryset = queryset.filter(valid_to__isnull=False, valid_to__lt=today)
+        elif validity == "expiring":
+            queryset = queryset.filter(
+                valid_to__isnull=False, valid_to__gte=today, valid_to__lte=horizon
+            )
+        elif validity == "current":
+            queryset = queryset.filter(Q(valid_to__isnull=True) | Q(valid_to__gt=horizon))
+        published = self.request.GET.get("published")
+        if published == "published":
+            queryset = queryset.filter(is_published=True)
+        elif published == "draft":
+            queryset = queryset.filter(is_published=False)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["attention"] = Certificate.objects.needs_attention()
+        context["categories"] = Certificate.Category.choices
+        context["active_category"] = self.request.GET.get("category", "")
+        context["active_validity"] = self.request.GET.get("validity", "")
+        context["active_published"] = self.request.GET.get("published", "")
         return context
 
 
@@ -182,13 +301,15 @@ class CertificateDeleteView(AdministratorRequiredMixin, DeleteView):
 # --- Inquiries / leads (Editor + Administrator) ---
 
 
-class InquiryListView(DashboardAccessMixin, ListView):
+class InquiryListView(FilterableListMixin, DashboardAccessMixin, ListView):
     model = Inquiry
     template_name = "dashboard/inquiries/list.html"
+    partial_template_name = "dashboard/inquiries/_table.html"
     context_object_name = "inquiries"
+    search_fields = ["name", "email", "company"]
 
-    def get_queryset(self):
-        queryset = super().get_queryset().select_related("service_interest")
+    def apply_filters(self, queryset):
+        queryset = queryset.select_related("service_interest")
         status = self.request.GET.get("status")
         if status in Inquiry.Status.values:
             queryset = queryset.filter(status=status)
@@ -198,7 +319,6 @@ class InquiryListView(DashboardAccessMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["active_status"] = self.request.GET.get("status", "")
         context["statuses"] = Inquiry.Status.choices
-        context["new_count"] = Inquiry.objects.filter(status=Inquiry.Status.NEW).count()
         return context
 
 

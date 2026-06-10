@@ -4,46 +4,33 @@
 {% block heading %}Services{% endblock %}
 
 {% block dashboard_content %}
-
-<div class="flex justify-between items-center mb-4">
-  <p class="text-sm text-slate-500">{{ services|length }} service{{ services|length|pluralize }}</p>
-  <a href="{% url 'dashboard:service_create' %}" class="bg-navy-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-700">+ New service</a>
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+  <form method="get" hx-get="{{ request.path }}" hx-target="#results" hx-push-url="true"
+        hx-trigger="submit, change, input changed delay:300ms" hx-indicator="#list-spin"
+        class="flex flex-wrap items-center gap-2">
+    <div class="relative">
+      <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+      </svg>
+      <input type="search" name="q" value="{{ q }}" placeholder="Search services…" autocomplete="off"
+             class="w-full sm:w-60 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+    </div>
+    <select name="published" class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+      <option value="">Any state</option>
+      <option value="published" {% if active_published == 'published' %}selected{% endif %}>Published</option>
+      <option value="draft" {% if active_published == 'draft' %}selected{% endif %}>Draft</option>
+    </select>
+    <select name="featured" class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+      <option value="">All services</option>
+      <option value="1" {% if active_featured == '1' %}selected{% endif %}>Featured only</option>
+    </select>
+    <noscript><button type="submit" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Filter</button></noscript>
+    <span id="list-spin" class="htmx-indicator text-xs text-slate-400">Filtering…</span>
+  </form>
+  <a href="{% url 'dashboard:service_create' %}" class="shrink-0 bg-navy-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-700 transition-colors">+ New service</a>
 </div>
 
-<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-  <table class="w-full text-sm">
-    <thead class="bg-slate-50 text-slate-600 text-left">
-      <tr>
-        <th class="px-4 py-3 font-semibold">Name</th>
-        <th class="px-4 py-3 font-semibold">Order</th>
-        <th class="px-4 py-3 font-semibold">Status</th>
-        <th class="px-4 py-3 font-semibold text-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for service in services %}
-      <tr class="border-t border-slate-100">
-        <td class="px-4 py-3">
-          <span class="font-medium text-slate-900">{{ service.name }}</span>
-          {% if service.is_featured %}<span class="ml-2 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-info/10 text-info">Featured</span>{% endif %}
-        </td>
-        <td class="px-4 py-3 text-slate-500">{{ service.order }}</td>
-        <td class="px-4 py-3">
-          {% if service.is_published %}
-            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Published</span>
-          {% else %}
-            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Draft</span>
-          {% endif %}
-        </td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
-          <a href="{% url 'dashboard:service_update' service.pk %}" class="text-navy-600 font-semibold hover:underline">Edit</a>
-          <a href="{% url 'dashboard:service_delete' service.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">No services yet. <a href="{% url 'dashboard:service_create' %}" class="text-navy-600 underline">Create one</a>.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div id="results">
+  {% include "dashboard/services/_table.html" %}
 </div>
 {% endblock %}

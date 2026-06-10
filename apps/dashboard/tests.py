@@ -1,10 +1,12 @@
 import tempfile
+from datetime import timedelta
 from io import BytesIO
 
 from django.contrib.auth.models import Group, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 from PIL import Image
 
 from apps.core.models import SiteSetting
@@ -129,6 +131,14 @@ class ServiceDashboardTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Service.objects.filter(pk=service.pk).exists())
 
+    def test_published_filter(self):
+        Service.objects.all().delete()  # ignore migration-seeded content
+        Service.objects.create(name="Live", is_published=True)
+        Service.objects.create(name="Hidden", is_published=False)
+        response = self.client.get(reverse("dashboard:service_list"), {"published": "draft"})
+        names = [s.name for s in response.context["services"]]
+        self.assertEqual(names, ["Hidden"])
+
 
 class ProjectDashboardTests(TestCase):
     def setUp(self):
@@ -222,6 +232,40 @@ class ProjectDashboardTests(TestCase):
         project = Project.objects.get(title="New Project")
         self.assertEqual(project.images.count(), 1)
 
+    def test_search_filters_projects(self):
+        Project.objects.all().delete()  # ignore migration-seeded content
+        Project.objects.create(title="Alpha Tower")
+        Project.objects.create(title="Beta Bridge")
+        response = self.client.get(reverse("dashboard:project_list"), {"q": "Alpha"})
+        titles = [p.title for p in response.context["projects"]]
+        self.assertEqual(titles, ["Alpha Tower"])
+
+    def test_status_filter(self):
+        Project.objects.all().delete()  # ignore migration-seeded content
+        Project.objects.create(title="Done one", status=Project.Status.COMPLETED)
+        Project.objects.create(title="Live one", status=Project.Status.ONGOING)
+        response = self.client.get(
+            reverse("dashboard:project_list"), {"status": Project.Status.ONGOING}
+        )
+        titles = [p.title for p in response.context["projects"]]
+        self.assertEqual(titles, ["Live one"])
+
+    def test_list_is_paginated(self):
+        Project.objects.all().delete()  # ignore migration-seeded content
+        for i in range(13):
+            Project.objects.create(title=f"Project {i:02d}")
+        page1 = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(page1.context["paginator"].count, 13)
+        self.assertEqual(len(page1.context["projects"]), 12)
+        page2 = self.client.get(reverse("dashboard:project_list"), {"page": 2})
+        self.assertEqual(len(page2.context["projects"]), 1)
+
+    def test_htmx_request_returns_table_fragment_only(self):
+        response = self.client.get(reverse("dashboard:project_list"), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "dashboard/projects/_table.html")
+        self.assertTemplateNotUsed(response, "dashboard/base.html")
+
 
 class CertificateDashboardTests(TestCase):
     def setUp(self):
@@ -270,6 +314,20 @@ class CertificateDashboardTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Certificate.objects.filter(pk=cert.pk).exists())
 
+    def test_validity_filter_returns_only_expired(self):
+        self.client.login(username="boss", password="pass12345")
+        Certificate.objects.all().delete()  # ignore migration-seeded content
+        today = timezone.localdate()
+        Certificate.objects.create(
+            name="Lapsed", category="safety", valid_to=today - timedelta(days=1)
+        )
+        Certificate.objects.create(
+            name="Good", category="safety", valid_to=today + timedelta(days=365)
+        )
+        response = self.client.get(reverse("dashboard:certificate_list"), {"validity": "expired"})
+        names = [c.name for c in response.context["certificates"]]
+        self.assertEqual(names, ["Lapsed"])
+
 
 class InquiryDashboardTests(TestCase):
     def setUp(self):
@@ -301,6 +359,12 @@ class InquiryDashboardTests(TestCase):
         response = self.client.post(reverse("dashboard:inquiry_delete", args=[self.inquiry.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Inquiry.objects.filter(pk=self.inquiry.pk).exists())
+
+    def test_search_filters_inquiries(self):
+        Inquiry.objects.create(name="Acme Corp", email="ops@acme.tz", message="Hi")
+        response = self.client.get(reverse("dashboard:inquiry_list"), {"q": "acme"})
+        names = [i.name for i in response.context["inquiries"]]
+        self.assertEqual(names, ["Acme Corp"])
 
 
 class DashboardFormLayoutTests(TestCase):

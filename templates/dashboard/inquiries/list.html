@@ -4,44 +4,27 @@
 {% block heading %}Inquiries{% endblock %}
 
 {% block dashboard_content %}
-
-<div class="flex flex-wrap gap-2 mb-5 text-sm">
-  <a href="{% url 'dashboard:inquiry_list' %}" class="px-3 py-1.5 rounded-lg font-semibold {% if not active_status %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">All</a>
-  {% for value, label in statuses %}
-  <a href="?status={{ value }}" class="px-3 py-1.5 rounded-lg font-semibold {% if active_status == value %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
-  {% endfor %}
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+  <form method="get" hx-get="{{ request.path }}" hx-target="#results" hx-push-url="true"
+        hx-trigger="submit, change, input changed delay:300ms" hx-indicator="#list-spin"
+        class="flex flex-wrap items-center gap-2">
+    <div class="relative">
+      <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+      </svg>
+      <input type="search" name="q" value="{{ q }}" placeholder="Search name, email, company…" autocomplete="off"
+             class="w-full sm:w-72 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+    </div>
+    <select name="status" class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+      <option value="">All statuses</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if active_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <noscript><button type="submit" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Filter</button></noscript>
+    <span id="list-spin" class="htmx-indicator text-xs text-slate-400">Filtering…</span>
+  </form>
 </div>
 
-<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-  <table class="w-full text-sm">
-    <thead class="bg-slate-50 text-slate-600 text-left">
-      <tr>
-        <th class="px-4 py-3 font-semibold">From</th>
-        <th class="px-4 py-3 font-semibold">Service</th>
-        <th class="px-4 py-3 font-semibold">Received</th>
-        <th class="px-4 py-3 font-semibold">Status</th>
-        <th class="px-4 py-3 font-semibold text-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for inquiry in inquiries %}
-      <tr class="border-t border-slate-100">
-        <td class="px-4 py-3">
-          <a href="{% url 'dashboard:inquiry_detail' inquiry.pk %}" class="font-medium text-navy-700 hover:underline">{{ inquiry.name }}</a>
-          <div class="text-xs text-slate-500">{{ inquiry.email }}</div>
-        </td>
-        <td class="px-4 py-3 text-slate-500">{{ inquiry.service_interest|default:"&mdash;" }}</td>
-        <td class="px-4 py-3 text-slate-500">{{ inquiry.created_at|date:"d M Y" }}</td>
-        <td class="px-4 py-3">{% include "dashboard/inquiries/_status_chip.html" with status=inquiry.status label=inquiry.get_status_display %}</td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
-          <a href="{% url 'dashboard:inquiry_detail' inquiry.pk %}" class="text-navy-600 font-semibold hover:underline">Open</a>
-          <a href="{% url 'dashboard:inquiry_delete' inquiry.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">No inquiries yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div id="results">
+  {% include "dashboard/inquiries/_table.html" %}
 </div>
 {% endblock %}
