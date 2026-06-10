@@ -1,0 +1,55 @@
+{% comment %}Projects table fragment — full page on load, HTMX swap on filter/page.{% endcomment %}
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <div class="px-4 py-3 border-b border-slate-100">
+    <p class="text-sm text-slate-500">{{ page_obj.paginator.count }} project{{ page_obj.paginator.count|pluralize }}{% if q %} matching &ldquo;{{ q }}&rdquo;{% endif %}</p>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600 text-left">
+        <tr>
+          <th class="px-4 py-3 font-semibold">Title</th>
+          <th class="px-4 py-3 font-semibold">Status</th>
+          <th class="px-4 py-3 font-semibold">Sector</th>
+          <th class="px-4 py-3 font-semibold text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        <tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              {% if project.hero_image %}
+              <img src="{{ project.hero_image.url }}" alt="" class="w-10 h-10 rounded object-cover border border-slate-200 shrink-0">
+              {% else %}
+              <div class="w-10 h-10 rounded bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center text-slate-300">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z"/></svg>
+              </div>
+              {% endif %}
+              <div class="min-w-0">
+                <span class="font-medium text-slate-900">{{ project.title }}</span>
+                {% if project.is_featured %}<span class="ml-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-info/10 text-info">Featured</span>{% endif %}
+                {% if not project.is_published %}<span class="ml-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Draft</span>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            {% if project.status == 'ongoing' %}
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Ongoing</span>
+            {% else %}
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Completed</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-slate-500">{{ project.get_sector_display|default:"&mdash;" }}</td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'dashboard:project_update' project.pk %}" class="text-navy-600 font-semibold hover:underline">Edit</a>
+            <a href="{% url 'dashboard:project_delete' project.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">{% if q or active_status or active_sector or active_published %}No projects match your filters.{% else %}No projects yet. <a href="{% url 'dashboard:project_create' %}" class="text-navy-600 underline">Create one</a>.{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "dashboard/_pagination.html" %}
+</div>
