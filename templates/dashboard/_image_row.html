@@ -1,0 +1,50 @@
+{% comment %}
+One project-image formset row: thumbnail + live preview on the left,
+caption / date / order / gallery toggle inline on the right.
+Expects: imgform -> a ProjectImageForm (a real row or the empty_form template).
+{% endcomment %}
+<div class="border border-slate-200 rounded-lg p-4" x-data="imagePreview('{% if imgform.image.value %}{{ imgform.image.value.url }}{% endif %}')">
+  {{ imgform.id }}
+  <div class="flex flex-col sm:flex-row gap-4">
+    <div class="shrink-0 sm:w-28">
+      <template x-if="preview">
+        <img :src="preview" alt="" class="w-full sm:w-28 h-28 rounded-lg object-cover border border-slate-200 bg-slate-50">
+      </template>
+      <template x-if="!preview">
+        <div class="w-full sm:w-28 h-28 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-300">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25z"/>
+          </svg>
+        </div>
+      </template>
+      <input type="file" name="{{ imgform.image.html_name }}" id="{{ imgform.image.id_for_label }}" accept="image/*" @change="pick($event)"
+             class="mt-2 block w-full text-xs text-slate-600 cursor-pointer file:mr-2 file:py-1.5 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-navy-50 file:text-navy-700 hover:file:bg-navy-100 file:cursor-pointer">
+      {% for error in imgform.image.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="flex-1 min-w-0 grid sm:grid-cols-2 gap-x-4 gap-y-3">
+      <div class="sm:col-span-2">
+        <label for="{{ imgform.caption.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">Caption</label>
+        {{ imgform.caption }}
+        {% for error in imgform.caption.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label for="{{ imgform.date_taken.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">Date taken</label>
+        {{ imgform.date_taken }}
+      </div>
+      <div>
+        <label for="{{ imgform.order.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">Order</label>
+        {{ imgform.order }}
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        {{ imgform.show_in_gallery }}
+        <span class="text-sm text-slate-700">Show in gallery</span>
+      </label>
+      {% if imgform.instance.pk %}
+      <label class="flex items-center gap-2 cursor-pointer select-none text-danger">
+        {{ imgform.DELETE }}
+        <span class="text-sm">Remove this image</span>
+      </label>
+      {% endif %}
+    </div>
+  </div>
+</div>

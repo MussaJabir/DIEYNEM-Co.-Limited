@@ -27,25 +27,22 @@
         </svg>
       </button>
       <div x-show="open" x-transition.opacity class="px-5 sm:px-6 pb-5 sm:pb-6">
-        <p class="text-xs text-slate-500 mb-4">Add site photos for the case-study gallery. Leave empty rows blank.</p>
-        {{ image_formset.management_form }}
-        <div class="space-y-4">
-          {% for imgform in image_formset %}
-          <div class="border border-slate-200 rounded-lg p-4">
-            {{ imgform.id }}
-            {% for field in imgform.visible_fields %}
-            <div class="mb-3">
-              <label class="block text-xs font-medium text-slate-600 mb-1">{{ field.label }}</label>
-              {% if field.field.widget.input_type == "checkbox" %}
-                <div>{{ field }}</div>
-              {% else %}
-                {{ field }}
-              {% endif %}
-              {% for error in field.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
-            </div>
+        <p class="text-xs text-slate-500 mb-4">Add site photos for the case-study gallery.</p>
+        <div x-data="imageFormset({{ image_formset.total_form_count }}, '{{ image_formset.prefix }}')">
+          {{ image_formset.management_form }}
+          <div x-ref="rows" class="space-y-4">
+            {% for imgform in image_formset %}
+              {% include "dashboard/_image_row.html" %}
             {% endfor %}
           </div>
-          {% endfor %}
+          <template x-ref="emptyRow">{% include "dashboard/_image_row.html" with imgform=image_formset.empty_form %}</template>
+          <button type="button" @click="addRow()"
+                  class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Add another image
+          </button>
         </div>
       </div>
     </section>
