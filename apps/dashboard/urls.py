@@ -17,4 +17,17 @@ urlpatterns = [
     path("projects/new/", views.ProjectCreateView.as_view(), name="project_create"),
     path("projects/<int:pk>/edit/", views.ProjectUpdateView.as_view(), name="project_update"),
     path("projects/<int:pk>/delete/", views.ProjectDeleteView.as_view(), name="project_delete"),
+    # Certificates (Administrator only)
+    path("certificates/", views.CertificateListView.as_view(), name="certificate_list"),
+    path("certificates/new/", views.CertificateCreateView.as_view(), name="certificate_create"),
+    path(
+        "certificates/<int:pk>/edit/",
+        views.CertificateUpdateView.as_view(),
+        name="certificate_update",
+    ),
+    path(
+        "certificates/<int:pk>/delete/",
+        views.CertificateDeleteView.as_view(),
+        name="certificate_delete",
+    ),
 ]

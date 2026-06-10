@@ -4,34 +4,44 @@
 {% block heading %}Overview{% endblock %}
 
 {% block dashboard_content %}
+{% if is_administrator and certs_attention %}
+<div class="mb-6 rounded-lg bg-amber-100 border border-amber-400 text-warn px-4 py-3 text-sm">
+  <strong>Compliance alert:</strong> {{ certs_attention_count }} certificate{{ certs_attention_count|pluralize }} expired or expiring within 60 days &mdash;
+  {% for c in certs_attention %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+  <a href="{% url 'dashboard:certificate_list' %}" class="underline font-semibold">Review</a>
+</div>
+{% endif %}
+
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <div class="bg-white border border-slate-200 rounded-xl p-5">
+  <a href="{% url 'dashboard:project_list' %}" class="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
     <p class="text-xs uppercase tracking-wider text-slate-500">Projects</p>
-    <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">&mdash;</p>
-    <p class="text-xs text-slate-400 mt-1">Available in Phase&nbsp;1</p>
-  </div>
+    <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">{{ projects_count }}</p>
+    <p class="text-xs text-slate-400 mt-1">{{ ongoing_count }} ongoing</p>
+  </a>
+  <a href="{% url 'dashboard:service_list' %}" class="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
+    <p class="text-xs uppercase tracking-wider text-slate-500">Services</p>
+    <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">{{ services_count }}</p>
+    <p class="text-xs text-slate-400 mt-1">service lines</p>
+  </a>
+  {% if is_administrator %}
+  <a href="{% url 'dashboard:certificate_list' %}" class="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
+    <p class="text-xs uppercase tracking-wider text-slate-500">Certs needing attention</p>
+    <p class="font-heading text-3xl font-extrabold {% if certs_attention_count %}text-warn{% else %}text-navy-700{% endif %} mt-1 tabular-nums">{{ certs_attention_count }}</p>
+    <p class="text-xs text-slate-400 mt-1">expired / expiring</p>
+  </a>
+  {% endif %}
   <div class="bg-white border border-slate-200 rounded-xl p-5">
-    <p class="text-xs uppercase tracking-wider text-slate-500">Ongoing</p>
+    <p class="text-xs uppercase tracking-wider text-slate-500">New inquiries</p>
     <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">&mdash;</p>
-    <p class="text-xs text-slate-400 mt-1">Available in Phase&nbsp;1</p>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-xl p-5">
-    <p class="text-xs uppercase tracking-wider text-slate-500">New Inquiries</p>
-    <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">&mdash;</p>
-    <p class="text-xs text-slate-400 mt-1">Available in Phase&nbsp;1</p>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-xl p-5">
-    <p class="text-xs uppercase tracking-wider text-slate-500">Certs expiring</p>
-    <p class="font-heading text-3xl font-extrabold text-navy-700 mt-1 tabular-nums">&mdash;</p>
-    <p class="text-xs text-slate-400 mt-1">Available in Phase&nbsp;1</p>
+    <p class="text-xs text-slate-400 mt-1">Available next</p>
   </div>
 </div>
 
 <div class="mt-6 bg-white border border-slate-200 rounded-xl p-6">
-  <h2 class="font-heading font-bold text-navy-800">Welcome to the DIEYNEM admin dashboard</h2>
+  <h2 class="font-heading font-bold text-navy-800">DIEYNEM admin dashboard</h2>
   <p class="text-slate-600 text-sm mt-2">
-    This is the Phase&nbsp;0 shell. Content modules &mdash; Projects, Services, Certificates and
-    Inquiries &mdash; arrive in Phase&nbsp;1, each with full create/edit/manage screens.
+    Manage projects, services and certificates from the sidebar. The public website
+    updates live as you publish changes.
   </p>
 </div>
 {% endblock %}

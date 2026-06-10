@@ -1,0 +1,47 @@
+{% extends "public/base.html" %}
+
+{% block title %}Certifications & Compliance &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}DIEYNEM Co. Limited is registered, licensed and fully compliant: CRB Specialist Contractor Class One, Electrical Contractors Class I, OSHA, WCF, TIN, VAT and tax clearance.{% endblock %}
+
+{% block content %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-6xl mx-auto px-4 py-16">
+    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">Credentials</p>
+    <h1 class="font-heading text-4xl font-extrabold mt-3">Certifications & Compliance</h1>
+    <p class="mt-4 text-navy-100 max-w-2xl">
+      Registered, licensed and fully compliant &mdash; our verified statutory credentials and industry accreditations.
+    </p>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-4 py-12 space-y-10">
+  {% for group in groups %}
+  <div>
+    <h2 class="font-heading text-xl font-bold text-navy-800 mb-4 pb-2 border-b border-slate-200">{{ group.label }}</h2>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {% for cert in group.items %}
+      <div class="bg-white border border-slate-200 border-t-4 border-t-navy-600 rounded-xl p-5">
+        <div class="flex justify-between items-start gap-2">
+          <h3 class="font-heading font-bold text-navy-800 leading-snug">{{ cert.name }}</h3>
+          {% if cert.status == 'expiring' %}
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn whitespace-nowrap">Renewing</span>
+          {% else %}
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok whitespace-nowrap">Current</span>
+          {% endif %}
+        </div>
+        {% if cert.description %}<p class="text-sm text-slate-600 mt-2">{{ cert.description }}</p>{% endif %}
+        <dl class="mt-3 text-xs text-slate-500 space-y-1">
+          {% if cert.issuer %}<div>Issuer: <span class="text-slate-700">{{ cert.issuer }}</span></div>{% endif %}
+          {% if cert.number %}<div>No.: <span class="text-slate-700 font-mono">{{ cert.number }}</span></div>{% endif %}
+          {% if cert.valid_to %}<div>Valid to: <span class="text-slate-700">{{ cert.valid_to|date:"M Y" }}</span></div>{% endif %}
+        </dl>
+        {% if cert.can_download %}<a href="{{ cert.file.url }}" class="inline-block mt-3 text-amber-600 text-sm font-semibold">Download &darr;</a>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-slate-500">Certifications will be listed here soon.</p>
+  {% endfor %}
+</section>
+{% endblock %}

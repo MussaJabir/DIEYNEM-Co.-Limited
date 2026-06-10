@@ -19,6 +19,7 @@ urlpatterns = [
     path("dashboard/", include("apps.dashboard.urls")),
     path("services/", include("apps.services.urls")),
     path("projects/", include("apps.projects.urls")),
+    path("certifications/", include("apps.credentials.urls")),
     path("", include("apps.core.urls")),
 ]
 
