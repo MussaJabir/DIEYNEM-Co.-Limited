@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import ImageField
 from django.forms import inlineformset_factory
 
 from apps.core.models import SiteSetting
@@ -45,6 +46,19 @@ class StyledModelForm(forms.ModelForm):
                 widget.attrs.setdefault("class", INPUT_CLASS)
             if isinstance(widget, forms.Textarea):
                 widget.attrs.setdefault("rows", 3)
+
+        # Image-field names so templates can render a thumbnail + live preview
+        # instead of a bare file input. (A plain FileField, e.g. a PDF scan,
+        # is intentionally excluded and keeps the default download widget.)
+        model_meta = self._meta.model._meta
+        self.image_fields = set()
+        for name in self.fields:
+            try:
+                model_field = model_meta.get_field(name)
+            except Exception:
+                continue
+            if isinstance(model_field, ImageField):
+                self.image_fields.add(name)
 
     def iter_fieldsets(self):
         """Yield section dicts for the template's grouped two-column layout.
@@ -238,7 +252,7 @@ ProjectImageFormSet = inlineformset_factory(
     Project,
     ProjectImage,
     form=ProjectImageForm,
-    extra=2,
+    extra=0,  # rows are added on demand from the dashboard
     can_delete=True,
 )
 

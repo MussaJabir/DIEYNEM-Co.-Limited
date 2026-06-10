@@ -1,18 +1,31 @@
+import tempfile
+from io import BytesIO
+
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 
 from apps.core.models import SiteSetting
 from apps.credentials.models import Certificate
 from apps.dashboard.forms import (
     CertificateForm,
     ProjectForm,
+    ProjectImageFormSet,
     ServiceForm,
     SiteSettingForm,
 )
 from apps.leads.models import Inquiry
 from apps.projects.models import Project
 from apps.services.models import Service
+
+
+def _png_upload(name="photo.png"):
+    """A valid in-memory PNG for ImageField uploads in tests."""
+    buffer = BytesIO()
+    Image.new("RGB", (2, 2), "navy").save(buffer, "PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
 class DashboardAccessTests(TestCase):
@@ -185,6 +198,30 @@ class ProjectDashboardTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Project.objects.filter(pk=project.pk).exists())
 
+    def test_image_form_has_preview_and_add_button(self):
+        project = Project.objects.create(title="Has images")
+        response = self.client.get(reverse("dashboard:project_update", args=[project.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "imageFormset(")
+        self.assertContains(response, "Add another image")
+        self.assertContains(response, "__prefix__")  # empty-form template present
+        self.assertContains(response, 'accept="image/*"')  # preview-style picker
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_create_project_with_gallery_image(self):
+        data = self._form_data(
+            **{
+                "images-TOTAL_FORMS": "1",
+                "images-0-order": "0",
+                "images-0-show_in_gallery": "on",
+                "images-0-image": _png_upload(),
+            }
+        )
+        response = self.client.post(reverse("dashboard:project_create"), data)
+        self.assertEqual(response.status_code, 302)
+        project = Project.objects.get(title="New Project")
+        self.assertEqual(project.images.count(), 1)
+
 
 class CertificateDashboardTests(TestCase):
     def setUp(self):
@@ -311,6 +348,16 @@ class DashboardFormLayoutTests(TestCase):
         self.assertContains(response, "saving = true")
         # Collapsible accordion sections.
         self.assertContains(response, ':aria-expanded="open"')
+
+    def test_image_fields_detected_excluding_plain_files(self):
+        self.assertIn("hero_image", ProjectForm().image_fields)
+        self.assertIn("display_image", CertificateForm().image_fields)
+        # The certificate scan is a plain FileField, not an image preview.
+        self.assertNotIn("file", CertificateForm().image_fields)
+        self.assertEqual(SiteSettingForm().image_fields, {"logo", "default_og_image"})
+
+    def test_image_formset_has_no_always_on_blank_rows(self):
+        self.assertEqual(ProjectImageFormSet.extra, 0)
 
     def test_section_flags_errors_for_auto_open(self):
         # A bound form missing a required field marks that section so the
