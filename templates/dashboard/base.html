@@ -9,50 +9,156 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+  <style>[x-cloak]{display:none!important}</style>
+  <script defer src="{% static 'js/alpine.min.js' %}"></script>
 </head>
-<body class="font-sans bg-slate-50 text-slate-900 antialiased">
-<div class="flex min-h-screen">
-  <aside class="w-64 bg-navy-900 text-navy-100 flex-shrink-0 hidden md:flex flex-col">
-    <div class="px-5 py-5 border-b border-navy-800">
-      <span class="font-heading text-white text-lg font-extrabold">DIEYNEM<span class="text-amber-500">.</span></span>
-      <p class="text-xs text-navy-400 mt-1">Admin Dashboard</p>
+<body class="font-sans bg-slate-50 text-slate-900 antialiased" x-data="{ sidebarOpen: false }">
+
+  <!-- Mobile backdrop -->
+  <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" x-cloak
+       class="fixed inset-0 z-30 bg-navy-950/50 md:hidden" aria-hidden="true"></div>
+
+  <div class="flex min-h-screen">
+
+    <!-- Sidebar (static on desktop, slide-over drawer on mobile) -->
+    <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-navy-900 text-navy-100 flex flex-col
+                  transform transition-transform duration-200 motion-reduce:transition-none
+                  -translate-x-full md:static md:translate-x-0"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+           aria-label="Sidebar">
+
+      <div class="px-5 py-5 border-b border-navy-800 flex items-center justify-between">
+        <div>
+          <span class="font-heading text-white text-lg font-extrabold">DIEYNEM<span class="text-amber-500">.</span></span>
+          <p class="text-xs text-navy-400 mt-1">Admin Dashboard</p>
+        </div>
+        <button type="button" @click="sidebarOpen = false"
+                class="md:hidden p-1.5 rounded-lg text-navy-300 hover:bg-navy-800 hover:text-white transition-colors"
+                aria-label="Close menu">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm" aria-label="Main navigation">
+        {% url 'dashboard:overview' as overview_url %}
+        <a href="{{ overview_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.path == overview_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/>
+          </svg>
+          <span>Overview</span>
+        </a>
+
+        <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Content</p>
+
+        {% url 'dashboard:project_list' as projects_url %}
+        <a href="{{ projects_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if '/dashboard/projects' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-.98.626-1.813 1.5-2.122"/>
+          </svg>
+          <span>Projects</span>
+        </a>
+
+        {% url 'dashboard:service_list' as services_url %}
+        <a href="{{ services_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if '/dashboard/services' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+          </svg>
+          <span>Services</span>
+        </a>
+
+        {% if is_administrator %}
+        {% url 'dashboard:certificate_list' as certificates_url %}
+        <a href="{{ certificates_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if '/dashboard/certificates' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+          </svg>
+          <span>Certificates</span>
+        </a>
+        {% endif %}
+
+        {% url 'dashboard:inquiry_list' as inquiries_url %}
+        <a href="{{ inquiries_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if '/dashboard/inquiries' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/>
+          </svg>
+          <span>Inquiries</span>
+          {% if new_inquiries_count %}
+          <span class="ml-auto inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-500 text-navy-950 text-xs font-bold tabular-nums">{{ new_inquiries_count }}</span>
+          {% endif %}
+        </a>
+
+        {% if is_administrator %}
+        <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Admin</p>
+        {% url 'dashboard:settings' as settings_url %}
+        <a href="{{ settings_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.path == settings_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
+          </svg>
+          <span>Site Settings</span>
+        </a>
+        {% endif %}
+      </nav>
+
+      <div class="px-3 py-4 border-t border-navy-800">
+        <div class="flex items-center gap-3 px-2 mb-3">
+          <div class="w-9 h-9 rounded-full bg-navy-700 text-white flex items-center justify-center font-semibold text-sm shrink-0" aria-hidden="true">{{ request.user.username|slice:":1"|upper }}</div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-white truncate">{{ request.user.username }}</p>
+            <p class="text-xs text-navy-300">{% if is_administrator %}Administrator{% else %}Editor{% endif %}</p>
+          </div>
+        </div>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+          <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-navy-200 hover:bg-navy-800 hover:text-white transition-colors text-sm">
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+            </svg>
+            <span>Log out</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main column -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center gap-3">
+        <button type="button" @click="sidebarOpen = true"
+                class="md:hidden -ml-1 p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Open menu">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+          </svg>
+        </button>
+        <h1 class="font-heading text-lg font-bold text-navy-800">{% block heading %}Dashboard{% endblock %}</h1>
+        <a href="{% url 'home' %}" target="_blank" rel="noopener"
+           class="ml-auto hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+          <span>View site</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+          </svg>
+        </a>
+      </header>
+
+      <main class="p-4 sm:p-6 flex-1">
+        <div class="mx-auto max-w-6xl">
+          {% if messages %}
+          <div class="mb-5 space-y-2">
+            {% for message in messages %}
+            <div class="rounded-lg border px-4 py-2.5 text-sm {% if message.tags == 'success' %}bg-ok/10 border-ok/30 text-ok{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-danger{% elif message.tags == 'warning' %}bg-amber-100 border-amber-400 text-warn{% else %}bg-navy-50 border-navy-100 text-navy-700{% endif %}">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% block dashboard_content %}{% endblock %}
+        </div>
+      </main>
     </div>
-    <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
-      {% url 'dashboard:overview' as overview_url %}
-      <a href="{{ overview_url }}" class="block px-3 py-2 rounded-lg {% if request.path == overview_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Overview</a>
-
-      <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Content</p>
-      {% url 'dashboard:project_list' as projects_url %}
-      <a href="{{ projects_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/projects' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Projects</a>
-      {% url 'dashboard:service_list' as services_url %}
-      <a href="{{ services_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/services' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Services</a>
-      {% if is_administrator %}
-      {% url 'dashboard:certificate_list' as certificates_url %}
-      <a href="{{ certificates_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/certificates' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Certificates</a>
-      {% endif %}
-      {% url 'dashboard:inquiry_list' as inquiries_url %}
-      <a href="{{ inquiries_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/inquiries' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Inquiries</a>
-
-      {% if is_administrator %}
-      <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Admin</p>
-      {% url 'dashboard:settings' as settings_url %}
-      <a href="{{ settings_url }}" class="block px-3 py-2 rounded-lg {% if request.path == settings_url %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Site Settings</a>
-      {% endif %}
-    </nav>
-    <div class="px-3 py-4 border-t border-navy-800 text-sm">
-      <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-        <button type="submit" class="w-full text-left px-3 py-2 rounded-lg hover:bg-navy-800">Log out</button>
-      </form>
-    </div>
-  </aside>
-
-  <div class="flex-1 flex flex-col min-w-0">
-    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-      <h1 class="font-heading text-lg font-bold text-navy-800">{% block heading %}Dashboard{% endblock %}</h1>
-      <span class="text-sm text-slate-500">{{ request.user.username }}</span>
-    </header>
-    <main class="p-6 flex-1">{% block dashboard_content %}{% endblock %}</main>
   </div>
-</div>
 </body>
 </html>
