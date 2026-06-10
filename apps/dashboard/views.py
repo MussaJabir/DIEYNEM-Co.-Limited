@@ -10,11 +10,13 @@ from django.views.generic import (
 
 from apps.core.models import SiteSetting
 from apps.credentials.models import Certificate
+from apps.leads.models import Inquiry
 from apps.projects.models import Project
 from apps.services.models import Service
 
 from .forms import (
     CertificateForm,
+    InquiryStatusForm,
     ProjectForm,
     ProjectImageFormSet,
     ServiceForm,
@@ -34,6 +36,7 @@ class OverviewView(DashboardAccessMixin, TemplateView):
         attention = Certificate.objects.needs_attention()
         context["certs_attention"] = attention
         context["certs_attention_count"] = attention.count()
+        context["new_inquiries_count"] = Inquiry.objects.filter(status=Inquiry.Status.NEW).count()
         return context
 
 
@@ -174,3 +177,40 @@ class CertificateDeleteView(AdministratorRequiredMixin, DeleteView):
     model = Certificate
     template_name = "dashboard/certificates/confirm_delete.html"
     success_url = reverse_lazy("dashboard:certificate_list")
+
+
+# --- Inquiries / leads (Editor + Administrator) ---
+
+
+class InquiryListView(DashboardAccessMixin, ListView):
+    model = Inquiry
+    template_name = "dashboard/inquiries/list.html"
+    context_object_name = "inquiries"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("service_interest")
+        status = self.request.GET.get("status")
+        if status in Inquiry.Status.values:
+            queryset = queryset.filter(status=status)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["active_status"] = self.request.GET.get("status", "")
+        context["statuses"] = Inquiry.Status.choices
+        context["new_count"] = Inquiry.objects.filter(status=Inquiry.Status.NEW).count()
+        return context
+
+
+class InquiryUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):
+    model = Inquiry
+    form_class = InquiryStatusForm
+    template_name = "dashboard/inquiries/detail.html"
+    success_url = reverse_lazy("dashboard:inquiry_list")
+    success_message = "Inquiry updated."
+
+
+class InquiryDeleteView(DashboardAccessMixin, DeleteView):
+    model = Inquiry
+    template_name = "dashboard/inquiries/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:inquiry_list")

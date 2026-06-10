@@ -3,6 +3,7 @@ from django.forms import inlineformset_factory
 
 from apps.core.models import SiteSetting
 from apps.credentials.models import Certificate
+from apps.leads.models import Inquiry
 from apps.projects.models import Project, ProjectImage
 from apps.services.models import Service
 
@@ -142,3 +143,9 @@ class CertificateForm(StyledModelForm):
             "issue_date": forms.DateInput(attrs={"type": "date"}),
             "valid_to": forms.DateInput(attrs={"type": "date"}),
         }
+
+
+class InquiryStatusForm(StyledModelForm):
+    class Meta:
+        model = Inquiry
+        fields = ["status", "internal_notes"]

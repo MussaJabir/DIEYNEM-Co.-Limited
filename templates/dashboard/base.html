@@ -30,7 +30,8 @@
       {% url 'dashboard:certificate_list' as certificates_url %}
       <a href="{{ certificates_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/certificates' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Certificates</a>
       {% endif %}
-      <span class="block px-3 py-2 rounded-lg text-navy-400 cursor-not-allowed">Inquiries <span class="text-[10px]">(next)</span></span>
+      {% url 'dashboard:inquiry_list' as inquiries_url %}
+      <a href="{{ inquiries_url }}" class="block px-3 py-2 rounded-lg {% if '/dashboard/inquiries' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}hover:bg-navy-800{% endif %}">Inquiries</a>
 
       {% if is_administrator %}
       <p class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-navy-400">Admin</p>

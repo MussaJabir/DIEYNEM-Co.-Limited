@@ -1,0 +1,15 @@
+{% extends "public/base.html" %}
+
+{% block title %}Thank you &mdash; DIEYNEM Co. Limited{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 py-24 text-center">
+  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-ok/10 text-ok text-3xl mb-6">&#10003;</div>
+  <h1 class="font-heading text-3xl font-extrabold text-navy-800">Thank you &mdash; your request has been received</h1>
+  <p class="mt-4 text-slate-600">
+    Our team will review your enquiry and respond shortly. For urgent matters, please call us
+    directly.
+  </p>
+  <a href="{% url 'home' %}" class="inline-block mt-8 bg-navy-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-700">Back to home</a>
+</section>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% if status == 'new' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-info/10 text-info">{{ label }}</span>
+{% elif status == 'contacted' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">{{ label }}</span>
+{% elif status == 'quoted' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-navy-100 text-navy-700">{{ label }}</span>
+{% elif status == 'won' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">{{ label }}</span>
+{% elif status == 'lost' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-danger/10 text-danger">{{ label }}</span>
+{% else %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{{ label }}</span>{% endif %}

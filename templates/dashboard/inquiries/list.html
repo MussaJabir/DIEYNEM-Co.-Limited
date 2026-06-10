@@ -1,0 +1,50 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Inquiries &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Inquiries{% endblock %}
+
+{% block dashboard_content %}
+{% if messages %}{% for message in messages %}
+  <div class="mb-4 rounded-lg bg-ok/10 border border-ok/30 text-ok px-4 py-2 text-sm">{{ message }}</div>
+{% endfor %}{% endif %}
+
+<div class="flex flex-wrap gap-2 mb-5 text-sm">
+  <a href="{% url 'dashboard:inquiry_list' %}" class="px-3 py-1.5 rounded-lg font-semibold {% if not active_status %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">All</a>
+  {% for value, label in statuses %}
+  <a href="?status={{ value }}" class="px-3 py-1.5 rounded-lg font-semibold {% if active_status == value %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-slate-600 text-left">
+      <tr>
+        <th class="px-4 py-3 font-semibold">From</th>
+        <th class="px-4 py-3 font-semibold">Service</th>
+        <th class="px-4 py-3 font-semibold">Received</th>
+        <th class="px-4 py-3 font-semibold">Status</th>
+        <th class="px-4 py-3 font-semibold text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inquiry in inquiries %}
+      <tr class="border-t border-slate-100">
+        <td class="px-4 py-3">
+          <a href="{% url 'dashboard:inquiry_detail' inquiry.pk %}" class="font-medium text-navy-700 hover:underline">{{ inquiry.name }}</a>
+          <div class="text-xs text-slate-500">{{ inquiry.email }}</div>
+        </td>
+        <td class="px-4 py-3 text-slate-500">{{ inquiry.service_interest|default:"&mdash;" }}</td>
+        <td class="px-4 py-3 text-slate-500">{{ inquiry.created_at|date:"d M Y" }}</td>
+        <td class="px-4 py-3">{% include "dashboard/inquiries/_status_chip.html" with status=inquiry.status label=inquiry.get_status_display %}</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap">
+          <a href="{% url 'dashboard:inquiry_detail' inquiry.pk %}" class="text-navy-600 font-semibold hover:underline">Open</a>
+          <a href="{% url 'dashboard:inquiry_delete' inquiry.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">No inquiries yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
