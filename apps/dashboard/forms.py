@@ -12,11 +12,26 @@ INPUT_CLASS = (
     "focus:outline-none focus:ring-2 focus:ring-amber-400"
 )
 CHECKBOX_CLASS = "h-4 w-4 rounded border-slate-300 text-navy-600 focus:ring-amber-400"
-FILE_CLASS = "block w-full text-sm text-slate-600"
+FILE_CLASS = (
+    "block w-full text-sm text-slate-600 cursor-pointer "
+    "file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 "
+    "file:text-sm file:font-semibold file:bg-navy-50 file:text-navy-700 "
+    "hover:file:bg-navy-100 file:cursor-pointer"
+)
 
 
 class StyledModelForm(forms.ModelForm):
-    """ModelForm that applies the dashboard's Tailwind styling to all widgets."""
+    """ModelForm that applies the dashboard's Tailwind styling to all widgets.
+
+    Subclasses may declare ``fieldsets`` to render the form as grouped,
+    two-column sections (see :meth:`iter_fieldsets`)::
+
+        fieldsets = [
+            ("Legend", {"fields": [...], "wide": [...], "description": "..."}),
+        ]
+    """
+
+    fieldsets: list = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,8 +46,72 @@ class StyledModelForm(forms.ModelForm):
             if isinstance(widget, forms.Textarea):
                 widget.attrs.setdefault("rows", 3)
 
+    def iter_fieldsets(self):
+        """Yield section dicts for the template's grouped two-column layout.
+
+        Each section is ``{"legend", "description", "fields": [{"field",
+        "wide"}]}``. Without a ``fieldsets`` declaration the whole form is
+        returned as one unlabelled section. Any field omitted from
+        ``fieldsets`` is appended in a final "Other" section so a forgotten
+        name can never silently drop an input.
+        """
+        if not self.fieldsets:
+            yield {
+                "legend": None,
+                "description": None,
+                "has_errors": False,
+                "fields": [{"field": self[name], "wide": False} for name in self.fields],
+            }
+            return
+
+        seen = set()
+        for legend, opts in self.fieldsets:
+            wide = set(opts.get("wide", []))
+            names = opts.get("fields", [])
+            seen.update(names)
+            yield {
+                "legend": legend,
+                "description": opts.get("description"),
+                "has_errors": any(self[name].errors for name in names),
+                "fields": [{"field": self[name], "wide": name in wide} for name in names],
+            }
+
+        leftovers = [name for name in self.fields if name not in seen]
+        if leftovers:
+            yield {
+                "legend": "Other",
+                "description": None,
+                "has_errors": any(self[name].errors for name in leftovers),
+                "fields": [{"field": self[name], "wide": False} for name in leftovers],
+            }
+
 
 class SiteSettingForm(StyledModelForm):
+    fieldsets = [
+        (
+            "Company identity",
+            {
+                "fields": ["company_name", "motto", "logo", "default_og_image"],
+                "wide": ["default_og_image"],
+                "description": "Shown across the public site and in the footer.",
+            },
+        ),
+        (
+            "Contact details",
+            {
+                "fields": ["po_box", "physical_address", "phones", "emails", "map_embed"],
+                "wide": ["physical_address", "map_embed"],
+            },
+        ),
+        (
+            "Social & footer",
+            {
+                "fields": ["facebook_url", "instagram_url", "linkedin_url", "footer_text"],
+                "wide": ["footer_text"],
+            },
+        ),
+    ]
+
     class Meta:
         model = SiteSetting
         fields = [
@@ -53,6 +132,22 @@ class SiteSettingForm(StyledModelForm):
 
 
 class ServiceForm(StyledModelForm):
+    fieldsets = [
+        (
+            "Service",
+            {
+                "fields": ["name", "short_description", "full_description", "capabilities"],
+                "wide": ["short_description", "full_description", "capabilities"],
+            },
+        ),
+        ("Media", {"fields": ["icon", "hero_image"]}),
+        ("Publishing", {"fields": ["order", "is_featured", "is_published"]}),
+        (
+            "Search engine (SEO)",
+            {"fields": ["meta_title", "meta_description"], "wide": ["meta_description"]},
+        ),
+    ]
+
     class Meta:
         model = Service
         fields = [
@@ -71,6 +166,33 @@ class ServiceForm(StyledModelForm):
 
 
 class ProjectForm(StyledModelForm):
+    fieldsets = [
+        (
+            "Basics",
+            {"fields": ["title", "status", "sector", "role", "location", "country"]},
+        ),
+        ("Parties", {"fields": ["client_name", "main_contractor", "consultant"]}),
+        ("Timeline", {"fields": ["year_start", "year_end", "completion_date"]}),
+        (
+            "Story",
+            {
+                "fields": ["overview", "scope_of_work", "technical_highlights", "outcome"],
+                "wide": ["overview", "scope_of_work", "technical_highlights", "outcome"],
+                "description": "Narrative shown on the public case-study page.",
+            },
+        ),
+        ("Commercial", {"fields": ["contract_value", "contract_value_visible"]}),
+        (
+            "Media & related services",
+            {"fields": ["hero_image", "related_services"], "wide": ["related_services"]},
+        ),
+        ("Publishing", {"fields": ["is_featured", "is_published", "order"]}),
+        (
+            "Search engine (SEO)",
+            {"fields": ["meta_title", "meta_description"], "wide": ["meta_description"]},
+        ),
+    ]
+
     class Meta:
         model = Project
         fields = [
@@ -122,6 +244,25 @@ ProjectImageFormSet = inlineformset_factory(
 
 
 class CertificateForm(StyledModelForm):
+    fieldsets = [
+        (
+            "Certificate",
+            {
+                "fields": ["name", "category", "issuer", "number", "description"],
+                "wide": ["description"],
+            },
+        ),
+        ("Validity", {"fields": ["issue_date", "valid_to"]}),
+        (
+            "Files",
+            {
+                "fields": ["file", "display_image", "downloadable"],
+                "description": "Upload the scan as the downloadable file; the display image is the clean card shown publicly.",
+            },
+        ),
+        ("Publishing", {"fields": ["related_project", "is_published", "order"]}),
+    ]
+
     class Meta:
         model = Certificate
         fields = [
