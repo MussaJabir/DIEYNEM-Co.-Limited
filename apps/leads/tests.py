@@ -53,3 +53,14 @@ class QuotationViewTests(TestCase):
     def test_missing_required_fields(self):
         self.client.post(reverse("leads:quote"), self._data(name="", message=""))
         self.assertEqual(Inquiry.objects.count(), 0)
+
+    def test_page_shows_trust_cues(self):
+        response = self.client.get(reverse("leads:quote"))
+        self.assertContains(response, "What happens next")
+        self.assertContains(response, "Contact us directly")
+
+    def test_thanks_page_renders(self):
+        response = self.client.get(reverse("leads:thanks"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "your request has been received")
+        self.assertContains(response, "View our projects")
