@@ -37,6 +37,9 @@ package-lock.json.lock
 .DS_Store
 Thumbs.db
 
+# ---- Reference material (third-party templates — kept local, NOT committed) ----
+homerise/
+
 # ---- Project working files (not for the repo) ----
 .work/
 report_output/

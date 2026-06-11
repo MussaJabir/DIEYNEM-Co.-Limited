@@ -1,8 +1,10 @@
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.leads.models import Inquiry
+from apps.services.models import Service
 
 from .models import SiteSetting
 
@@ -21,6 +23,20 @@ class HomePageTests(TestCase):
         # Seeded contact details should appear in the footer.
         self.assertContains(response, "info@dieynem.co.tz")
         self.assertContains(response, "P.O. Box 38075")
+
+    def test_home_exposes_credibility_stats(self):
+        response = self.client.get(reverse("home"))
+        stats = response.context["stats"]
+        self.assertEqual(stats["years"], timezone.localdate().year - 2011)
+        self.assertEqual(stats["services"], Service.objects.published().count())
+        # Count-up band + new sections render.
+        self.assertContains(response, "data-count-to")
+        self.assertContains(response, "Years in business")
+
+    def test_home_has_why_and_cta_sections(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Why DIEYNEM")
+        self.assertContains(response, "Have a project or tender")
 
 
 class RoleGroupTests(TestCase):
