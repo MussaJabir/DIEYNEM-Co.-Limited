@@ -68,3 +68,19 @@ class ProjectPublicTests(TestCase):
         project = Project.objects.create(title="Draft Project", is_published=False)
         response = self.client.get(reverse("projects:detail", kwargs={"slug": project.slug}))
         self.assertEqual(response.status_code, 404)
+
+    def test_list_has_header_and_cta(self):
+        response = self.client.get(reverse("projects:list"))
+        self.assertContains(response, "Project Portfolio")
+        self.assertContains(response, "Request a Quotation")
+
+    def test_detail_renders_case_study_sections(self):
+        project = Project.objects.create(
+            title="Switchgear Upgrade",
+            is_published=True,
+            scope_of_work="33kV switchgear\nTransformers",
+        )
+        response = self.client.get(project.get_absolute_url())
+        self.assertContains(response, "Scope of work")
+        self.assertContains(response, "33kV switchgear")
+        self.assertContains(response, "Request a similar project")
