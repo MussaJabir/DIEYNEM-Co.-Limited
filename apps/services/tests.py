@@ -44,3 +44,17 @@ class ServicePublicTests(TestCase):
         service = Service.objects.create(name="Draft Service", is_published=False)
         response = self.client.get(reverse("services:detail", kwargs={"slug": service.slug}))
         self.assertEqual(response.status_code, 404)
+
+    def test_list_has_header_and_cta(self):
+        response = self.client.get(reverse("services:list"))
+        self.assertContains(response, "Our Services")
+        self.assertContains(response, "Request a Quotation")
+
+    def test_detail_shows_capabilities_and_cta(self):
+        service = Service.objects.create(
+            name="Cabling", is_published=True, capabilities="Fibre\nCopper"
+        )
+        response = self.client.get(service.get_absolute_url())
+        self.assertContains(response, "Capabilities")
+        self.assertContains(response, "Fibre")
+        self.assertContains(response, "Request a Quotation")
