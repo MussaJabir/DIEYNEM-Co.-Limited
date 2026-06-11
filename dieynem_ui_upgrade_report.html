@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIEYNEM — Website & Dashboard UI Upgrade Report</title>
+<style>
+  /* ---- Keep colours when printing / saving as PDF ---- */
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    size: A4;
+    margin: 14mm 13mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1F2937;
+    line-height: 1.55;
+    font-size: 10.5pt;
+    background: #f1f5f9;
+  }
+  .page {
+    max-width: 210mm;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 16mm 14mm;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    background: #0C1B30;
+    color: #fff;
+    border-radius: 12px;
+    border-left: 7px solid #F59E0B;
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .hero .brand { font-size: 26pt; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
+  .hero .brand .dot { color: #F59E0B; }
+  .hero .brand-sub { font-size: 9.5pt; color: #8FB3DC; margin-top: 6px; }
+  .hero .meta { text-align: right; font-size: 9.5pt; color: #DCE8F5; }
+  .hero .meta .rep { font-size: 11pt; font-weight: 700; color: #fff; }
+  .badge-done {
+    display: inline-block; margin-top: 8px; padding: 4px 13px; border-radius: 9999px;
+    background: #F59E0B; color: #0C1B30; font-size: 8.5pt; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .05em;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  h2 {
+    font-size: 13.5pt; color: #1E4E86; margin: 26px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid #E2E8F0; font-weight: 800; letter-spacing: -0.2px;
+  }
+  p { margin-bottom: 8px; }
+
+  /* ---- Executive summary ---- */
+  .summary {
+    background: linear-gradient(135deg, #EEF4FB 0%, #F8FAFC 100%);
+    border: 1px solid #DCE8F5; border-left: 5px solid #F59E0B; border-radius: 10px;
+    padding: 16px 18px; margin-top: 18px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .summary p { color: #12294A; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* ---- Stat grid ---- */
+  .stats { margin: 20px 0 4px; font-size: 0; }
+  .stat {
+    display: inline-block; width: 19%; margin-right: 1.1%; vertical-align: top;
+    background: #fff; border: 1px solid #E2E8F0; border-top: 3px solid #1E4E86;
+    border-radius: 8px; padding: 11px 12px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .stat.last { margin-right: 0; }
+  .stat .n { font-size: 19pt; font-weight: 800; color: #1E4E86; line-height: 1.05; }
+  .stat .n.amber { color: #D97706; }
+  .stat .l { font-size: 7.8pt; color: #64748B; text-transform: uppercase; letter-spacing: .04em; margin-top: 5px; }
+
+  /* ---- Two-column tick lists ---- */
+  .features { list-style: none; columns: 2; column-gap: 26px; margin-top: 4px; }
+  .features li {
+    position: relative; padding-left: 19px; font-size: 9.7pt; color: #1F2937;
+    margin-bottom: 7px; break-inside: avoid;
+  }
+  .features li::before {
+    content: "\2713"; position: absolute; left: 0; color: #1E4E86; font-weight: 800;
+  }
+  .features.amber li::before { color: #F59E0B; }
+  .features strong { color: #12294A; }
+
+  /* ---- Module cards ---- */
+  .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .module {
+    border: 1px solid #E2E8F0; border-left: 4px solid #1E4E86; border-radius: 8px;
+    padding: 11px 13px; background: #fff; break-inside: avoid;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .head { display: flex; justify-content: space-between; align-items: center; }
+  .module .name { font-weight: 800; font-size: 10pt; color: #12294A; }
+  .module .chip {
+    font-size: 7.8pt; font-weight: 800; text-transform: uppercase; padding: 2px 8px;
+    border-radius: 9999px; background: #DCFCE7; color: #16A34A;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .desc { font-size: 9pt; color: #475569; margin-top: 4px; }
+
+  /* ---- Reliability cards ---- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .card {
+    border: 1px solid #E2E8F0; border-radius: 8px; padding: 11px 13px; background: #fff;
+    break-inside: avoid;
+  }
+  .card .t { font-weight: 800; color: #12294A; font-size: 9.8pt; margin-bottom: 3px; }
+  .card .d { font-size: 9pt; color: #475569; }
+
+  /* ---- Callout ---- */
+  .callout {
+    background: #FEF3C7; border: 1px solid #FBBF24; border-radius: 8px;
+    padding: 13px 15px; margin-top: 12px; font-size: 9.8pt; color: #92400E;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .callout strong { color: #78350F; }
+  .callout ul { margin: 6px 0 6px 18px; }
+  .callout li { margin-bottom: 2px; }
+
+  footer {
+    margin-top: 30px; padding-top: 14px; border-top: 1px solid #E2E8F0;
+    text-align: center; font-size: 8.8pt; color: #94A3B8;
+  }
+  footer strong { color: #1E4E86; }
+
+  @media print {
+    body { background: #fff; }
+    .page { padding: 0; margin: 0; max-width: none; }
+    .modules, .grid2, .stats, .features { page-break-inside: auto; }
+    .module, .card, .stat, .summary, .callout { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="brand">DIEYNEM<span class="dot">.</span></div>
+      <div class="brand-sub">Co. Limited &middot; Electrical &middot; ICT &middot; Fire &middot; HVAC &middot; Power Infrastructure</div>
+    </div>
+    <div class="meta">
+      <div class="rep">Website &amp; Dashboard — UI Upgrade Report</div>
+      <div style="margin-top:5px;">Date: <strong style="color:#fff;">11 June 2026</strong></div>
+      <div>Prepared for DIEYNEM Co. Limited</div>
+      <span class="badge-done">&bull; Upgrade Complete</span>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <h2>Summary</h2>
+  <div class="summary">
+    <p><strong>Your website and admin dashboard have been visually upgraded.</strong> Both now look more modern, polished and professional &mdash; and, just as importantly, they are easier to use on a phone and more persuasive to the clients you want to win.</p>
+    <p>This was a <strong>design and usability upgrade</strong>: the same content and information, presented far more convincingly. The public website now tells your story like a serious engineering contractor &mdash; with a striking homepage, animated credibility figures, and a clear path that guides visitors towards requesting a quotation. The admin dashboard your team uses every day is now cleaner, quicker and far simpler to manage.</p>
+    <p>It was delivered as <strong>nine carefully reviewed releases</strong>, each tested before going live &mdash; with no disruption to your existing content and nothing left half-finished.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="n amber">2</div><div class="l">Platforms upgraded</div></div>
+    <div class="stat"><div class="n">9</div><div class="l">Reviewed releases</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">Public pages redesigned</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">Dashboard areas improved</div></div>
+    <div class="stat last"><div class="n">100%</div><div class="l">Mobile-ready</div></div>
+  </div>
+
+  <!-- PUBLIC SITE -->
+  <h2>Your public website — what visitors now experience</h2>
+  <ul class="features">
+    <li>A <strong>premium new homepage</strong> with a bold hero, your headline and featured project</li>
+    <li><strong>Credibility figures that count up</strong> as visitors scroll &mdash; years, projects, services, certifications</li>
+    <li>Services shown as clear <strong>cards with their own icons</strong>, not plain text</li>
+    <li>Projects presented as a polished portfolio with <strong>hover effects and sector tags</strong></li>
+    <li>Each project opens a <strong>full case study</strong>, with a tap-to-enlarge photo gallery</li>
+    <li>A <strong>credentials page</strong> that reassures buyers every certificate is current</li>
+    <li>A friendly <strong>quotation form</strong> with a clear &ldquo;what happens next&rdquo;</li>
+    <li>A proper <strong>menu on phones</strong> and smooth, subtle motion throughout</li>
+  </ul>
+
+  <!-- DASHBOARD -->
+  <h2>Your admin dashboard — what is now easier</h2>
+  <ul class="features amber">
+    <li>A modern <strong>sidebar with icons</strong> and a clear &ldquo;you are here&rdquo; highlight</li>
+    <li>Works properly <strong>on a phone or tablet</strong> with a slide-out menu</li>
+    <li>An <strong>alert badge</strong> showing new enquiries at a glance</li>
+    <li>Long forms are now <strong>tidy, grouped sections</strong> &mdash; no endless scrolling</li>
+    <li><strong>Image previews</strong> &mdash; you see a photo before and as you upload it</li>
+    <li>Project photos managed as <strong>compact rows</strong> with &ldquo;add another&rdquo;</li>
+    <li><strong>Search &amp; filters</strong> on every list &mdash; find any project, service or enquiry instantly</li>
+    <li><strong>Page-by-page lists</strong> that stay fast even as your content grows</li>
+  </ul>
+
+  <!-- MODULES -->
+  <h2>What we delivered</h2>
+  <div class="modules">
+    <div class="module">
+      <div class="head"><span class="name">Premium homepage</span><span class="chip">Done</span></div>
+      <div class="desc">A conversion-focused redesign &mdash; hero, count-up figures, service &amp; project showcases and clear calls to action.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Services &amp; Projects pages</span><span class="chip">Done</span></div>
+      <div class="desc">Icon service cards, a filterable project portfolio and rich case-study pages with a photo lightbox.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Certifications &amp; Contact</span><span class="chip">Done</span></div>
+      <div class="desc">Reassuring credential cards and a low-friction quotation page with direct contact details.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Dashboard navigation</span><span class="chip">Done</span></div>
+      <div class="desc">A refreshed, icon-led sidebar that finally works on mobile, with new-enquiry alerts.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Easier forms &amp; photos</span><span class="chip">Done</span></div>
+      <div class="desc">Grouped, collapsible forms and live image previews make adding and editing content quick.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Searchable data tables</span><span class="chip">Done</span></div>
+      <div class="desc">Instant search, filtering and paging across projects, services, certificates and enquiries.</div>
+    </div>
+  </div>
+
+  <!-- RELIABILITY -->
+  <h2>How we kept it fast, safe and consistent</h2>
+  <div class="grid2">
+    <div class="card"><div class="t">Light and fast</div><div class="d">Built with your existing tools and no heavy add-ons, so pages stay quick to load on any connection.</div></div>
+    <div class="card"><div class="t">Looks right everywhere</div><div class="d">Checked on phone, tablet and computer &mdash; the layout adapts cleanly to every screen size.</div></div>
+    <div class="card"><div class="t">One consistent brand</div><div class="d">The same navy &amp; amber identity, headings and components are reused across every page.</div></div>
+    <div class="card"><div class="t">Considerate motion</div><div class="d">Animations are subtle and automatically switch off for visitors who prefer reduced motion.</div></div>
+    <div class="card"><div class="t">Tested before going live</div><div class="d">Every release was automatically checked and reviewed before it could affect the live site.</div></div>
+    <div class="card"><div class="t">Nothing lost</div><div class="d">A pure visual upgrade &mdash; all your existing content, projects and settings were preserved.</div></div>
+  </div>
+
+  <!-- NEXT -->
+  <h2>What&rsquo;s next</h2>
+  <div class="callout">
+    <strong>The upgrade is complete and ready to publish.</strong>
+    Before it goes live to the public, two simple things are worth a final check:
+    <ul>
+      <li>Confirm the <strong>figures flagged earlier</strong> (VAT number, a few contract values and the office plot number) so they appear correctly.</li>
+      <li>Give the new pages a quick look-over and tell us of any wording you&rsquo;d like adjusted &mdash; all editable from your dashboard.</li>
+    </ul>
+    On your word, we prepare the final release and the upgraded site goes live.
+  </div>
+
+  <footer>
+    Website &amp; Dashboard — UI Upgrade Report &middot; 11 June 2026 &middot; <strong>DIEYNEM Co. Limited</strong> &middot; Quality is our Motto
+  </footer>
+
+</div>
+</body>
+</html>
