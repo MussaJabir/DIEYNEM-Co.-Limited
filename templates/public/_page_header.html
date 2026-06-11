@@ -1,0 +1,17 @@
+{% comment %}
+Inner-page hero. Params:
+  eyebrow      -> small uppercase label (optional)
+  eyebrow_url  -> makes the eyebrow a link (optional)
+  title        -> main H1 (required)
+  subtitle     -> lead paragraph (optional)
+{% endcomment %}
+<section class="relative overflow-hidden bg-gradient-to-br from-navy-900 to-navy-950 text-white">
+  <div class="pointer-events-none absolute inset-y-0 right-0 w-1/2 hidden md:block" aria-hidden="true">
+    <svg class="absolute right-0 top-0 h-full w-auto opacity-[0.06]" viewBox="0 0 400 600" preserveAspectRatio="none" fill="none"><path d="M140 0 L400 0 L400 600 L0 600 Z" fill="#F59E0B"/></svg>
+  </div>
+  <div class="relative max-w-6xl mx-auto px-4 py-16 md:py-20">
+    {% if eyebrow %}<p data-reveal class="text-amber-500 font-semibold uppercase tracking-widest text-sm">{% if eyebrow_url %}<a href="{{ eyebrow_url }}" class="hover:underline">{{ eyebrow }}</a>{% else %}{{ eyebrow }}{% endif %}</p>{% endif %}
+    <h1 data-reveal data-reveal-delay=".1s" class="font-heading text-4xl md:text-5xl font-extrabold mt-3 max-w-3xl leading-tight">{{ title }}</h1>
+    {% if subtitle %}<p data-reveal data-reveal-delay=".2s" class="mt-4 text-navy-100 max-w-2xl text-lg">{{ subtitle }}</p>{% endif %}
+  </div>
+</section>
