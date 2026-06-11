@@ -4,20 +4,12 @@
 {% block meta_description %}Request a quotation or invite DIEYNEM Co. Limited to tender for your electrical, ICT, fire, HVAC, solar or power-infrastructure project.{% endblock %}
 
 {% block content %}
-<section class="bg-navy-900 text-white">
-  <div class="max-w-5xl mx-auto px-4 py-16">
-    <p class="text-amber-500 font-semibold uppercase tracking-widest text-sm">Get in touch</p>
-    <h1 class="font-heading text-4xl font-extrabold mt-3">Request a Quotation</h1>
-    <p class="mt-4 text-navy-100 max-w-2xl">
-      Tell us about your project &mdash; electrical, ICT, fire, HVAC, solar or power
-      infrastructure &mdash; and our team will respond with a quotation or tender response.
-    </p>
-  </div>
-</section>
+{% include "public/_page_header.html" with eyebrow="Get in touch" title="Request a Quotation" subtitle="Tell us about your project — electrical, ICT, fire, HVAC, solar or power infrastructure — and our team will respond with a quotation or tender response." %}
 
-<section id="contact" class="max-w-5xl mx-auto px-4 py-12 grid gap-10 lg:grid-cols-3">
-  <div class="lg:col-span-2">
-    <form method="post" class="space-y-4">
+<section id="contact" class="max-w-5xl mx-auto px-4 py-16 grid gap-10 lg:grid-cols-3">
+  <!-- Form -->
+  <div class="lg:col-span-2" data-reveal>
+    <form method="post" x-data="{ saving: false }" @submit="saving = true" class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 space-y-4">
       {% csrf_token %}
       {% if form.non_field_errors %}
         <div class="rounded-lg bg-red-50 border border-red-200 text-danger px-4 py-2 text-sm">{{ form.non_field_errors }}</div>
@@ -63,17 +55,60 @@
         <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>{{ form.website }}
       </div>
 
-      <button type="submit" class="bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600">Send request</button>
+      <div class="flex items-center gap-3 pt-2">
+        <button type="submit" :disabled="saving" class="group inline-flex items-center gap-2 bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+          <svg x-show="saving" x-cloak class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          <span>Send request</span>
+          <svg x-show="!saving" class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </button>
+        <p class="text-xs text-slate-400">We&rsquo;ll never share your details.</p>
+      </div>
     </form>
   </div>
 
-  <aside>
-    <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-sm">
-      <h2 class="font-heading font-bold text-navy-800 mb-3">Contact</h2>
-      {% if site.po_box %}<p class="text-slate-700">{{ site.po_box }}</p>{% endif %}
-      {% if site.physical_address %}<p class="text-slate-600 mt-1">{{ site.physical_address }}</p>{% endif %}
-      {% if site.email_list %}<p class="mt-3 text-slate-700">{{ site.email_list|join:" &middot; " }}</p>{% endif %}
-      {% if site.phone_list %}<p class="text-slate-700">{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
+  <!-- Trust sidebar -->
+  <aside class="space-y-4" data-reveal data-reveal-delay=".1s">
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+      <h2 class="font-heading font-bold text-navy-800 mb-4">Contact us directly</h2>
+      <ul class="space-y-4 text-sm">
+        {% if site.phone_list %}
+        <li class="flex gap-3">
+          <span class="w-9 h-9 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg></span>
+          <div>
+            <p class="text-slate-500 text-xs">Call us</p>
+            {% for p in site.phone_list %}<a href="tel:{{ p }}" class="block text-slate-800 font-medium hover:text-navy-600">{{ p }}</a>{% endfor %}
+          </div>
+        </li>
+        {% endif %}
+        {% if site.email_list %}
+        <li class="flex gap-3">
+          <span class="w-9 h-9 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg></span>
+          <div>
+            <p class="text-slate-500 text-xs">Email us</p>
+            {% for e in site.email_list %}<a href="mailto:{{ e }}" class="block text-slate-800 font-medium hover:text-navy-600 break-all">{{ e }}</a>{% endfor %}
+          </div>
+        </li>
+        {% endif %}
+        {% if site.physical_address or site.po_box %}
+        <li class="flex gap-3">
+          <span class="w-9 h-9 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg></span>
+          <div>
+            <p class="text-slate-500 text-xs">Visit / write to us</p>
+            {% if site.po_box %}<p class="text-slate-800 font-medium">{{ site.po_box }}</p>{% endif %}
+            {% if site.physical_address %}<p class="text-slate-600">{{ site.physical_address }}</p>{% endif %}
+          </div>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <div class="bg-navy-900 text-white rounded-xl p-6">
+      <h2 class="font-heading font-bold mb-3">What happens next</h2>
+      <ol class="space-y-3 text-sm text-navy-100">
+        <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-500 text-navy-950 font-bold text-xs flex items-center justify-center shrink-0">1</span> We review your scope and confirm receipt.</li>
+        <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-500 text-navy-950 font-bold text-xs flex items-center justify-center shrink-0">2</span> Our engineers prepare a detailed quotation.</li>
+        <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-500 text-navy-950 font-bold text-xs flex items-center justify-center shrink-0">3</span> We respond — and can attend a site meeting if needed.</li>
+      </ol>
     </div>
   </aside>
 </section>
