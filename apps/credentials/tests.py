@@ -56,3 +56,8 @@ class CertificatePublicTests(TestCase):
         # The seeded Tax Clearance (valid to 2025-12-31) is expired.
         response = self.client.get(reverse("credentials:list"))
         self.assertNotContains(response, "Tax Clearance Certificate")
+
+    def test_list_has_header_and_cta(self):
+        response = self.client.get(reverse("credentials:list"))
+        self.assertContains(response, "Certifications & Compliance")
+        self.assertContains(response, "Request a Quotation")
