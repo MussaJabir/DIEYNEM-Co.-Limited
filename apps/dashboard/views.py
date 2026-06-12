@@ -23,6 +23,8 @@ from .forms import (
     InquiryStatusForm,
     ProjectForm,
     ProjectImageFormSet,
+    ProjectMilestoneFormSet,
+    ProjectUpdateFormSet,
     ServiceForm,
     SiteSettingForm,
 )
@@ -182,33 +184,50 @@ class ProjectListView(FilterableListMixin, DashboardAccessMixin, ListView):
         return context
 
 
-class ProjectImageFormSetMixin:
-    """Adds the ProjectImage inline formset to create/update views."""
+class ProjectInlineFormsetsMixin:
+    """Binds the Project inline formsets (images, milestones, updates) to a view.
+
+    Each entry maps a context key to ``(FormSet, prefix)``. The prefix matches
+    the management-form id the dashboard's add-row Alpine helper bumps.
+    """
+
+    inline_formsets = {
+        "image_formset": (ProjectImageFormSet, "images"),
+        "milestone_formset": (ProjectMilestoneFormSet, "milestones"),
+        "update_formset": (ProjectUpdateFormSet, "updates"),
+    }
+
+    def _build_formset(self, formset_cls, prefix, *, bind):
+        if bind:
+            return formset_cls(
+                self.request.POST, self.request.FILES, instance=self.object, prefix=prefix
+            )
+        return formset_cls(instance=self.object, prefix=prefix)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.method == "POST":
-            context["image_formset"] = ProjectImageFormSet(
-                self.request.POST, self.request.FILES, instance=self.object, prefix="images"
-            )
-        else:
-            context["image_formset"] = ProjectImageFormSet(instance=self.object, prefix="images")
+        bind = self.request.method == "POST"
+        for key, (formset_cls, prefix) in self.inline_formsets.items():
+            # setdefault keeps any already-validated formset passed by form_valid.
+            context.setdefault(key, self._build_formset(formset_cls, prefix, bind=bind))
         return context
 
     def form_valid(self, form):
-        formset = ProjectImageFormSet(
-            self.request.POST, self.request.FILES, instance=self.object, prefix="images"
-        )
-        if not formset.is_valid():
-            return self.render_to_response(self.get_context_data(form=form))
+        formsets = {
+            key: self._build_formset(formset_cls, prefix, bind=True)
+            for key, (formset_cls, prefix) in self.inline_formsets.items()
+        }
+        if not all(fs.is_valid() for fs in formsets.values()):
+            return self.render_to_response(self.get_context_data(form=form, **formsets))
         response = super().form_valid(form)
-        formset.instance = self.object
-        formset.save()
+        for fs in formsets.values():
+            fs.instance = self.object
+            fs.save()
         return response
 
 
 class ProjectCreateView(
-    DashboardAccessMixin, ProjectImageFormSetMixin, SuccessMessageMixin, CreateView
+    DashboardAccessMixin, ProjectInlineFormsetsMixin, SuccessMessageMixin, CreateView
 ):
     model = Project
     form_class = ProjectForm
@@ -219,7 +238,7 @@ class ProjectCreateView(
 
 
 class ProjectUpdateView(
-    DashboardAccessMixin, ProjectImageFormSetMixin, SuccessMessageMixin, UpdateView
+    DashboardAccessMixin, ProjectInlineFormsetsMixin, SuccessMessageMixin, UpdateView
 ):
     model = Project
     form_class = ProjectForm

@@ -13,6 +13,74 @@
 
     {% include "dashboard/_form_sections.html" with collapsible=True %}
 
+    <!-- Milestones (collapsible; opens automatically if a row has an error) -->
+    <section x-data="{ open: {% if milestone_formset.total_error_count %}true{% else %}false{% endif %} }"
+             class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <button type="button" @click="open = !open" :aria-expanded="open"
+              class="w-full flex items-center justify-between gap-3 px-5 sm:px-6 py-4 text-left hover:bg-slate-50 transition-colors">
+        <span class="flex items-center gap-2">
+          <span class="font-heading font-bold text-navy-800">Milestones</span>
+          {% if milestone_formset.initial_form_count %}<span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{{ milestone_formset.initial_form_count }}</span>{% endif %}
+        </span>
+        <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+      <div x-show="open" x-transition.opacity class="px-5 sm:px-6 pb-5 sm:pb-6">
+        <p class="text-xs text-slate-500 mb-4">Steps in the project plan — toggle each as it completes. Shown as the public milestone bar on ongoing projects.</p>
+        <div x-data="inlineFormset({{ milestone_formset.total_form_count }}, '{{ milestone_formset.prefix }}')">
+          {{ milestone_formset.management_form }}
+          <div x-ref="rows" class="space-y-4">
+            {% for mform in milestone_formset %}
+              {% include "dashboard/_milestone_row.html" %}
+            {% endfor %}
+          </div>
+          <template x-ref="emptyRow">{% include "dashboard/_milestone_row.html" with mform=milestone_formset.empty_form %}</template>
+          <button type="button" @click="addRow()"
+                  class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Add milestone
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Project updates (collapsible; opens automatically if a row has an error) -->
+    <section x-data="{ open: {% if update_formset.total_error_count %}true{% else %}false{% endif %} }"
+             class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <button type="button" @click="open = !open" :aria-expanded="open"
+              class="w-full flex items-center justify-between gap-3 px-5 sm:px-6 py-4 text-left hover:bg-slate-50 transition-colors">
+        <span class="flex items-center gap-2">
+          <span class="font-heading font-bold text-navy-800">Project updates</span>
+          {% if update_formset.initial_form_count %}<span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{{ update_formset.initial_form_count }}</span>{% endif %}
+        </span>
+        <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+      <div x-show="open" x-transition.opacity class="px-5 sm:px-6 pb-5 sm:pb-6">
+        <p class="text-xs text-slate-500 mb-4">Dated progress notes (with an optional photo) — the newest shows in the public latest-updates feed.</p>
+        <div x-data="inlineFormset({{ update_formset.total_form_count }}, '{{ update_formset.prefix }}')">
+          {{ update_formset.management_form }}
+          <div x-ref="rows" class="space-y-4">
+            {% for uform in update_formset %}
+              {% include "dashboard/_update_row.html" %}
+            {% endfor %}
+          </div>
+          <template x-ref="emptyRow">{% include "dashboard/_update_row.html" with uform=update_formset.empty_form %}</template>
+          <button type="button" @click="addRow()"
+                  class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Post an update
+          </button>
+        </div>
+      </div>
+    </section>
+
     <!-- Project images (collapsible; opens automatically if a row has an error) -->
     <section x-data="{ open: {% if image_formset.total_error_count %}true{% else %}false{% endif %} }"
              class="bg-white border border-slate-200 rounded-xl overflow-hidden">

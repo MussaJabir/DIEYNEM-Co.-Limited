@@ -30,6 +30,7 @@
         <a href="{% url 'home' %}" class="hover:text-white transition-colors">Home</a>
         <a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a>
         <a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a>
+        <a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">Ongoing</a>
         <a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">Certifications</a>
         <a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">Contact</a>
       </nav>
@@ -46,6 +47,7 @@
       <a href="{% url 'home' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Home</a>
       <a href="{% url 'services:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Services</a>
       <a href="{% url 'projects:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Projects</a>
+      <a href="{% url 'ongoing_projects' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Ongoing</a>
       <a href="{% url 'credentials:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Certifications</a>
       <a href="{% url 'leads:quote' %}" @click="open=false" class="block px-3 py-2 rounded-lg bg-amber-500 text-navy-950 font-semibold text-center mt-2">Request Quotation</a>
     </nav>
@@ -70,6 +72,7 @@
         <ul class="space-y-2">
           <li><a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a></li>
           <li><a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a></li>
+          <li><a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">Ongoing Projects</a></li>
           <li><a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">Certifications</a></li>
           <li><a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">Request a Quotation</a></li>
         </ul>

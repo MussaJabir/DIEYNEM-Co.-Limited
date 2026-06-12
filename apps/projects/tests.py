@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Project
+from .models import Project, ProjectMilestone, ProjectUpdate
 
 
 class ProjectModelTests(TestCase):
@@ -45,6 +45,41 @@ class ProjectModelTests(TestCase):
         self.assertTrue(shown.show_value)
         self.assertFalse(blank.show_value)
 
+    def test_is_ongoing(self):
+        ongoing = Project.objects.create(title="Live", status=Project.Status.ONGOING)
+        done = Project.objects.create(title="Done", status=Project.Status.COMPLETED)
+        self.assertTrue(ongoing.is_ongoing)
+        self.assertFalse(done.is_ongoing)
+
+    def test_display_progress_prefers_explicit_percent(self):
+        project = Project.objects.create(
+            title="P", status=Project.Status.ONGOING, progress_percent=65
+        )
+        ProjectMilestone.objects.create(project=project, title="A", is_complete=True)
+        ProjectMilestone.objects.create(project=project, title="B", is_complete=False)
+        # Explicit percent wins over the 50% the milestones would imply.
+        self.assertEqual(project.display_progress, 65)
+
+    def test_display_progress_falls_back_to_milestone_ratio(self):
+        project = Project.objects.create(title="P", status=Project.Status.ONGOING)
+        ProjectMilestone.objects.create(project=project, title="A", is_complete=True)
+        ProjectMilestone.objects.create(project=project, title="B", is_complete=True)
+        ProjectMilestone.objects.create(project=project, title="C", is_complete=False)
+        ProjectMilestone.objects.create(project=project, title="D", is_complete=False)
+        self.assertEqual(project.milestone_summary, (2, 4))
+        self.assertEqual(project.display_progress, 50)
+
+    def test_display_progress_none_when_nothing_to_show(self):
+        project = Project.objects.create(title="P", status=Project.Status.ONGOING)
+        self.assertIsNone(project.display_progress)
+
+    def test_updates_ordered_newest_first(self):
+        project = Project.objects.create(title="P", status=Project.Status.ONGOING)
+        ProjectUpdate.objects.create(project=project, date="2026-01-01", note="old")
+        ProjectUpdate.objects.create(project=project, date="2026-03-01", note="new")
+        notes = [u.note for u in project.updates.all()]
+        self.assertEqual(notes, ["new", "old"])
+
 
 class ProjectPublicTests(TestCase):
     def test_list_shows_seeded_project(self):
@@ -84,3 +119,50 @@ class ProjectPublicTests(TestCase):
         self.assertContains(response, "Scope of work")
         self.assertContains(response, "33kV switchgear")
         self.assertContains(response, "Request a similar project")
+
+
+class OngoingProjectsPublicTests(TestCase):
+    def test_page_lists_only_published_ongoing(self):
+        live = Project.objects.create(title="Msalato Airport Wiring", status=Project.Status.ONGOING)
+        Project.objects.create(title="Finished Hall", status=Project.Status.COMPLETED)
+        Project.objects.create(
+            title="Hidden Live", status=Project.Status.ONGOING, is_published=False
+        )
+        response = self.client.get(reverse("ongoing_projects"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, live.title)
+        self.assertNotContains(response, "Finished Hall")
+        self.assertNotContains(response, "Hidden Live")
+
+    def test_page_shows_progress_milestones_and_updates(self):
+        project = Project.objects.create(
+            title="Live Works",
+            status=Project.Status.ONGOING,
+            progress_percent=70,
+        )
+        ProjectMilestone.objects.create(project=project, title="Cabling complete", is_complete=True)
+        ProjectUpdate.objects.create(project=project, date="2026-06-01", note="Panel energised")
+        response = self.client.get(reverse("ongoing_projects"))
+        self.assertContains(response, "70%")
+        self.assertContains(response, "Cabling complete")
+        self.assertContains(response, "Panel energised")
+
+    def test_empty_state(self):
+        Project.objects.filter(status=Project.Status.ONGOING).delete()
+        response = self.client.get(reverse("ongoing_projects"))
+        self.assertContains(response, "No ongoing projects")
+
+    def test_detail_shows_live_status_for_ongoing(self):
+        project = Project.objects.create(
+            title="Ongoing Case", status=Project.Status.ONGOING, progress_percent=40
+        )
+        ProjectMilestone.objects.create(project=project, title="Site handover", is_complete=True)
+        response = self.client.get(project.get_absolute_url())
+        self.assertContains(response, "Live status")
+        self.assertContains(response, "40%")
+        self.assertContains(response, "Site handover")
+
+    def test_detail_hides_live_status_for_completed(self):
+        project = Project.objects.create(title="Done Case", status=Project.Status.COMPLETED)
+        response = self.client.get(project.get_absolute_url())
+        self.assertNotContains(response, "Live status")

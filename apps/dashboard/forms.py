@@ -5,7 +5,7 @@ from django.forms import inlineformset_factory
 from apps.core.models import SiteSetting
 from apps.credentials.models import Certificate
 from apps.leads.models import Inquiry
-from apps.projects.models import Project, ProjectImage
+from apps.projects.models import Project, ProjectImage, ProjectMilestone, ProjectUpdate
 from apps.services.models import Service
 
 INPUT_CLASS = (
@@ -188,6 +188,14 @@ class ProjectForm(StyledModelForm):
         ("Parties", {"fields": ["client_name", "main_contractor", "consultant"]}),
         ("Timeline", {"fields": ["year_start", "year_end", "completion_date"]}),
         (
+            "Ongoing progress",
+            {
+                "fields": ["progress_percent", "last_updated_label"],
+                "description": "Ongoing projects only — drives the public progress bar and "
+                '"last updated" label. Manage milestones and updates in the sections below.',
+            },
+        ),
+        (
             "Story",
             {
                 "fields": ["overview", "scope_of_work", "technical_highlights", "outcome"],
@@ -222,6 +230,8 @@ class ProjectForm(StyledModelForm):
             "year_start",
             "year_end",
             "completion_date",
+            "progress_percent",
+            "last_updated_label",
             "overview",
             "scope_of_work",
             "technical_highlights",
@@ -238,6 +248,7 @@ class ProjectForm(StyledModelForm):
         ]
         widgets = {
             "completion_date": forms.DateInput(attrs={"type": "date"}),
+            "last_updated_label": forms.DateInput(attrs={"type": "date"}),
         }
 
 
@@ -252,6 +263,38 @@ ProjectImageFormSet = inlineformset_factory(
     Project,
     ProjectImage,
     form=ProjectImageForm,
+    extra=0,  # rows are added on demand from the dashboard
+    can_delete=True,
+)
+
+
+class ProjectMilestoneForm(StyledModelForm):
+    class Meta:
+        model = ProjectMilestone
+        fields = ["title", "is_complete", "date", "order"]
+        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+
+
+ProjectMilestoneFormSet = inlineformset_factory(
+    Project,
+    ProjectMilestone,
+    form=ProjectMilestoneForm,
+    extra=0,  # rows are added on demand from the dashboard
+    can_delete=True,
+)
+
+
+class ProjectUpdateForm(StyledModelForm):
+    class Meta:
+        model = ProjectUpdate
+        fields = ["date", "note", "image"]
+        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+
+
+ProjectUpdateFormSet = inlineformset_factory(
+    Project,
+    ProjectUpdate,
+    form=ProjectUpdateForm,
     extra=0,  # rows are added on demand from the dashboard
     can_delete=True,
 )

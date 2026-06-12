@@ -1,0 +1,32 @@
+{% comment %}
+One milestone formset row: title + completion toggle + date + order, inline.
+Expects: mform -> a ProjectMilestoneForm (a real row or the empty_form template).
+{% endcomment %}
+<div class="border border-slate-200 rounded-lg p-4">
+  {{ mform.id }}
+  <div class="grid sm:grid-cols-12 gap-x-4 gap-y-3 items-start">
+    <div class="sm:col-span-6">
+      <label for="{{ mform.title.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">Milestone</label>
+      {{ mform.title }}
+      {% for error in mform.title.errors %}<p class="text-xs text-danger mt-1">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="sm:col-span-3">
+      <label for="{{ mform.date.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+      {{ mform.date }}
+    </div>
+    <div class="sm:col-span-3">
+      <label for="{{ mform.order.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">Order</label>
+      {{ mform.order }}
+    </div>
+    <label class="sm:col-span-6 flex items-center gap-2 cursor-pointer select-none">
+      {{ mform.is_complete }}
+      <span class="text-sm text-slate-700">Completed</span>
+    </label>
+    {% if mform.instance.pk %}
+    <label class="sm:col-span-6 flex items-center gap-2 cursor-pointer select-none text-danger sm:justify-end">
+      {{ mform.DELETE }}
+      <span class="text-sm">Remove milestone</span>
+    </label>
+    {% endif %}
+  </div>
+</div>

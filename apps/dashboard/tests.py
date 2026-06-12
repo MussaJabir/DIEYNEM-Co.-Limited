@@ -166,6 +166,8 @@ class ProjectDashboardTests(TestCase):
             "outcome": "",
             "contract_value": "",
             "contract_value_visible": "on",
+            "progress_percent": "",
+            "last_updated_label": "",
             "order": 0,
             "meta_title": "",
             "meta_description": "",
@@ -174,6 +176,16 @@ class ProjectDashboardTests(TestCase):
             "images-INITIAL_FORMS": "0",
             "images-MIN_NUM_FORMS": "0",
             "images-MAX_NUM_FORMS": "1000",
+            # Empty inline milestone formset
+            "milestones-TOTAL_FORMS": "0",
+            "milestones-INITIAL_FORMS": "0",
+            "milestones-MIN_NUM_FORMS": "0",
+            "milestones-MAX_NUM_FORMS": "1000",
+            # Empty inline update formset
+            "updates-TOTAL_FORMS": "0",
+            "updates-INITIAL_FORMS": "0",
+            "updates-MIN_NUM_FORMS": "0",
+            "updates-MAX_NUM_FORMS": "1000",
         }
         data.update(overrides)
         return data
@@ -231,6 +243,41 @@ class ProjectDashboardTests(TestCase):
         self.assertEqual(response.status_code, 302)
         project = Project.objects.get(title="New Project")
         self.assertEqual(project.images.count(), 1)
+
+    def test_create_project_with_milestone_and_update(self):
+        data = self._form_data(
+            **{
+                "status": "ongoing",
+                "progress_percent": "45",
+                "milestones-TOTAL_FORMS": "1",
+                "milestones-0-title": "Cabling complete",
+                "milestones-0-is_complete": "on",
+                "milestones-0-order": "0",
+                "updates-TOTAL_FORMS": "1",
+                "updates-0-date": "2026-06-01",
+                "updates-0-note": "Main panel energised.",
+            }
+        )
+        response = self.client.post(reverse("dashboard:project_create"), data)
+        self.assertEqual(response.status_code, 302)
+        project = Project.objects.get(title="New Project")
+        self.assertEqual(project.progress_percent, 45)
+        self.assertEqual(project.milestones.count(), 1)
+        self.assertTrue(project.milestones.first().is_complete)
+        self.assertEqual(project.updates.count(), 1)
+        self.assertEqual(project.updates.first().note, "Main panel energised.")
+
+    def test_editor_shows_milestone_and_update_sections(self):
+        project = Project.objects.create(title="Ongoing one", status=Project.Status.ONGOING)
+        response = self.client.get(reverse("dashboard:project_update", args=[project.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ongoing progress")
+        self.assertContains(response, "Milestones")
+        self.assertContains(response, "Add milestone")
+        self.assertContains(response, "Project updates")
+        self.assertContains(response, "Post an update")
+        # Generic add-row Alpine helper is wired for the new formsets.
+        self.assertContains(response, "inlineFormset(")
 
     def test_search_filters_projects(self):
         Project.objects.all().delete()  # ignore migration-seeded content

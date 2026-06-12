@@ -20,9 +20,21 @@ class ProjectListView(ListView):
         return context
 
 
+class OngoingProjectListView(ListView):
+    """The living portfolio: ongoing projects with progress, milestones, updates."""
+
+    template_name = "public/projects/ongoing.html"
+    context_object_name = "projects"
+
+    def get_queryset(self):
+        return Project.objects.ongoing().prefetch_related("milestones", "updates")
+
+
 class ProjectDetailView(DetailView):
     template_name = "public/projects/detail.html"
     context_object_name = "project"
 
     def get_queryset(self):
-        return Project.objects.published().prefetch_related("related_services", "images")
+        return Project.objects.published().prefetch_related(
+            "related_services", "images", "milestones", "updates"
+        )

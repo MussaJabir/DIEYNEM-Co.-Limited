@@ -14,9 +14,10 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
-  // Add-on-demand rows for the project images inline formset: clone the
-  // empty-form template, renumber it, append it, and bump TOTAL_FORMS.
-  Alpine.data("imageFormset", (initialTotal, prefix) => ({
+  // Add-on-demand rows for an inline formset: clone the empty-form template,
+  // renumber it, append it, and bump TOTAL_FORMS. Prefix-driven, so it serves
+  // the project images, milestones and updates formsets alike.
+  const inlineFormset = (initialTotal, prefix) => ({
     total: initialTotal,
     addRow() {
       const html = this.$refs.emptyRow.innerHTML.replace(
@@ -28,5 +29,8 @@ document.addEventListener("alpine:init", () => {
       const mgmt = document.getElementById("id_" + prefix + "-TOTAL_FORMS");
       if (mgmt) mgmt.value = this.total;
     },
-  }));
+  });
+  Alpine.data("inlineFormset", inlineFormset);
+  // Backwards-compatible alias kept for the project-images section.
+  Alpine.data("imageFormset", inlineFormset);
 });
