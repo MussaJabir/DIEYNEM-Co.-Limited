@@ -1,3 +1,5 @@
+from django.http import HttpResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
@@ -46,3 +48,16 @@ class AboutView(TemplateView):
         context["founded_year"] = COMPANY_FOUNDED_YEAR
         context["years_in_operation"] = timezone.localdate().year - COMPANY_FOUNDED_YEAR
         return context
+
+
+def robots_txt(request):
+    """Serve /robots.txt — crawlers welcome on the public site, not the admin."""
+    sitemap_url = request.build_absolute_uri(reverse("sitemap"))
+    lines = [
+        "User-agent: *",
+        "Disallow: /dashboard/",
+        "Disallow: /admin/",
+        "",
+        f"Sitemap: {sitemap_url}",
+    ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")

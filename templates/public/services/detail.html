@@ -2,6 +2,23 @@
 
 {% block title %}{{ service.meta_title|default:service.name }} &mdash; DIEYNEM Co. Limited{% endblock %}
 {% block meta_description %}{{ service.meta_description|default:service.short_description }}{% endblock %}
+{% block og_title %}{{ service.meta_title|default:service.name }}{% endblock %}
+{% block og_description %}{{ service.meta_description|default:service.short_description }}{% endblock %}
+{% block og_image %}{% if service.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ service.og_image.url }}">{% elif service.hero_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ service.hero_image.url }}">{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "{{ service.name|escapejs }}",
+  "serviceType": "{{ service.name|escapejs }}",
+  {% if service.short_description %}"description": "{{ service.short_description|escapejs }}",{% endif %}
+  "areaServed": "Tanzania",
+  "provider": {"@type": "Organization", "name": "{{ site.company_name|escapejs }}"},
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ service.get_absolute_url }}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 {% url 'services:list' as services_url %}

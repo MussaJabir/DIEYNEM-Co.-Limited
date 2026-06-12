@@ -6,6 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}DIEYNEM Co. Limited{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Class One electrical, ICT, fire-detection, HVAC, solar and rural-electrification contractor in Tanzania. Since 2011.{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="{{ site.company_name }}">
+  <meta property="og:title" content="{% block og_title %}DIEYNEM Co. Limited — Class One Engineering Contractor{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Class One electrical, ICT, fire-detection, HVAC, solar and rural-electrification contractor in Tanzania. Since 2011.{% endblock %}">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  {% block og_image %}{% if site.default_og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.default_og_image.url }}">{% endif %}{% endblock %}
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -21,6 +32,9 @@
   <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
   <script defer src="{% static 'js/alpine.min.js' %}"></script>
   <script defer src="{% static 'js/public.js' %}"></script>
+
+  {% if organization_jsonld %}<script type="application/ld+json">{{ organization_jsonld }}</script>{% endif %}
+  {% block structured_data %}{% endblock %}
 </head>
 <body class="font-sans text-slate-900 bg-white antialiased">
   <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">

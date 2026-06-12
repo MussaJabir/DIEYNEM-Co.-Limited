@@ -1,9 +1,12 @@
+import json
+
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.leads.models import Inquiry
+from apps.projects.models import Project
 from apps.services.models import Service
 
 from .models import Client, SiteSetting, Statistic, TeamMember
@@ -95,6 +98,56 @@ class LeadershipSeedTests(TestCase):
         leaders = TeamMember.objects.filter(group=TeamMember.Group.LEADERSHIP)
         self.assertEqual(leaders.count(), 3)
         self.assertTrue(leaders.filter(name="Dickson Nathaniel Chungu").exists())
+
+
+class SeoTests(TestCase):
+    def test_sitemap_lists_static_and_content_urls(self):
+        Service.objects.create(name="SEO Service", is_published=True)
+        Project.objects.create(title="SEO Project", is_published=True)
+        response = self.client.get("/sitemap.xml")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("application/xml", response["Content-Type"])
+        body = response.content.decode()
+        self.assertIn("/about/", body)
+        self.assertIn("/seo-service/", body)
+        self.assertIn("/seo-project/", body)
+
+    def test_robots_txt(self):
+        response = self.client.get("/robots.txt")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain")
+        body = response.content.decode()
+        self.assertIn("Disallow: /dashboard/", body)
+        self.assertIn("Sitemap:", body)
+        self.assertIn("/sitemap.xml", body)
+
+    def test_home_has_organization_jsonld_and_og(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'property="og:title"')
+        self.assertContains(response, 'rel="canonical"')
+        self.assertContains(response, "application/ld+json")
+        payload = response.context["organization_jsonld"]
+        data = json.loads(payload)
+        self.assertEqual(data["@type"], "Organization")
+        self.assertEqual(data["name"], "DIEYNEM Co. Limited")
+
+    def test_service_detail_has_service_jsonld(self):
+        service = Service.objects.create(name="Switchgear Service", is_published=True)
+        response = self.client.get(service.get_absolute_url())
+        self.assertContains(response, '"@type": "Service"')
+
+    def test_project_detail_has_creativework_jsonld_and_article_og(self):
+        project = Project.objects.create(title="Tower Wiring", is_published=True)
+        response = self.client.get(project.get_absolute_url())
+        self.assertContains(response, '"@type": "CreativeWork"')
+        self.assertContains(response, 'content="article"')
+
+    def test_dashboard_pages_skip_organization_jsonld(self):
+        editor = User.objects.create_user("editor", password="pass12345")
+        editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertIsNone(response.context.get("organization_jsonld"))
 
 
 class StatisticModelTests(TestCase):
