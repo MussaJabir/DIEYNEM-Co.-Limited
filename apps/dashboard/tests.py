@@ -14,6 +14,7 @@ from apps.credentials.models import Certificate
 from apps.dashboard.forms import (
     CertificateForm,
     ClientForm,
+    GalleryImageForm,
     ProjectForm,
     ProjectImageFormSet,
     ServiceForm,
@@ -22,6 +23,7 @@ from apps.dashboard.forms import (
     TeamMemberForm,
 )
 from apps.leads.models import Inquiry
+from apps.media_center.models import GalleryImage
 from apps.projects.models import Project
 from apps.services.models import Service
 
@@ -536,6 +538,50 @@ class TeamMemberDashboardTests(TestCase):
         self.assertEqual(names, ["Eng One"])
 
 
+class GalleryDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:gallery_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:gallery_list"))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_editor_can_create(self):
+        data = {
+            "title": "Switchgear",
+            "caption": "",
+            "category": "Switchgear",
+            "related_project": "",
+            "order": 0,
+            "is_active": "on",
+            "image": _png_upload(),
+        }
+        response = self.client.post(reverse("dashboard:gallery_create"), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(GalleryImage.objects.filter(title="Switchgear").exists())
+
+    def test_editor_can_delete(self):
+        image = GalleryImage.objects.create(image="x.jpg", title="ToDelete")
+        response = self.client.post(reverse("dashboard:gallery_delete", args=[image.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(GalleryImage.objects.filter(pk=image.pk).exists())
+
+    def test_active_filter(self):
+        GalleryImage.objects.create(image="a.jpg", title="Live", is_active=True)
+        GalleryImage.objects.create(image="b.jpg", title="Hidden", is_active=False)
+        response = self.client.get(reverse("dashboard:gallery_list"), {"active": "inactive"})
+        titles = [g.title for g in response.context["images"]]
+        self.assertEqual(titles, ["Hidden"])
+
+
 class DashboardFormLayoutTests(TestCase):
     """Two-column fieldset rendering for the dashboard forms."""
 
@@ -549,6 +595,7 @@ class DashboardFormLayoutTests(TestCase):
             StatisticForm,
             ClientForm,
             TeamMemberForm,
+            GalleryImageForm,
         ):
             form = form_cls()
             rendered = {

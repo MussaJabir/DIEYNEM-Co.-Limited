@@ -15,12 +15,14 @@ from django.views.generic import (
 from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import EXPIRY_WARNING_DAYS, Certificate
 from apps.leads.models import Inquiry
+from apps.media_center.models import GalleryImage
 from apps.projects.models import Project
 from apps.services.models import Service
 
 from .forms import (
     CertificateForm,
     ClientForm,
+    GalleryImageForm,
     InquiryStatusForm,
     ProjectForm,
     ProjectImageFormSet,
@@ -501,3 +503,52 @@ class TeamMemberDeleteView(DashboardAccessMixin, DeleteView):
     model = TeamMember
     template_name = "dashboard/team/confirm_delete.html"
     success_url = reverse_lazy("dashboard:team_list")
+
+
+# --- Gallery (Editor + Administrator) ---
+
+
+class GalleryImageListView(FilterableListMixin, DashboardAccessMixin, ListView):
+    model = GalleryImage
+    template_name = "dashboard/gallery/list.html"
+    partial_template_name = "dashboard/gallery/_table.html"
+    context_object_name = "images"
+    search_fields = ["title", "caption", "category"]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("related_project")
+
+    def apply_filters(self, queryset):
+        active = self.request.GET.get("active")
+        if active == "active":
+            queryset = queryset.filter(is_active=True)
+        elif active == "inactive":
+            queryset = queryset.filter(is_active=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["active_active"] = self.request.GET.get("active", "")
+        return context
+
+
+class GalleryImageCreateView(DashboardAccessMixin, SuccessMessageMixin, CreateView):
+    model = GalleryImage
+    form_class = GalleryImageForm
+    template_name = "dashboard/gallery/form.html"
+    success_url = reverse_lazy("dashboard:gallery_list")
+    success_message = "Gallery image added."
+
+
+class GalleryImageUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):
+    model = GalleryImage
+    form_class = GalleryImageForm
+    template_name = "dashboard/gallery/form.html"
+    success_url = reverse_lazy("dashboard:gallery_list")
+    success_message = "Gallery image updated."
+
+
+class GalleryImageDeleteView(DashboardAccessMixin, DeleteView):
+    model = GalleryImage
+    template_name = "dashboard/gallery/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:gallery_list")

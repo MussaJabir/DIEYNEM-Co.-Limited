@@ -26,6 +26,7 @@ urlpatterns = [
     path("projects/", include("apps.projects.urls")),
     path("certifications/", include("apps.credentials.urls")),
     path("request-quotation/", include("apps.leads.urls")),
+    path("", include("apps.media_center.urls")),
     path("", include("apps.core.urls")),
 ]
 

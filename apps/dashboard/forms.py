@@ -5,6 +5,7 @@ from django.forms import inlineformset_factory
 from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import Certificate
 from apps.leads.models import Inquiry
+from apps.media_center.models import GalleryImage
 from apps.projects.models import Project, ProjectImage, ProjectMilestone, ProjectUpdate
 from apps.services.models import Service
 
@@ -389,3 +390,15 @@ class TeamMemberForm(StyledModelForm):
     class Meta:
         model = TeamMember
         fields = ["name", "qualification", "role", "group", "photo", "order", "is_active"]
+
+
+class GalleryImageForm(StyledModelForm):
+    fieldsets = [
+        ("Image", {"fields": ["image", "title", "caption"], "wide": ["caption"]}),
+        ("Classification", {"fields": ["category", "related_project"]}),
+        ("Publishing", {"fields": ["order", "is_active"]}),
+    ]
+
+    class Meta:
+        model = GalleryImage
+        fields = ["image", "title", "caption", "category", "related_project", "order", "is_active"]
