@@ -15,13 +15,14 @@ from django.views.generic import (
 from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import EXPIRY_WARNING_DAYS, Certificate
 from apps.leads.models import Inquiry
-from apps.media_center.models import GalleryImage
+from apps.media_center.models import Download, GalleryImage
 from apps.projects.models import Project
 from apps.services.models import Service
 
 from .forms import (
     CertificateForm,
     ClientForm,
+    DownloadForm,
     GalleryImageForm,
     InquiryStatusForm,
     ProjectForm,
@@ -552,3 +553,54 @@ class GalleryImageDeleteView(DashboardAccessMixin, DeleteView):
     model = GalleryImage
     template_name = "dashboard/gallery/confirm_delete.html"
     success_url = reverse_lazy("dashboard:gallery_list")
+
+
+# --- Downloads (Editor + Administrator) ---
+
+
+class DownloadListView(FilterableListMixin, DashboardAccessMixin, ListView):
+    model = Download
+    template_name = "dashboard/downloads/list.html"
+    partial_template_name = "dashboard/downloads/_table.html"
+    context_object_name = "downloads"
+    search_fields = ["title", "description"]
+
+    def apply_filters(self, queryset):
+        category = self.request.GET.get("category")
+        if category in Download.Category.values:
+            queryset = queryset.filter(category=category)
+        public = self.request.GET.get("public")
+        if public == "public":
+            queryset = queryset.filter(is_public=True)
+        elif public == "private":
+            queryset = queryset.filter(is_public=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Download.Category.choices
+        context["active_category"] = self.request.GET.get("category", "")
+        context["active_public"] = self.request.GET.get("public", "")
+        return context
+
+
+class DownloadCreateView(DashboardAccessMixin, SuccessMessageMixin, CreateView):
+    model = Download
+    form_class = DownloadForm
+    template_name = "dashboard/downloads/form.html"
+    success_url = reverse_lazy("dashboard:download_list")
+    success_message = "Download added."
+
+
+class DownloadUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):
+    model = Download
+    form_class = DownloadForm
+    template_name = "dashboard/downloads/form.html"
+    success_url = reverse_lazy("dashboard:download_list")
+    success_message = "Download updated."
+
+
+class DownloadDeleteView(DashboardAccessMixin, DeleteView):
+    model = Download
+    template_name = "dashboard/downloads/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:download_list")

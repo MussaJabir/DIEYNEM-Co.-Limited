@@ -58,4 +58,13 @@ urlpatterns = [
     path("gallery/new/", views.GalleryImageCreateView.as_view(), name="gallery_create"),
     path("gallery/<int:pk>/edit/", views.GalleryImageUpdateView.as_view(), name="gallery_update"),
     path("gallery/<int:pk>/delete/", views.GalleryImageDeleteView.as_view(), name="gallery_delete"),
+    # Downloads
+    path("downloads/", views.DownloadListView.as_view(), name="download_list"),
+    path("downloads/new/", views.DownloadCreateView.as_view(), name="download_create"),
+    path("downloads/<int:pk>/edit/", views.DownloadUpdateView.as_view(), name="download_update"),
+    path(
+        "downloads/<int:pk>/delete/",
+        views.DownloadDeleteView.as_view(),
+        name="download_delete",
+    ),
 ]

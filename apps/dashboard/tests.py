@@ -14,6 +14,7 @@ from apps.credentials.models import Certificate
 from apps.dashboard.forms import (
     CertificateForm,
     ClientForm,
+    DownloadForm,
     GalleryImageForm,
     ProjectForm,
     ProjectImageFormSet,
@@ -23,7 +24,7 @@ from apps.dashboard.forms import (
     TeamMemberForm,
 )
 from apps.leads.models import Inquiry
-from apps.media_center.models import GalleryImage
+from apps.media_center.models import Download, GalleryImage
 from apps.projects.models import Project
 from apps.services.models import Service
 
@@ -582,6 +583,58 @@ class GalleryDashboardTests(TestCase):
         self.assertEqual(titles, ["Hidden"])
 
 
+class DownloadDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _pdf(self, name="profile.pdf"):
+        return SimpleUploadedFile(name, b"%PDF-1.4 fake", content_type="application/pdf")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:download_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:download_list"))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_editor_can_create(self):
+        data = {
+            "title": "Company Profile 2026",
+            "description": "",
+            "category": "company_profile",
+            "order": 0,
+            "is_public": "on",
+            "file": self._pdf(),
+        }
+        response = self.client.post(reverse("dashboard:download_create"), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Download.objects.filter(title="Company Profile 2026").exists())
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_editor_can_delete(self):
+        download = Download.objects.create(title="ToDelete", file=self._pdf())
+        response = self.client.post(reverse("dashboard:download_delete", args=[download.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Download.objects.filter(pk=download.pk).exists())
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_category_filter(self):
+        Download.objects.create(
+            title="A Profile", file=self._pdf(), category=Download.Category.COMPANY_PROFILE
+        )
+        Download.objects.create(
+            title="A Brochure", file=self._pdf(), category=Download.Category.BROCHURE
+        )
+        response = self.client.get(reverse("dashboard:download_list"), {"category": "brochure"})
+        titles = [d.title for d in response.context["downloads"]]
+        self.assertEqual(titles, ["A Brochure"])
+
+
 class DashboardFormLayoutTests(TestCase):
     """Two-column fieldset rendering for the dashboard forms."""
 
@@ -596,6 +649,7 @@ class DashboardFormLayoutTests(TestCase):
             ClientForm,
             TeamMemberForm,
             GalleryImageForm,
+            DownloadForm,
         ):
             form = form_cls()
             rendered = {

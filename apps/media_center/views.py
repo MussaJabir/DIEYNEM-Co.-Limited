@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 
 from apps.projects.models import ProjectImage
 
-from .models import GalleryImage
+from .models import Download, GalleryImage
 
 
 class GalleryView(TemplateView):
@@ -55,4 +55,21 @@ class GalleryView(TemplateView):
             items = [i for i in items if i["category"] == active_category]
         context["items"] = items
         context["active_category"] = active_category
+        return context
+
+
+class DownloadsView(TemplateView):
+    """Public downloads page — documents grouped by category (BS §270)."""
+
+    template_name = "public/downloads.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        downloads = list(Download.objects.public())
+        groups = []
+        for value, label in Download.Category.choices:
+            group_files = [d for d in downloads if d.category == value]
+            if group_files:
+                groups.append({"label": label, "downloads": group_files})
+        context["download_groups"] = groups
         return context
