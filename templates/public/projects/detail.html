@@ -2,6 +2,24 @@
 
 {% block title %}{{ project.meta_title|default:project.title }} &mdash; DIEYNEM Co. Limited{% endblock %}
 {% block meta_description %}{{ project.meta_description|default:project.overview|truncatewords:30 }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ project.meta_title|default:project.title }}{% endblock %}
+{% block og_description %}{{ project.meta_description|default:project.overview|truncatewords:30 }}{% endblock %}
+{% block og_image %}{% if project.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ project.og_image.url }}">{% elif project.hero_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ project.hero_image.url }}">{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "{{ project.title|escapejs }}",
+  {% if project.overview %}"description": "{{ project.overview|escapejs }}",{% endif %}
+  {% if project.hero_image %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ project.hero_image.url }}",{% endif %}
+  {% if project.location %}"locationCreated": "{{ project.location|escapejs }}, {{ project.country|escapejs }}",{% endif %}
+  "creator": {"@type": "Organization", "name": "{{ site.company_name|escapejs }}"},
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <!-- Case-study hero -->
