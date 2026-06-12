@@ -709,3 +709,60 @@ class DashboardFormLayoutTests(TestCase):
         sections = {s["legend"]: s["has_errors"] for s in form.iter_fieldsets()}
         self.assertTrue(sections["Basics"], "Basics holds the missing title")
         self.assertFalse(sections["Story"], "Story fields are all optional")
+
+
+class OverviewComplianceTests(TestCase):
+    """Certificate expiry warnings on the dashboard Overview (< 60 days)."""
+
+    def setUp(self):
+        Certificate.objects.all().delete()
+        self.today = timezone.localdate()
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.administrator = User.objects.create_user("boss", password="pass12345")
+        self.administrator.groups.add(Group.objects.get(name="Administrator"))
+
+    def _make(self, name, valid_to):
+        return Certificate.objects.create(name=name, category="safety", valid_to=valid_to)
+
+    def test_panel_counts_split_expired_and_expiring(self):
+        self._make("Lapsed", self.today - timedelta(days=3))
+        self._make("Soon", self.today + timedelta(days=12))
+        self._make("Fine", self.today + timedelta(days=400))  # not in attention
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.context["certs_expired_count"], 1)
+        self.assertEqual(response.context["certs_expiring_count"], 1)
+        self.assertEqual(response.context["certs_attention_count"], 2)
+
+    def test_panel_orders_most_urgent_first(self):
+        self._make("Soon", self.today + timedelta(days=30))
+        self._make("Lapsed", self.today - timedelta(days=5))
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        names = [c.name for c in response.context["certs_attention"]]
+        self.assertEqual(names, ["Lapsed", "Soon"])
+
+    def test_panel_shows_day_counts_and_excludes_current(self):
+        self._make("Lapsed", self.today - timedelta(days=3))
+        self._make("Soon", self.today + timedelta(days=12))
+        self._make("Fine", self.today + timedelta(days=400))
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertContains(response, "Expired 3 days ago")
+        self.assertContains(response, "Expires in 12 days")
+        self.assertContains(response, "Compliance attention needed")
+        self.assertNotContains(response, "Fine")
+
+    def test_editor_does_not_see_compliance_panel(self):
+        self._make("Lapsed", self.today - timedelta(days=3))
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Compliance attention needed")
+
+    def test_no_panel_when_all_current(self):
+        self._make("Fine", self.today + timedelta(days=400))
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertNotContains(response, "Compliance attention needed")

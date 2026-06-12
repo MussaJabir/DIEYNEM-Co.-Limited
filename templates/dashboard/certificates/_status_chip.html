@@ -1,0 +1,4 @@
+{% comment %}Certificate validity chip. Expects: status -> 'expired' | 'expiring' | 'current'.{% endcomment %}
+{% if status == 'expired' %}<span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-danger/10 text-danger">Expired</span>
+{% elif status == 'expiring' %}<span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Expiring</span>
+{% else %}<span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Current</span>{% endif %}

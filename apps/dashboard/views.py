@@ -89,9 +89,12 @@ class OverviewView(DashboardAccessMixin, TemplateView):
         context["projects_count"] = Project.objects.count()
         context["ongoing_count"] = Project.objects.ongoing().count()
         context["services_count"] = Service.objects.count()
-        attention = Certificate.objects.needs_attention()
+        # Most urgent first (furthest overdue, then soonest to expire).
+        attention = list(Certificate.objects.needs_attention().order_by("valid_to"))
         context["certs_attention"] = attention
-        context["certs_attention_count"] = attention.count()
+        context["certs_attention_count"] = len(attention)
+        context["certs_expired_count"] = sum(1 for c in attention if c.is_expired)
+        context["certs_expiring_count"] = sum(1 for c in attention if not c.is_expired)
         context["new_inquiries_count"] = Inquiry.objects.filter(status=Inquiry.Status.NEW).count()
         return context
 

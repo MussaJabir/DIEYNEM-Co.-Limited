@@ -103,5 +103,16 @@ class Certificate(TimeStampedModel):
         return self.status == "expired"
 
     @property
+    def days_until_expiry(self) -> int | None:
+        """Whole days until ``valid_to`` (negative if already expired).
+
+        ``None`` when the certificate has no expiry date. Powers the
+        dashboard expiry warnings ("expires in 12 days" / "expired 3 days ago").
+        """
+        if self.valid_to is None:
+            return None
+        return (self.valid_to - timezone.localdate()).days
+
+    @property
     def can_download(self) -> bool:
         return self.downloadable and bool(self.file)

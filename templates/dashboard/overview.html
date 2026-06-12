@@ -5,11 +5,39 @@
 
 {% block dashboard_content %}
 {% if is_administrator and certs_attention %}
-<div class="mb-6 rounded-lg bg-amber-100 border border-amber-400 text-warn px-4 py-3 text-sm">
-  <strong>Compliance alert:</strong> {{ certs_attention_count }} certificate{{ certs_attention_count|pluralize }} expired or expiring within 60 days &mdash;
-  {% for c in certs_attention %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.
-  <a href="{% url 'dashboard:certificate_list' %}" class="underline font-semibold">Review</a>
-</div>
+<section class="mb-6 bg-white border rounded-xl overflow-hidden {% if certs_expired_count %}border-danger/40{% else %}border-amber-400{% endif %}">
+  <div class="flex items-center gap-3 px-5 py-3.5 {% if certs_expired_count %}bg-red-50{% else %}bg-amber-100{% endif %}">
+    <svg class="w-5 h-5 shrink-0 {% if certs_expired_count %}text-danger{% else %}text-warn{% endif %}" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+    </svg>
+    <div class="min-w-0">
+      <p class="font-heading font-bold {% if certs_expired_count %}text-danger{% else %}text-warn{% endif %}">Compliance attention needed</p>
+      <p class="text-xs text-slate-600">
+        {% if certs_expired_count %}{{ certs_expired_count }} expired{% endif %}{% if certs_expired_count and certs_expiring_count %} &middot; {% endif %}{% if certs_expiring_count %}{{ certs_expiring_count }} expiring within 60 days{% endif %}
+      </p>
+    </div>
+    <a href="{% url 'dashboard:certificate_list' %}" class="ml-auto shrink-0 text-sm font-semibold {% if certs_expired_count %}text-danger{% else %}text-warn{% endif %} hover:underline">Review all</a>
+  </div>
+  <ul class="divide-y divide-slate-100">
+    {% for c in certs_attention %}
+    <li class="flex items-center gap-3 px-5 py-3">
+      {% include "dashboard/certificates/_status_chip.html" with status=c.status %}
+      <div class="min-w-0 flex-1">
+        <a href="{% url 'dashboard:certificate_update' c.pk %}" class="font-medium text-slate-900 hover:text-navy-600 transition-colors">{{ c.name }}</a>
+        <p class="text-xs text-slate-400">{{ c.get_category_display }}{% if c.issuer %} &middot; {{ c.issuer }}{% endif %}</p>
+      </div>
+      <div class="text-right shrink-0">
+        {% if c.is_expired %}
+        <p class="text-xs font-semibold text-danger tabular-nums">Expired {{ c.days_until_expiry|cut:"-" }} day{{ c.days_until_expiry|cut:"-"|pluralize }} ago</p>
+        {% else %}
+        <p class="text-xs font-semibold text-warn tabular-nums">Expires in {{ c.days_until_expiry }} day{{ c.days_until_expiry|pluralize }}</p>
+        {% endif %}
+        <p class="text-xs text-slate-400 tabular-nums">{{ c.valid_to|date:"j M Y" }}</p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
 {% endif %}
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

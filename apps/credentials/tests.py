@@ -45,6 +45,11 @@ class CertificateModelTests(TestCase):
         cert = self._make("NoFile", None, downloadable=True)
         self.assertFalse(cert.can_download)
 
+    def test_days_until_expiry(self):
+        self.assertIsNone(self._make("Perpetual", None).days_until_expiry)
+        self.assertEqual(self._make("Soon", self.today + timedelta(days=12)).days_until_expiry, 12)
+        self.assertEqual(self._make("Lapsed", self.today - timedelta(days=3)).days_until_expiry, -3)
+
 
 class CertificatePublicTests(TestCase):
     def test_list_page_shows_current_certs(self):

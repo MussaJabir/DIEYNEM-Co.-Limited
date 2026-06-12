@@ -46,14 +46,14 @@
 
 ## Phase 2 — Living portfolio & depth  ·  PRs into `develop`
 
-- [ ] Ongoing projects: `ProjectMilestone`, `ProjectUpdate`, progress %; public ongoing page + dashboard module + **tests**
-- [ ] Gallery (`GalleryImage` + `ProjectImage.show_in_gallery`) + lightbox + dashboard manager + **tests**
-- [ ] Downloads (`Download`) + page + dashboard + **tests**
-- [ ] `Client`/`Partner` band + `TeamMember` (About) + `Statistic` band + dashboard CRUD + **tests**
-- [ ] About page (history, motto, leadership) + **test**
-- [ ] SEO: `sitemap.xml`, `robots.txt`, meta + Open Graph + JSON-LD (Organization/Service) + **tests**
-- [ ] Image optimisation (WebP/srcset via easy-thumbnails)
-- [ ] Certificate expiry warnings on dashboard Overview (< 60 days)
+- [x] Ongoing projects: `ProjectMilestone`, `ProjectUpdate`, progress %; public ongoing page + dashboard module + **tests**
+- [x] Gallery (`GalleryImage` + `ProjectImage.show_in_gallery`) + lightbox + dashboard manager + **tests**
+- [x] Downloads (`Download`) + page + dashboard + **tests**
+- [x] `Client`/`Partner` band + `TeamMember` (About) + `Statistic` band + dashboard CRUD + **tests**
+- [x] About page (history, motto, leadership) + **test**
+- [x] SEO: `sitemap.xml`, `robots.txt`, meta + Open Graph + JSON-LD (Organization/Service) + **tests**
+- [x] Image optimisation (WebP/srcset via easy-thumbnails)
+- [x] Certificate expiry warnings on dashboard Overview (< 60 days)
 
 ## Phase 3 — Polish & extras  ·  PRs into `develop`
 

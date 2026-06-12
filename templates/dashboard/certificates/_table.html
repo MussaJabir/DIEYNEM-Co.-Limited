@@ -24,9 +24,7 @@
           <td class="px-4 py-3 text-slate-500">{{ cert.get_category_display }}</td>
           <td class="px-4 py-3 text-slate-500">{% if cert.valid_to %}{{ cert.valid_to|date:"d M Y" }}{% else %}&mdash;{% endif %}</td>
           <td class="px-4 py-3">
-            {% if cert.status == 'expired' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-danger/10 text-danger">Expired</span>
-            {% elif cert.status == 'expiring' %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Expiring</span>
-            {% else %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Current</span>{% endif %}
+            {% include "dashboard/certificates/_status_chip.html" with status=cert.status %}
           </td>
           <td class="px-4 py-3 text-right whitespace-nowrap">
             <a href="{% url 'dashboard:certificate_update' cert.pk %}" class="text-navy-600 font-semibold hover:underline">Edit</a>
