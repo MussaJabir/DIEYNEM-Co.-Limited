@@ -104,6 +104,15 @@
           <span>Statistics</span>
         </a>
 
+        {% url 'dashboard:gallery_list' as gallery_url %}
+        <a href="{{ gallery_url }}" @click="sidebarOpen = false"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if '/dashboard/gallery' in request.path %}bg-navy-800 text-white border-l-2 border-amber-500{% else %}text-navy-200 hover:bg-navy-800 hover:text-white{% endif %}">
+          <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 16.5h18a.75.75 0 00.75-.75V6a.75.75 0 00-.75-.75H3a.75.75 0 00-.75.75v9.75c0 .414.336.75.75.75zm10.5-11.25h.008v.008H13.5V5.25z"/>
+          </svg>
+          <span>Gallery</span>
+        </a>
+
         {% if is_administrator %}
         {% url 'dashboard:certificate_list' as certificates_url %}
         <a href="{{ certificates_url }}" @click="sidebarOpen = false"

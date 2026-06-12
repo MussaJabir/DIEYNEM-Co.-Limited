@@ -53,4 +53,9 @@ urlpatterns = [
     path("team/new/", views.TeamMemberCreateView.as_view(), name="team_create"),
     path("team/<int:pk>/edit/", views.TeamMemberUpdateView.as_view(), name="team_update"),
     path("team/<int:pk>/delete/", views.TeamMemberDeleteView.as_view(), name="team_delete"),
+    # Gallery
+    path("gallery/", views.GalleryImageListView.as_view(), name="gallery_list"),
+    path("gallery/new/", views.GalleryImageCreateView.as_view(), name="gallery_create"),
+    path("gallery/<int:pk>/edit/", views.GalleryImageUpdateView.as_view(), name="gallery_update"),
+    path("gallery/<int:pk>/delete/", views.GalleryImageDeleteView.as_view(), name="gallery_delete"),
 ]

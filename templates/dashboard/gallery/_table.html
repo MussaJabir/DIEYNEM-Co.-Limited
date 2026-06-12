@@ -1,0 +1,49 @@
+{% comment %}Gallery table fragment — full page on load, HTMX swap on filter/page.{% endcomment %}
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <div class="px-4 py-3 border-b border-slate-100">
+    <p class="text-sm text-slate-500">{{ page_obj.paginator.count }} image{{ page_obj.paginator.count|pluralize }}{% if q %} matching &ldquo;{{ q }}&rdquo;{% endif %}</p>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600 text-left">
+        <tr>
+          <th class="px-4 py-3 font-semibold">Image</th>
+          <th class="px-4 py-3 font-semibold">Category</th>
+          <th class="px-4 py-3 font-semibold">Project</th>
+          <th class="px-4 py-3 font-semibold">Order</th>
+          <th class="px-4 py-3 font-semibold">Status</th>
+          <th class="px-4 py-3 font-semibold text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for image in images %}
+        <tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <img src="{{ image.image.url }}" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-50 border border-slate-200 shrink-0">
+              <span class="font-medium text-slate-900">{{ image.title|default:image.caption|default:"Untitled" }}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-slate-500">{{ image.category|default:"—" }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ image.related_project.title|default:"—" }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ image.order }}</td>
+          <td class="px-4 py-3">
+            {% if image.is_active %}
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Active</span>
+            {% else %}
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'dashboard:gallery_update' image.pk %}" class="text-navy-600 font-semibold hover:underline">Edit</a>
+            <a href="{% url 'dashboard:gallery_delete' image.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">{% if q or active_active %}No images match your filters.{% else %}No gallery images yet. <a href="{% url 'dashboard:gallery_create' %}" class="text-navy-600 underline">Add one</a>.{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "dashboard/_pagination.html" %}
+</div>
