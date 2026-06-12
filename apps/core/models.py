@@ -90,3 +90,76 @@ class SiteSetting(models.Model):
             ("LinkedIn", self.linkedin_url),
         ]
         return [(name, url) for name, url in pairs if url]
+
+
+class Statistic(TimeStampedModel):
+    """An editable counter for the homepage numbers band (BS §6).
+
+    Kept editable so figures stay honest as the portfolio grows — e.g.
+    "120 km of line", "45+ transformers", "6 countries".
+    """
+
+    label = models.CharField(max_length=80)
+    value = models.PositiveIntegerField()
+    prefix = models.CharField(max_length=10, blank=True, help_text='e.g. "TZS " or "~".')
+    suffix = models.CharField(max_length=10, blank=True, help_text='e.g. "+", " km" or "%".')
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def __str__(self) -> str:
+        return f"{self.label}: {self.prefix}{self.value}{self.suffix}"
+
+
+class Client(TimeStampedModel):
+    """A client, partner or main contractor shown in the homepage logo band."""
+
+    class Type(models.TextChoices):
+        CLIENT = "client", "Client"
+        PARTNER = "partner", "Partner"
+        MAIN_CONTRACTOR = "main_contractor", "Main Contractor"
+
+    name = models.CharField(max_length=160)
+    logo = models.ImageField(upload_to="clients/", blank=True, null=True)
+    type = models.CharField(max_length=20, choices=Type.choices, default=Type.CLIENT)
+    website = models.URLField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_featured = models.BooleanField(default=False, help_text="Highlight in the homepage band.")
+
+    class Meta:
+        ordering = ["order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class TeamMember(TimeStampedModel):
+    """A leadership / engineering / support staff member shown on the About page."""
+
+    class Group(models.TextChoices):
+        LEADERSHIP = "leadership", "Leadership"
+        ENGINEER = "engineer", "Engineering"
+        SUPPORT = "support", "Support"
+
+    name = models.CharField(max_length=160)
+    role = models.CharField(max_length=160)
+    qualification = models.CharField(
+        max_length=60, blank=True, help_text='Honorific / qualification, e.g. "Eng." or "CPA".'
+    )
+    group = models.CharField(max_length=20, choices=Group.choices, default=Group.LEADERSHIP)
+    photo = models.ImageField(upload_to="team/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    @property
+    def display_name(self) -> str:
+        """Name prefixed with the qualification, e.g. ``Eng. Jane Doe``."""
+        return f"{self.qualification} {self.name}".strip()

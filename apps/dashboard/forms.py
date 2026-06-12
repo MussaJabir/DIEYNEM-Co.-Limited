@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import ImageField
 from django.forms import inlineformset_factory
 
-from apps.core.models import SiteSetting
+from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import Certificate
 from apps.leads.models import Inquiry
 from apps.projects.models import Project, ProjectImage, ProjectMilestone, ProjectUpdate
@@ -347,3 +347,45 @@ class InquiryStatusForm(StyledModelForm):
     class Meta:
         model = Inquiry
         fields = ["status", "internal_notes"]
+
+
+class StatisticForm(StyledModelForm):
+    fieldsets = [
+        (
+            "Counter",
+            {
+                "fields": ["label", "value", "prefix", "suffix"],
+                "description": "Shown in the homepage numbers band — e.g. prefix “~”, "
+                "value 120, suffix “ km”.",
+            },
+        ),
+        ("Publishing", {"fields": ["order", "is_active"]}),
+    ]
+
+    class Meta:
+        model = Statistic
+        fields = ["label", "value", "prefix", "suffix", "order", "is_active"]
+
+
+class ClientForm(StyledModelForm):
+    fieldsets = [
+        ("Organisation", {"fields": ["name", "type", "website"]}),
+        ("Logo", {"fields": ["logo"]}),
+        ("Publishing", {"fields": ["order", "is_featured"]}),
+    ]
+
+    class Meta:
+        model = Client
+        fields = ["name", "type", "website", "logo", "order", "is_featured"]
+
+
+class TeamMemberForm(StyledModelForm):
+    fieldsets = [
+        ("Person", {"fields": ["name", "qualification", "role", "group"]}),
+        ("Photo", {"fields": ["photo"]}),
+        ("Publishing", {"fields": ["order", "is_active"]}),
+    ]
+
+    class Meta:
+        model = TeamMember
+        fields = ["name", "qualification", "role", "group", "photo", "order", "is_active"]

@@ -9,14 +9,17 @@ from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
 
-from apps.core.models import SiteSetting
+from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import Certificate
 from apps.dashboard.forms import (
     CertificateForm,
+    ClientForm,
     ProjectForm,
     ProjectImageFormSet,
     ServiceForm,
     SiteSettingForm,
+    StatisticForm,
+    TeamMemberForm,
 )
 from apps.leads.models import Inquiry
 from apps.projects.models import Project
@@ -414,12 +417,139 @@ class InquiryDashboardTests(TestCase):
         self.assertEqual(names, ["Acme Corp"])
 
 
+class StatisticDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {"label": "Km of line", "value": 120, "prefix": "", "suffix": " km", "order": 0}
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:statistic_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:statistic_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_create(self):
+        response = self.client.post(
+            reverse("dashboard:statistic_create"), self._form_data(is_active="on")
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Statistic.objects.filter(label="Km of line").exists())
+
+    def test_editor_can_delete(self):
+        stat = Statistic.objects.create(label="ToDelete", value=1)
+        response = self.client.post(reverse("dashboard:statistic_delete", args=[stat.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Statistic.objects.filter(pk=stat.pk).exists())
+
+    def test_active_filter(self):
+        Statistic.objects.create(label="Live", value=1, is_active=True)
+        Statistic.objects.create(label="Hidden", value=2, is_active=False)
+        response = self.client.get(reverse("dashboard:statistic_list"), {"active": "inactive"})
+        labels = [s.label for s in response.context["statistics"]]
+        self.assertEqual(labels, ["Hidden"])
+
+
+class ClientDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {"name": "Tanesco", "type": "client", "website": "", "order": 0}
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:client_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_create(self):
+        response = self.client.post(reverse("dashboard:client_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Client.objects.filter(name="Tanesco").exists())
+
+    def test_editor_can_delete(self):
+        obj = Client.objects.create(name="ToDelete")
+        response = self.client.post(reverse("dashboard:client_delete", args=[obj.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Client.objects.filter(pk=obj.pk).exists())
+
+    def test_type_filter(self):
+        Client.objects.create(name="A Client", type=Client.Type.CLIENT)
+        Client.objects.create(name="A Partner", type=Client.Type.PARTNER)
+        response = self.client.get(reverse("dashboard:client_list"), {"type": "partner"})
+        names = [c.name for c in response.context["clients"]]
+        self.assertEqual(names, ["A Partner"])
+
+
+class TeamMemberDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {
+            "name": "Jane Doe",
+            "qualification": "Eng.",
+            "role": "Managing Director",
+            "group": "leadership",
+            "order": 0,
+        }
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:team_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_create(self):
+        response = self.client.post(
+            reverse("dashboard:team_create"), self._form_data(is_active="on")
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(TeamMember.objects.filter(name="Jane Doe").exists())
+
+    def test_editor_can_delete(self):
+        member = TeamMember.objects.create(name="ToDelete", role="X")
+        response = self.client.post(reverse("dashboard:team_delete", args=[member.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(TeamMember.objects.filter(pk=member.pk).exists())
+
+    def test_group_filter(self):
+        TeamMember.objects.create(name="Lead One", role="MD", group=TeamMember.Group.LEADERSHIP)
+        TeamMember.objects.create(name="Eng One", role="Engineer", group=TeamMember.Group.ENGINEER)
+        response = self.client.get(reverse("dashboard:team_list"), {"group": "engineer"})
+        names = [m.name for m in response.context["members"]]
+        self.assertEqual(names, ["Eng One"])
+
+
 class DashboardFormLayoutTests(TestCase):
     """Two-column fieldset rendering for the dashboard forms."""
 
     def test_fieldsets_render_every_field(self):
         # Guards against a field being dropped from a form's ``fieldsets``.
-        for form_cls in (ProjectForm, ServiceForm, CertificateForm, SiteSettingForm):
+        for form_cls in (
+            ProjectForm,
+            ServiceForm,
+            CertificateForm,
+            SiteSettingForm,
+            StatisticForm,
+            ClientForm,
+            TeamMemberForm,
+        ):
             form = form_cls()
             rendered = {
                 item["field"].name

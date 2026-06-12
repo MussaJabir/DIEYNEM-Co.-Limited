@@ -6,7 +6,7 @@ from django.utils import timezone
 from apps.leads.models import Inquiry
 from apps.services.models import Service
 
-from .models import SiteSetting
+from .models import Client, SiteSetting, Statistic, TeamMember
 
 
 class HomePageTests(TestCase):
@@ -37,6 +37,54 @@ class HomePageTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Why DIEYNEM")
         self.assertContains(response, "Have a project or tender")
+
+    def test_home_uses_editable_statistics_when_present(self):
+        Statistic.objects.create(label="Km of line", value=120, suffix=" km", order=1)
+        Statistic.objects.create(label="Hidden one", value=9, is_active=False)
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Km of line")
+        self.assertContains(response, 'data-count-to="120"')
+        # Inactive statistics and the computed fallback are not shown.
+        self.assertNotContains(response, "Hidden one")
+        self.assertNotContains(response, "Years in business")
+
+    def test_home_falls_back_to_computed_stats_without_statistics(self):
+        self.assertFalse(Statistic.objects.exists())
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Years in business")
+
+    def test_home_shows_clients_band(self):
+        Client.objects.create(name="Tanesco", order=1)
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Clients &amp; partners")
+        self.assertContains(response, "Tanesco")
+
+
+class StatisticModelTests(TestCase):
+    def test_str_includes_prefix_and_suffix(self):
+        stat = Statistic.objects.create(label="Line", value=120, prefix="~", suffix=" km")
+        self.assertEqual(str(stat), "Line: ~120 km")
+
+    def test_default_ordering_by_order(self):
+        Statistic.objects.create(label="B", value=2, order=2)
+        Statistic.objects.create(label="A", value=1, order=1)
+        self.assertEqual([s.label for s in Statistic.objects.all()], ["A", "B"])
+
+
+class TeamMemberModelTests(TestCase):
+    def test_display_name_prepends_qualification(self):
+        member = TeamMember.objects.create(name="Jane Doe", role="MD", qualification="Eng.")
+        self.assertEqual(member.display_name, "Eng. Jane Doe")
+
+    def test_display_name_without_qualification(self):
+        member = TeamMember.objects.create(name="John Doe", role="Technician")
+        self.assertEqual(member.display_name, "John Doe")
+
+
+class ClientModelTests(TestCase):
+    def test_default_type_is_client(self):
+        client = Client.objects.create(name="Tanesco")
+        self.assertEqual(client.type, Client.Type.CLIENT)
 
 
 class RoleGroupTests(TestCase):

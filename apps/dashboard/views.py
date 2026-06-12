@@ -12,7 +12,7 @@ from django.views.generic import (
     UpdateView,
 )
 
-from apps.core.models import SiteSetting
+from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import EXPIRY_WARNING_DAYS, Certificate
 from apps.leads.models import Inquiry
 from apps.projects.models import Project
@@ -20,6 +20,7 @@ from apps.services.models import Service
 
 from .forms import (
     CertificateForm,
+    ClientForm,
     InquiryStatusForm,
     ProjectForm,
     ProjectImageFormSet,
@@ -27,6 +28,8 @@ from .forms import (
     ProjectUpdateFormSet,
     ServiceForm,
     SiteSettingForm,
+    StatisticForm,
+    TeamMemberForm,
 )
 from .mixins import AdministratorRequiredMixin, DashboardAccessMixin
 
@@ -353,3 +356,148 @@ class InquiryDeleteView(DashboardAccessMixin, DeleteView):
     model = Inquiry
     template_name = "dashboard/inquiries/confirm_delete.html"
     success_url = reverse_lazy("dashboard:inquiry_list")
+
+
+# --- Statistics (Editor + Administrator) ---
+
+
+class StatisticListView(FilterableListMixin, DashboardAccessMixin, ListView):
+    model = Statistic
+    template_name = "dashboard/statistics/list.html"
+    partial_template_name = "dashboard/statistics/_table.html"
+    context_object_name = "statistics"
+    search_fields = ["label"]
+
+    def apply_filters(self, queryset):
+        active = self.request.GET.get("active")
+        if active == "active":
+            queryset = queryset.filter(is_active=True)
+        elif active == "inactive":
+            queryset = queryset.filter(is_active=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["active_active"] = self.request.GET.get("active", "")
+        return context
+
+
+class StatisticCreateView(DashboardAccessMixin, SuccessMessageMixin, CreateView):
+    model = Statistic
+    form_class = StatisticForm
+    template_name = "dashboard/statistics/form.html"
+    success_url = reverse_lazy("dashboard:statistic_list")
+    success_message = "Statistic created."
+
+
+class StatisticUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):
+    model = Statistic
+    form_class = StatisticForm
+    template_name = "dashboard/statistics/form.html"
+    success_url = reverse_lazy("dashboard:statistic_list")
+    success_message = "Statistic updated."
+
+
+class StatisticDeleteView(DashboardAccessMixin, DeleteView):
+    model = Statistic
+    template_name = "dashboard/statistics/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:statistic_list")
+
+
+# --- Clients / partners (Editor + Administrator) ---
+
+
+class ClientListView(FilterableListMixin, DashboardAccessMixin, ListView):
+    model = Client
+    template_name = "dashboard/clients/list.html"
+    partial_template_name = "dashboard/clients/_table.html"
+    context_object_name = "clients"
+    search_fields = ["name"]
+
+    def apply_filters(self, queryset):
+        client_type = self.request.GET.get("type")
+        if client_type in Client.Type.values:
+            queryset = queryset.filter(type=client_type)
+        if self.request.GET.get("featured") == "1":
+            queryset = queryset.filter(is_featured=True)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["types"] = Client.Type.choices
+        context["active_type"] = self.request.GET.get("type", "")
+        context["active_featured"] = self.request.GET.get("featured", "")
+        return context
+
+
+class ClientCreateView(DashboardAccessMixin, SuccessMessageMixin, CreateView):
+    model = Client
+    form_class = ClientForm
+    template_name = "dashboard/clients/form.html"
+    success_url = reverse_lazy("dashboard:client_list")
+    success_message = "Client created."
+
+
+class ClientUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):
+    model = Client
+    form_class = ClientForm
+    template_name = "dashboard/clients/form.html"
+    success_url = reverse_lazy("dashboard:client_list")
+    success_message = "Client updated."
+
+
+class ClientDeleteView(DashboardAccessMixin, DeleteView):
+    model = Client
+    template_name = "dashboard/clients/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:client_list")
+
+
+# --- Team members (Editor + Administrator) ---
+
+
+class TeamMemberListView(FilterableListMixin, DashboardAccessMixin, ListView):
+    model = TeamMember
+    template_name = "dashboard/team/list.html"
+    partial_template_name = "dashboard/team/_table.html"
+    context_object_name = "members"
+    search_fields = ["name", "role"]
+
+    def apply_filters(self, queryset):
+        group = self.request.GET.get("group")
+        if group in TeamMember.Group.values:
+            queryset = queryset.filter(group=group)
+        active = self.request.GET.get("active")
+        if active == "active":
+            queryset = queryset.filter(is_active=True)
+        elif active == "inactive":
+            queryset = queryset.filter(is_active=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["groups"] = TeamMember.Group.choices
+        context["active_group"] = self.request.GET.get("group", "")
+        context["active_active"] = self.request.GET.get("active", "")
+        return context
+
+
+class TeamMemberCreateView(DashboardAccessMixin, SuccessMessageMixin, CreateView):
+    model = TeamMember
+    form_class = TeamMemberForm
+    template_name = "dashboard/team/form.html"
+    success_url = reverse_lazy("dashboard:team_list")
+    success_message = "Team member created."
+
+
+class TeamMemberUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):
+    model = TeamMember
+    form_class = TeamMemberForm
+    template_name = "dashboard/team/form.html"
+    success_url = reverse_lazy("dashboard:team_list")
+    success_message = "Team member updated."
+
+
+class TeamMemberDeleteView(DashboardAccessMixin, DeleteView):
+    model = TeamMember
+    template_name = "dashboard/team/confirm_delete.html"
+    success_url = reverse_lazy("dashboard:team_list")
