@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% load media_extras %}
 
 {% block title %}Ongoing Projects &mdash; DIEYNEM Co. Limited{% endblock %}
 {% block meta_description %}Live status of DIEYNEM Co. Limited's ongoing projects — progress, milestones and the latest site updates across our active electrical, ICT and infrastructure works.{% endblock %}
@@ -13,7 +14,7 @@
       <!-- Visual / status -->
       <div class="relative md:col-span-1 min-h-[12rem] bg-gradient-to-br from-navy-800 to-navy-950">
         {% if project.hero_image %}
-          <img src="{{ project.hero_image.url }}" alt="{{ project.title }}" loading="lazy" class="absolute inset-0 w-full h-full object-cover">
+          {% responsive_image project.hero_image alt=project.title img_class="absolute inset-0 w-full h-full object-cover" sizes="(min-width: 768px) 33vw, 100vw" ratio="4:3" %}
         {% else %}
           <div class="absolute inset-0 flex items-center justify-center"><span class="font-heading text-white/20 font-extrabold text-3xl">DIEYNEM.</span></div>
         {% endif %}
@@ -73,7 +74,7 @@
           <ul class="space-y-3">
             {% for u in updates %}
             <li class="flex gap-3">
-              {% if u.image %}<img src="{{ u.image.url }}" alt="" loading="lazy" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0">{% endif %}
+              {% if u.image %}<span class="block w-12 h-12 shrink-0">{% responsive_image u.image alt="" img_class="w-12 h-12 rounded-lg object-cover border border-slate-200" sizes="48px" ratio="1:1" %}</span>{% endif %}
               <div class="min-w-0">
                 <p class="text-xs text-slate-400">{{ u.date|date:"j M Y" }}</p>
                 <p class="text-sm text-slate-700">{{ u.note }}</p>

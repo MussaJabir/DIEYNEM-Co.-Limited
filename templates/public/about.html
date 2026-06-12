@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% load media_extras %}
 
 {% block title %}About DIEYNEM Co. Limited — Class One Engineering Contractor{% endblock %}
 {% block meta_description %}DIEYNEM Co. Limited is a Dar es Salaam–based multi-disciplinary engineering contractor, incorporated in 2011 and registered with the Contractors Registration Board as a Specialist Contractor, Class One.{% endblock %}
@@ -112,7 +113,7 @@
       {% for member in group.members %}
       <div data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' %}" class="bg-white border border-slate-200 rounded-xl p-6 flex items-center gap-4">
         {% if member.photo %}
-          <img src="{{ member.photo.url }}" alt="{{ member.display_name }}" loading="lazy" class="w-16 h-16 rounded-full object-cover bg-slate-50 border border-slate-200 shrink-0">
+          <span class="block w-16 h-16 shrink-0">{% responsive_image member.photo alt=member.display_name img_class="w-16 h-16 rounded-full object-cover bg-slate-50 border border-slate-200" sizes="64px" ratio="1:1" %}</span>
         {% else %}
           <span class="w-16 h-16 rounded-full bg-navy-700 text-white flex items-center justify-center font-heading font-bold text-xl shrink-0" aria-hidden="true">{{ member.name|slice:":1"|upper }}</span>
         {% endif %}

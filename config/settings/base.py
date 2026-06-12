@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
+    # Third-party
+    "easy_thumbnails",
     # Local apps
     "apps.core",
     "apps.services",
@@ -97,6 +99,13 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
+
+# easy-thumbnails: responsive WebP derivatives served via <picture>/srcset.
+# Derivatives are generated on first request and cached; the originals are
+# never upscaled (see the responsive_image template tag). Extensions are NOT
+# preserved so WebP derivatives end in .webp and serve the correct mime type.
+THUMBNAIL_QUALITY = 82
+THUMBNAIL_DEFAULT_OPTIONS = {"quality": THUMBNAIL_QUALITY}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

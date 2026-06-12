@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% load media_extras %}
 
 {% block title %}Projects &mdash; DIEYNEM Co. Limited{% endblock %}
 {% block meta_description %}Documented and certified projects by DIEYNEM Co. Limited across electrical, ICT, fire, HVAC, solar and power infrastructure in Tanzania and Uganda.{% endblock %}
@@ -19,7 +20,7 @@
        class="group block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200">
       <div class="relative h-48 overflow-hidden">
         {% if project.hero_image %}
-          <img src="{{ project.hero_image.url }}" alt="{{ project.title }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          {% responsive_image project.hero_image alt=project.title img_class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" sizes="(min-width: 1024px) 384px, (min-width: 640px) 50vw, 100vw" ratio="16:9" %}
         {% else %}
           <div class="w-full h-full bg-gradient-to-br from-navy-700 to-navy-900 flex items-center justify-center"><span class="font-heading text-white/20 font-extrabold text-2xl">DIEYNEM.</span></div>
         {% endif %}

@@ -1,15 +1,26 @@
 import json
+import tempfile
+from io import BytesIO
 
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.template import Context, Template
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from apps.leads.models import Inquiry
 from apps.projects.models import Project
 from apps.services.models import Service
 
 from .models import Client, SiteSetting, Statistic, TeamMember
+
+
+def _jpeg(name="photo.jpg", size=(1200, 800)):
+    buffer = BytesIO()
+    Image.new("RGB", size, "navy").save(buffer, "JPEG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
 
 
 class HomePageTests(TestCase):
@@ -148,6 +159,38 @@ class SeoTests(TestCase):
         self.client.login(username="editor", password="pass12345")
         response = self.client.get(reverse("dashboard:overview"))
         self.assertIsNone(response.context.get("organization_jsonld"))
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class ResponsiveImageTagTests(TestCase):
+    def _render(self, image, **kwargs):
+        kw = " ".join(f'{k}="{v}"' for k, v in kwargs.items())
+        template = Template("{% load media_extras %}{% responsive_image img " + kw + " %}")
+        return template.render(Context({"img": image}))
+
+    def test_renders_picture_with_webp_and_fallback(self):
+        member = TeamMember.objects.create(name="Jane", role="MD", photo=_jpeg())
+        html = self._render(member.photo, alt="Jane", sizes="50vw", ratio="1:1")
+        self.assertIn("<picture>", html)
+        self.assertIn('type="image/webp"', html)
+        self.assertIn(".webp", html)
+        # Fallback <img> keeps the original format and carries a width srcset.
+        self.assertIn("<img", html)
+        self.assertIn("480w", html)
+        self.assertIn('alt="Jane"', html)
+        self.assertIn('sizes="50vw"', html)
+
+    def test_no_image_renders_nothing(self):
+        html = self._render("", alt="x").strip()
+        self.assertEqual(html, "")
+
+    def test_missing_source_file_falls_back_to_plain_img(self):
+        # An ImageField pointing at a file that isn't on disk must not 500.
+        member = TeamMember.objects.create(name="Ghost", role="X")
+        member.photo = "team/does-not-exist.jpg"
+        html = self._render(member.photo, alt="Ghost")
+        self.assertIn("<img", html)
+        self.assertNotIn("<picture>", html)
 
 
 class StatisticModelTests(TestCase):
