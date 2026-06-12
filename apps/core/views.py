@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.views.generic import TemplateView
 
-from apps.core.models import Client, Statistic
+from apps.core.models import Client, Statistic, TeamMember
 from apps.credentials.models import Certificate
 from apps.projects.models import Project
 from apps.services.models import Service
@@ -27,4 +27,22 @@ class HomeView(TemplateView):
         }
         # Clients / partners logo band.
         context["clients"] = Client.objects.all()
+        return context
+
+
+class AboutView(TemplateView):
+    template_name = "public/about.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Partition active members into BS-ordered groups in a single query.
+        members = list(TeamMember.objects.filter(is_active=True))
+        groups = []
+        for value, label in TeamMember.Group.choices:
+            group_members = [m for m in members if m.group == value]
+            if group_members:
+                groups.append({"label": label, "members": group_members})
+        context["team_groups"] = groups
+        context["founded_year"] = COMPANY_FOUNDED_YEAR
+        context["years_in_operation"] = timezone.localdate().year - COMPANY_FOUNDED_YEAR
         return context

@@ -28,6 +28,7 @@
       <a href="{% url 'home' %}" class="font-heading text-xl font-extrabold tracking-tight">DIEYNEM<span class="text-amber-500">.</span></a>
       <nav class="hidden md:flex gap-7 text-sm text-navy-100">
         <a href="{% url 'home' %}" class="hover:text-white transition-colors">Home</a>
+        <a href="{% url 'about' %}" class="hover:text-white transition-colors">About</a>
         <a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a>
         <a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a>
         <a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">Ongoing</a>
@@ -45,6 +46,7 @@
     <!-- Mobile menu -->
     <nav x-show="open" x-cloak x-transition.opacity class="md:hidden border-t border-navy-800 px-4 py-3 space-y-1 text-navy-100">
       <a href="{% url 'home' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Home</a>
+      <a href="{% url 'about' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">About</a>
       <a href="{% url 'services:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Services</a>
       <a href="{% url 'projects:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Projects</a>
       <a href="{% url 'ongoing_projects' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Ongoing</a>
@@ -70,6 +72,7 @@
       <div>
         <p class="font-heading text-white font-bold mb-3">Explore</p>
         <ul class="space-y-2">
+          <li><a href="{% url 'about' %}" class="hover:text-white transition-colors">About</a></li>
           <li><a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a></li>
           <li><a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a></li>
           <li><a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">Ongoing Projects</a></li>
