@@ -1,0 +1,15 @@
+{% comment %}
+Responsive <picture> rendered by the {% responsive_image %} tag.
+Context: sources (bool/None), webp_srcset, fallback_srcset, fallback_src,
+sizes, alt, img_class, loading. With no usable image, sources is falsy and
+only a plain <img> (or nothing) is rendered.
+{% endcomment %}
+{% if sources %}
+<picture>
+  <source type="image/webp" srcset="{{ webp_srcset }}" sizes="{{ sizes }}">
+  <img src="{{ fallback_src }}" srcset="{{ fallback_srcset }}" sizes="{{ sizes }}"
+       alt="{{ alt }}" loading="{{ loading }}" decoding="async" class="{{ img_class }}">
+</picture>
+{% elif fallback_src %}
+<img src="{{ fallback_src }}" alt="{{ alt }}" loading="{{ loading }}" decoding="async" class="{{ img_class }}">
+{% endif %}

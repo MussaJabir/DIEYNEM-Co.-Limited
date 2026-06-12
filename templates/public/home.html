@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% load media_extras %}
 
 {% block title %}DIEYNEM Co. Limited — Electrical, ICT, Fire, HVAC &amp; Power Infrastructure{% endblock %}
 
@@ -26,7 +27,7 @@
       <div class="absolute -inset-3 bg-amber-500/20 rounded-2xl -rotate-3" aria-hidden="true"></div>
       <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl aspect-[4/3]">
         {% if hero_project.hero_image %}
-          <img src="{{ hero_project.hero_image.url }}" alt="{{ hero_project.title }}" class="w-full h-full object-cover">
+          {% responsive_image hero_project.hero_image alt=hero_project.title img_class="w-full h-full object-cover" sizes="(min-width: 1024px) 600px, 100vw" ratio="4:3" loading="eager" %}
         {% else %}
           <div class="w-full h-full bg-navy-800 flex items-center justify-center"><span class="font-heading text-white/15 font-extrabold text-4xl">DIEYNEM.</span></div>
         {% endif %}
@@ -126,7 +127,7 @@
          class="group block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200">
         <div class="relative h-48 overflow-hidden">
           {% if project.hero_image %}
-            <img src="{{ project.hero_image.url }}" alt="{{ project.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            {% responsive_image project.hero_image alt=project.title img_class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" sizes="(min-width: 1024px) 384px, (min-width: 640px) 50vw, 100vw" ratio="16:9" %}
           {% else %}
             <div class="w-full h-full bg-gradient-to-br from-navy-700 to-navy-900 flex items-center justify-center"><span class="font-heading text-white/20 font-extrabold text-2xl">DIEYNEM.</span></div>
           {% endif %}
@@ -199,7 +200,7 @@
            class="flex items-center justify-center bg-white border border-slate-200 rounded-xl p-5 h-24 grayscale hover:grayscale-0 transition-all duration-200">
         {% if client.logo %}
           {% if client.website %}<a href="{{ client.website }}" target="_blank" rel="noopener" class="block">{% endif %}
-          <img src="{{ client.logo.url }}" alt="{{ client.name }}" loading="lazy" title="{{ client.name }}" class="max-h-12 max-w-full object-contain">
+          {% responsive_image client.logo alt=client.name img_class="max-h-12 max-w-full object-contain" sizes="200px" %}
           {% if client.website %}</a>{% endif %}
         {% else %}
           <span class="font-heading font-bold text-navy-700 text-center text-sm">{{ client.name }}</span>

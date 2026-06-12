@@ -46,6 +46,12 @@ class GalleryPageTests(TestCase):
         self.assertContains(response, "Curated shot")
         self.assertContains(response, "Site photo")
 
+    def test_grid_uses_responsive_webp_pictures(self):
+        GalleryImage.objects.create(image=_png(), caption="Solar array")
+        response = self.client.get(reverse("media_center:gallery"))
+        self.assertContains(response, "<picture>")
+        self.assertContains(response, 'type="image/webp"')
+
     def test_excludes_inactive_and_unpublished_sources(self):
         GalleryImage.objects.create(image=_png(), caption="Hidden curated", is_active=False)
         draft = Project.objects.create(title="Draft", is_published=False)

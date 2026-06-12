@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% load media_extras %}
 
 {% block title %}Gallery &mdash; DIEYNEM Co. Limited{% endblock %}
 {% block meta_description %}On-site photography from DIEYNEM Co. Limited's electrical, ICT, fire, HVAC, solar and power-infrastructure projects across Tanzania and Uganda.{% endblock %}
@@ -22,7 +23,7 @@
     <figure data-reveal data-reveal-delay="{% cycle '0s' '.05s' '.1s' '.15s' %}" class="group">
       <button type="button" @click="src='{{ item.src }}'; caption='{{ item.caption|escapejs }}'; open=true"
               class="block w-full overflow-hidden rounded-xl border border-slate-200 cursor-zoom-in relative aspect-square">
-        <img src="{{ item.src }}" alt="{{ item.caption }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        {% responsive_image item.image alt=item.caption img_class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" sizes="(min-width: 1024px) 280px, (min-width: 640px) 33vw, 50vw" ratio="1:1" %}
         {% if item.category %}<span class="absolute top-2 left-2 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/90 text-navy-700">{{ item.category }}</span>{% endif %}
       </button>
       {% if item.caption or item.project_title %}

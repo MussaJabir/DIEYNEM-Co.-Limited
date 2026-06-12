@@ -22,6 +22,7 @@ class GalleryView(TemplateView):
             published = bool(project and project.is_published)
             items.append(
                 {
+                    "image": image.image,
                     "src": image.image.url,
                     "caption": image.caption or image.title,
                     "category": image.category,
@@ -37,6 +38,7 @@ class GalleryView(TemplateView):
         for pi in project_images:
             items.append(
                 {
+                    "image": pi.image,
                     "src": pi.image.url,
                     "caption": pi.caption,
                     "category": pi.project.get_sector_display(),

@@ -1,4 +1,5 @@
 {% extends "public/base.html" %}
+{% load media_extras %}
 
 {% block title %}{{ project.meta_title|default:project.title }} &mdash; DIEYNEM Co. Limited{% endblock %}
 {% block meta_description %}{{ project.meta_description|default:project.overview|truncatewords:30 }}{% endblock %}
@@ -39,8 +40,8 @@
 </section>
 
 {% if project.hero_image %}
-<div class="max-w-5xl mx-auto px-4 -mt-10 relative z-10">
-  <img src="{{ project.hero_image.url }}" alt="{{ project.title }}" data-reveal class="w-full h-64 sm:h-96 object-cover rounded-2xl border border-slate-200 shadow-xl">
+<div class="max-w-5xl mx-auto px-4 -mt-10 relative z-10" data-reveal>
+  {% responsive_image project.hero_image alt=project.title img_class="w-full h-64 sm:h-96 object-cover rounded-2xl border border-slate-200 shadow-xl" sizes="(min-width: 1024px) 1024px, 100vw" ratio="16:9" loading="eager" %}
 </div>
 {% endif %}
 
@@ -144,7 +145,7 @@
         {% for img in project.images.all %}
         <figure>
           <button type="button" @click="src='{{ img.image.url }}'; open=true" class="block w-full overflow-hidden rounded-lg group cursor-zoom-in">
-            <img src="{{ img.image.url }}" alt="{{ img.caption }}" loading="lazy" class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105">
+            {% responsive_image img.image alt=img.caption img_class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105" sizes="(min-width: 640px) 320px, 50vw" ratio="4:3" %}
           </button>
           {% if img.caption %}<figcaption class="text-xs text-slate-500 mt-1">{{ img.caption }}</figcaption>{% endif %}
         </figure>
