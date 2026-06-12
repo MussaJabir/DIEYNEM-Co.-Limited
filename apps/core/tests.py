@@ -60,6 +60,43 @@ class HomePageTests(TestCase):
         self.assertContains(response, "Tanesco")
 
 
+class AboutPageTests(TestCase):
+    def test_about_returns_200(self):
+        response = self.client.get(reverse("about"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_about_shows_verified_overview_and_motto(self):
+        response = self.client.get(reverse("about"))
+        self.assertContains(response, "Specialist Contractor, Class One")
+        self.assertContains(response, "Milestones")
+        # Motto comes from the (seeded) SiteSetting singleton.
+        self.assertContains(response, "Quality is our Motto")
+
+    def test_about_shows_seeded_leadership(self):
+        response = self.client.get(reverse("about"))
+        self.assertContains(response, "Leadership &amp; technical team")
+        self.assertContains(response, "Maulidy Ngaiwa Juma")
+        self.assertContains(response, "Eng. Novatus Peter Lyimo")
+
+    def test_about_groups_only_active_members(self):
+        TeamMember.objects.create(
+            name="Hidden Person", role="Intern", group=TeamMember.Group.SUPPORT, is_active=False
+        )
+        response = self.client.get(reverse("about"))
+        self.assertNotContains(response, "Hidden Person")
+
+    def test_about_exposes_years_in_operation(self):
+        response = self.client.get(reverse("about"))
+        self.assertEqual(response.context["years_in_operation"], timezone.localdate().year - 2011)
+
+
+class LeadershipSeedTests(TestCase):
+    def test_three_leaders_seeded_by_migration(self):
+        leaders = TeamMember.objects.filter(group=TeamMember.Group.LEADERSHIP)
+        self.assertEqual(leaders.count(), 3)
+        self.assertTrue(leaders.filter(name="Dickson Nathaniel Chungu").exists())
+
+
 class StatisticModelTests(TestCase):
     def test_str_includes_prefix_and_suffix(self):
         stat = Statistic.objects.create(label="Line", value=120, prefix="~", suffix=" km")
