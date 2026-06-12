@@ -5,7 +5,7 @@ from django.forms import inlineformset_factory
 from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import Certificate
 from apps.leads.models import Inquiry
-from apps.media_center.models import GalleryImage
+from apps.media_center.models import Download, GalleryImage
 from apps.projects.models import Project, ProjectImage, ProjectMilestone, ProjectUpdate
 from apps.services.models import Service
 
@@ -402,3 +402,17 @@ class GalleryImageForm(StyledModelForm):
     class Meta:
         model = GalleryImage
         fields = ["image", "title", "caption", "category", "related_project", "order", "is_active"]
+
+
+class DownloadForm(StyledModelForm):
+    fieldsets = [
+        (
+            "Document",
+            {"fields": ["title", "description", "file", "category"], "wide": ["description"]},
+        ),
+        ("Publishing", {"fields": ["order", "is_public"]}),
+    ]
+
+    class Meta:
+        model = Download
+        fields = ["title", "description", "file", "category", "order", "is_public"]

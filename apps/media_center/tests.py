@@ -8,13 +8,17 @@ from PIL import Image
 
 from apps.projects.models import Project, ProjectImage
 
-from .models import GalleryImage
+from .models import Download, GalleryImage
 
 
 def _png(name="photo.png"):
     buffer = BytesIO()
     Image.new("RGB", (2, 2), "navy").save(buffer, "PNG")
     return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
+
+
+def _pdf(name="profile.pdf"):
+    return SimpleUploadedFile(name, b"%PDF-1.4 fake", content_type="application/pdf")
 
 
 class GalleryImageModelTests(TestCase):
@@ -65,3 +69,42 @@ class GalleryPageTests(TestCase):
     def test_empty_state(self):
         response = self.client.get(reverse("media_center:gallery"))
         self.assertContains(response, "will appear here soon")
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class DownloadModelTests(TestCase):
+    def test_public_queryset(self):
+        Download.objects.create(title="Public", file=_pdf(), is_public=True)
+        Download.objects.create(title="Hidden", file=_pdf(), is_public=False)
+        self.assertEqual(Download.objects.public().count(), 1)
+
+    def test_extension_and_size_helpers(self):
+        download = Download.objects.create(title="Profile", file=_pdf())
+        self.assertEqual(download.extension, "PDF")
+        self.assertTrue(download.size_display.endswith("B"))
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class DownloadsPageTests(TestCase):
+    def test_page_returns_200(self):
+        response = self.client.get(reverse("media_center:downloads"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_lists_public_grouped_by_category(self):
+        Download.objects.create(
+            title="Company Profile 2026",
+            file=_pdf(),
+            category=Download.Category.COMPANY_PROFILE,
+        )
+        response = self.client.get(reverse("media_center:downloads"))
+        self.assertContains(response, "Company Profile 2026")
+        self.assertContains(response, "Download")
+
+    def test_hides_private_downloads(self):
+        Download.objects.create(title="Internal Only", file=_pdf(), is_public=False)
+        response = self.client.get(reverse("media_center:downloads"))
+        self.assertNotContains(response, "Internal Only")
+
+    def test_empty_state(self):
+        response = self.client.get(reverse("media_center:downloads"))
+        self.assertContains(response, "available here soon")

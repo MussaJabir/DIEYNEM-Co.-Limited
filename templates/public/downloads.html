@@ -1,0 +1,42 @@
+{% extends "public/base.html" %}
+
+{% block title %}Downloads &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}Download DIEYNEM Co. Limited's company profile, capability statements and brochures.{% endblock %}
+
+{% block content %}
+{% include "public/_page_header.html" with eyebrow="Resources" title="Downloads" subtitle="Our company profile, capability statements and brochures — ready for your procurement and tender files." %}
+
+<section class="max-w-4xl mx-auto px-4 py-16">
+  {% for group in download_groups %}
+  <div class="{% if not forloop.first %}mt-12{% endif %}">
+    <h2 data-reveal class="font-heading text-xl font-bold text-navy-800 mb-5">{{ group.label }}{{ group.downloads|length|pluralize }}</h2>
+    <ul class="space-y-3">
+      {% for download in group.downloads %}
+      <li data-reveal data-reveal-delay="{% cycle '0s' '.05s' '.1s' %}"
+          class="flex items-center gap-4 bg-white border border-slate-200 rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="font-heading font-bold text-navy-800 leading-snug">{{ download.title }}</p>
+          {% if download.description %}<p class="text-slate-500 text-sm mt-0.5">{{ download.description }}</p>{% endif %}
+          <p class="text-xs text-slate-400 mt-1 tabular-nums">{{ download.extension }}{% if download.size_display %} &middot; {{ download.size_display }}{% endif %}</p>
+        </div>
+        <a href="{{ download.file.url }}" download
+           class="shrink-0 inline-flex items-center gap-2 bg-amber-500 text-navy-950 font-semibold text-sm px-4 py-2.5 rounded-lg hover:bg-amber-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+          <span class="hidden sm:inline">Download</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% empty %}
+  <div class="text-center py-16">
+    <p class="text-slate-500">Documents will be available here soon. In the meantime, please <a href="{% url 'leads:quote' %}" class="text-navy-600 font-semibold hover:underline">get in touch</a>.</p>
+  </div>
+  {% endfor %}
+</section>
+
+{% include "public/_cta_band.html" %}
+{% endblock %}
