@@ -1,0 +1,38 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Team &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Team{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+  <form method="get" hx-get="{{ request.path }}" hx-target="#results" hx-push-url="true"
+        hx-trigger="submit, change, input changed delay:300ms" hx-indicator="#list-spin"
+        class="flex flex-wrap items-center gap-2">
+    <div class="relative">
+      <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+      </svg>
+      <input type="search" name="q" value="{{ q }}" placeholder="Search team…" autocomplete="off"
+             class="w-full sm:w-60 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+    </div>
+    <select name="group" class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+      <option value="">All groups</option>
+      {% for value, label in groups %}
+      <option value="{{ value }}" {% if active_group == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="active" class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+      <option value="">Any state</option>
+      <option value="active" {% if active_active == 'active' %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if active_active == 'inactive' %}selected{% endif %}>Inactive</option>
+    </select>
+    <noscript><button type="submit" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Filter</button></noscript>
+    <span id="list-spin" class="htmx-indicator text-xs text-slate-400">Filtering…</span>
+  </form>
+  <a href="{% url 'dashboard:team_create' %}" class="shrink-0 bg-navy-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-700 transition-colors">+ New member</a>
+</div>
+
+<div id="results">
+  {% include "dashboard/team/_table.html" %}
+</div>
+{% endblock %}

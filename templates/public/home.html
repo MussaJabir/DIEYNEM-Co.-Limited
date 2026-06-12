@@ -53,22 +53,31 @@
 <!-- ============ Credibility numbers ============ -->
 <section class="bg-navy-900 text-white">
   <div class="max-w-6xl mx-auto px-4 py-14 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-    <div data-reveal>
-      <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.years }}">0</span></p>
-      <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Years in business</p>
-    </div>
-    <div data-reveal data-reveal-delay=".1s">
-      <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.projects }}">0</span>+</p>
-      <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Projects delivered</p>
-    </div>
-    <div data-reveal data-reveal-delay=".2s">
-      <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.services }}">0</span></p>
-      <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Service lines</p>
-    </div>
-    <div data-reveal data-reveal-delay=".3s">
-      <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.certificates }}">0</span></p>
-      <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Certifications</p>
-    </div>
+    {% if statistics %}
+      {% for stat in statistics %}
+      <div data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' '.3s' %}">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums">{{ stat.prefix }}<span data-count-to="{{ stat.value }}">0</span>{{ stat.suffix }}</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{{ stat.label }}</p>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div data-reveal>
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.years }}">0</span></p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Years in business</p>
+      </div>
+      <div data-reveal data-reveal-delay=".1s">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.projects }}">0</span>+</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Projects delivered</p>
+      </div>
+      <div data-reveal data-reveal-delay=".2s">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.services }}">0</span></p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Service lines</p>
+      </div>
+      <div data-reveal data-reveal-delay=".3s">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.certificates }}">0</span></p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Certifications</p>
+      </div>
+    {% endif %}
   </div>
 </section>
 
@@ -175,6 +184,32 @@
     </div>
   </div>
 </section>
+
+<!-- ============ Clients / partners ============ -->
+{% if clients %}
+<section class="bg-slate-50 border-t border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-16">
+    <div class="text-center max-w-2xl mx-auto">
+      <p data-reveal class="text-amber-600 font-semibold uppercase tracking-widest text-sm">Trusted by</p>
+      <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Clients &amp; partners</h2>
+    </div>
+    <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      {% for client in clients %}
+      <div data-reveal data-reveal-delay="{% cycle '0s' '.05s' '.1s' '.15s' '.2s' %}"
+           class="flex items-center justify-center bg-white border border-slate-200 rounded-xl p-5 h-24 grayscale hover:grayscale-0 transition-all duration-200">
+        {% if client.logo %}
+          {% if client.website %}<a href="{{ client.website }}" target="_blank" rel="noopener" class="block">{% endif %}
+          <img src="{{ client.logo.url }}" alt="{{ client.name }}" loading="lazy" title="{{ client.name }}" class="max-h-12 max-w-full object-contain">
+          {% if client.website %}</a>{% endif %}
+        {% else %}
+          <span class="font-heading font-bold text-navy-700 text-center text-sm">{{ client.name }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
 <!-- ============ CTA band ============ -->
 <section class="relative overflow-hidden bg-navy-900 text-white">
