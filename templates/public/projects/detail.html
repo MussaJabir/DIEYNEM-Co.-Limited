@@ -62,7 +62,7 @@
           <span class="text-navy-700 tabular-nums">{{ progress }}%</span>
         </div>
         <div class="h-2.5 rounded-full bg-white overflow-hidden border border-slate-200">
-          <div class="h-full rounded-full bg-amber-500" style="width: {{ progress }}%"></div>
+          <div class="h-full rounded-full bg-amber-500 progress-bar" style="--target: {{ progress }}%"></div>
         </div>
       </div>
       {% endif %}
