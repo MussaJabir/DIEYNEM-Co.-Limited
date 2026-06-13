@@ -1,7 +1,9 @@
+import csv
 from datetime import timedelta
 
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q
+from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
@@ -10,6 +12,7 @@ from django.views.generic import (
     ListView,
     TemplateView,
     UpdateView,
+    View,
 )
 
 from apps.core.models import Client, SiteSetting, Statistic, TeamMember
@@ -328,13 +331,33 @@ class CertificateDeleteView(AdministratorRequiredMixin, DeleteView):
 
 # --- Inquiries / leads (Editor + Administrator) ---
 
+INQUIRY_SEARCH_FIELDS = ["name", "email", "company"]
+
+
+def filtered_inquiries(params):
+    """Inquiries narrowed by the ``q`` search and ``status`` filter.
+
+    Shared by the list view and the CSV export so both honour the same filters.
+    """
+    queryset = Inquiry.objects.select_related("service_interest")
+    term = params.get("q", "").strip()
+    if term:
+        condition = Q()
+        for field in INQUIRY_SEARCH_FIELDS:
+            condition |= Q(**{f"{field}__icontains": term})
+        queryset = queryset.filter(condition)
+    status = params.get("status")
+    if status in Inquiry.Status.values:
+        queryset = queryset.filter(status=status)
+    return queryset
+
 
 class InquiryListView(FilterableListMixin, DashboardAccessMixin, ListView):
     model = Inquiry
     template_name = "dashboard/inquiries/list.html"
     partial_template_name = "dashboard/inquiries/_table.html"
     context_object_name = "inquiries"
-    search_fields = ["name", "email", "company"]
+    search_fields = INQUIRY_SEARCH_FIELDS
 
     def apply_filters(self, queryset):
         queryset = queryset.select_related("service_interest")
@@ -347,7 +370,59 @@ class InquiryListView(FilterableListMixin, DashboardAccessMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["active_status"] = self.request.GET.get("status", "")
         context["statuses"] = Inquiry.Status.choices
+        # Pipeline overview: a stable count per status across all inquiries.
+        counts = dict(Inquiry.objects.values_list("status").annotate(n=Count("id")))
+        context["pipeline"] = [
+            {"value": value, "label": label, "count": counts.get(value, 0)}
+            for value, label in Inquiry.Status.choices
+        ]
+        context["pipeline_total"] = sum(counts.values())
         return context
+
+
+class InquiryExportView(DashboardAccessMixin, View):
+    """Stream the (optionally filtered) inquiries as a CSV download."""
+
+    def get(self, request, *args, **kwargs):
+        queryset = filtered_inquiries(request.GET).order_by("-created_at")
+        stamp = timezone.localdate().isoformat()
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="dieynem-inquiries-{stamp}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Received",
+                "Name",
+                "Company",
+                "Email",
+                "Phone",
+                "Service interest",
+                "Project type",
+                "Status",
+                "Source",
+                "Message",
+                "Internal notes",
+                "Last updated",
+            ]
+        )
+        for inquiry in queryset:
+            writer.writerow(
+                [
+                    inquiry.created_at.strftime("%Y-%m-%d %H:%M"),
+                    inquiry.name,
+                    inquiry.company,
+                    inquiry.email,
+                    inquiry.phone,
+                    inquiry.service_interest.name if inquiry.service_interest else "",
+                    inquiry.project_type,
+                    inquiry.get_status_display(),
+                    inquiry.source,
+                    inquiry.message,
+                    inquiry.internal_notes,
+                    inquiry.updated_at.strftime("%Y-%m-%d %H:%M"),
+                ]
+            )
+        return response
 
 
 class InquiryUpdateView(DashboardAccessMixin, SuccessMessageMixin, UpdateView):

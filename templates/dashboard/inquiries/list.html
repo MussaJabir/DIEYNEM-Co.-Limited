@@ -4,8 +4,22 @@
 {% block heading %}Inquiries{% endblock %}
 
 {% block dashboard_content %}
+<!-- Pipeline overview: count per stage, click to filter. -->
+<div class="flex flex-wrap gap-2 mb-4 text-sm">
+  <a href="{% url 'dashboard:inquiry_list' %}"
+     class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg font-semibold transition-colors {% if not active_status %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+    All <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-xs {% if not active_status %}bg-white/20{% else %}bg-white text-slate-500{% endif %} tabular-nums">{{ pipeline_total }}</span>
+  </a>
+  {% for stage in pipeline %}
+  <a href="?status={{ stage.value }}"
+     class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg font-semibold transition-colors {% if active_status == stage.value %}bg-navy-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+    {{ stage.label }} <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-xs {% if active_status == stage.value %}bg-white/20{% else %}bg-white text-slate-500{% endif %} tabular-nums">{{ stage.count }}</span>
+  </a>
+  {% endfor %}
+</div>
+
 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-  <form method="get" hx-get="{{ request.path }}" hx-target="#results" hx-push-url="true"
+  <form id="inquiry-filters" method="get" hx-get="{{ request.path }}" hx-target="#results" hx-push-url="true"
         hx-trigger="submit, change, input changed delay:300ms" hx-indicator="#list-spin"
         class="flex flex-wrap items-center gap-2">
     <div class="relative">
@@ -22,9 +36,39 @@
     <noscript><button type="submit" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700">Filter</button></noscript>
     <span id="list-spin" class="htmx-indicator text-xs text-slate-400">Filtering…</span>
   </form>
+
+  <a id="export-csv" href="{% url 'dashboard:inquiry_export' %}{% if querystring %}?{{ querystring }}{% endif %}"
+     class="shrink-0 inline-flex items-center gap-2 bg-white border border-slate-300 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+    </svg>
+    Export CSV
+  </a>
 </div>
 
 <div id="results">
   {% include "dashboard/inquiries/_table.html" %}
 </div>
+
+<script>
+  // Keep the CSV export link in step with the live filter form, so it always
+  // downloads exactly what the table is showing.
+  (function () {
+    var form = document.getElementById("inquiry-filters");
+    var link = document.getElementById("export-csv");
+    if (!form || !link) return;
+    var base = link.href.split("?")[0];
+    function sync() {
+      var params = new URLSearchParams();
+      new FormData(form).forEach(function (value, key) {
+        if (value) params.append(key, value);
+      });
+      var qs = params.toString();
+      link.href = qs ? base + "?" + qs : base;
+    }
+    form.addEventListener("change", sync);
+    form.addEventListener("input", sync);
+    sync();
+  })();
+</script>
 {% endblock %}
