@@ -69,8 +69,13 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function run() {
     revealAll();
     countUpAll();
-  });
+  }
+
+  document.addEventListener("DOMContentLoaded", run);
+  // Re-run after HTMX swaps so filtered/paged content still reveals and counts.
+  // Harmless where HTMX is absent — the event simply never fires.
+  document.addEventListener("htmx:afterSwap", run);
 })();

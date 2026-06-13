@@ -35,6 +35,7 @@
 
   {% if organization_jsonld %}<script type="application/ld+json">{{ organization_jsonld }}</script>{% endif %}
   {% block structured_data %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body class="font-sans text-slate-900 bg-white antialiased">
   <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">
