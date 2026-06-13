@@ -21,12 +21,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+  <!-- Mark JS as available before first paint so progressively-enhanced
+       animations can start from their pre-animation state without a flash. -->
+  <script>document.documentElement.classList.add('js')</script>
   <style>
     [x-cloak]{display:none!important}
     [data-reveal]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
     [data-reveal].is-visible{opacity:1;transform:none}
+    /* Progress bars animate their fill on scroll-in. Without JS the bar shows
+       its true width (var --target); with JS it starts at 0 and fills to target. */
+    .progress-bar{width:var(--target);transition:width 1s cubic-bezier(.22,1,.36,1)}
+    .js .progress-bar{width:0}
+    .js .progress-bar.is-filled{width:var(--target)}
     @media (prefers-reduced-motion: reduce){
       [data-reveal]{opacity:1!important;transform:none!important;transition:none!important}
+      .js .progress-bar{width:var(--target)!important;transition:none!important}
     }
   </style>
   <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>

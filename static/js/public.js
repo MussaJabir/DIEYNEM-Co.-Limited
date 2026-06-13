@@ -69,9 +69,34 @@
     });
   }
 
+  function progressBarsAll() {
+    var els = document.querySelectorAll(".progress-bar");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) {
+        el.classList.add("is-filled");
+      });
+      return;
+    }
+    var io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          io.unobserve(entry.target);
+          entry.target.classList.add("is-filled");
+        });
+      },
+      { threshold: 0.3 }
+    );
+    els.forEach(function (el) {
+      io.observe(el);
+    });
+  }
+
   function run() {
     revealAll();
     countUpAll();
+    progressBarsAll();
   }
 
   document.addEventListener("DOMContentLoaded", run);

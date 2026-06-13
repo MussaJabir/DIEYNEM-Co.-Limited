@@ -216,6 +216,17 @@ class OngoingProjectsPublicTests(TestCase):
         self.assertContains(response, "Cabling complete")
         self.assertContains(response, "Panel energised")
 
+    def test_progress_bar_is_animatable(self):
+        Project.objects.create(
+            title="Animated Works", status=Project.Status.ONGOING, progress_percent=70
+        )
+        response = self.client.get(reverse("ongoing_projects"))
+        # The fill carries the JS hook class + the target width as a CSS var, so
+        # public.js can animate it from 0 on scroll-in (no inline width to fight).
+        self.assertContains(response, "progress-bar")
+        self.assertContains(response, "--target: 70%")
+        self.assertNotContains(response, 'style="width: 70%"')
+
     def test_empty_state(self):
         Project.objects.filter(status=Project.Status.ONGOING).delete()
         response = self.client.get(reverse("ongoing_projects"))
