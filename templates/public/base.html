@@ -17,9 +17,11 @@
   {% block og_image %}{% if site.default_og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.default_og_image.url }}">{% endif %}{% endblock %}
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Self-hosted fonts (no render-blocking third-party request). Preload the
+       two faces used in above-the-fold text so they paint without a swap flash. -->
+  <link rel="preload" href="{% static 'fonts/inter-400-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/manrope-800-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
   <!-- Mark JS as available before first paint so progressively-enhanced
        animations can start from their pre-animation state without a flash. -->
