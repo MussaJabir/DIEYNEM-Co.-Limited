@@ -1,5 +1,5 @@
 {% extends "public/base.html" %}
-{% load media_extras %}
+{% load media_extras cache %}
 
 {% block title %}DIEYNEM Co. Limited — Electrical, ICT, Fire, HVAC &amp; Power Infrastructure{% endblock %}
 
@@ -27,7 +27,7 @@
       <div class="absolute -inset-3 bg-amber-500/20 rounded-2xl -rotate-3" aria-hidden="true"></div>
       <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl aspect-[4/3]">
         {% if hero_project.hero_image %}
-          {% responsive_image hero_project.hero_image alt=hero_project.title img_class="w-full h-full object-cover" sizes="(min-width: 1024px) 600px, 100vw" ratio="4:3" loading="eager" %}
+          {% responsive_image hero_project.hero_image alt=hero_project.title img_class="w-full h-full object-cover" sizes="(min-width: 1024px) 600px, 100vw" ratio="4:3" loading="eager" fetchpriority="high" %}
         {% else %}
           <div class="w-full h-full bg-navy-800 flex items-center justify-center"><span class="font-heading text-white/15 font-extrabold text-4xl">DIEYNEM.</span></div>
         {% endif %}
@@ -54,6 +54,7 @@
 <!-- ============ Credibility numbers ============ -->
 <section class="bg-navy-900 text-white">
   <div class="max-w-6xl mx-auto px-4 py-14 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+    {% cache 3600 home_stats cache_version %}
     {% if statistics %}
       {% for stat in statistics %}
       <div data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' '.3s' %}">
@@ -79,6 +80,7 @@
         <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Certifications</p>
       </div>
     {% endif %}
+    {% endcache %}
   </div>
 </section>
 
@@ -90,6 +92,7 @@
     <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Engineering services under one roof</h2>
   </div>
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
+    {% cache 3600 home_services cache_version %}
     {% for service in featured_services %}
     <a href="{{ service.get_absolute_url }}" data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' %}"
        class="group block bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
@@ -103,6 +106,7 @@
       </span>
     </a>
     {% endfor %}
+    {% endcache %}
   </div>
   <div class="mt-10"><a href="{% url 'services:list' %}" class="inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">View all services
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a></div>
@@ -122,6 +126,7 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a>
     </div>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
+      {% cache 3600 home_featured_projects cache_version %}
       {% for project in featured_projects %}
       <a href="{{ project.get_absolute_url }}" data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' %}"
          class="group block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200">
@@ -142,6 +147,7 @@
         </div>
       </a>
       {% endfor %}
+      {% endcache %}
     </div>
     <div class="mt-10 sm:hidden"><a href="{% url 'projects:list' %}" class="text-navy-700 font-semibold">View all projects &rarr;</a></div>
   </div>

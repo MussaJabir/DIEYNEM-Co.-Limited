@@ -36,6 +36,7 @@ def responsive_image(
     ratio=None,
     widths=DEFAULT_WIDTHS,
     loading="lazy",
+    fetchpriority="",
 ):
     """Build WebP + fallback srcsets for ``image`` (an ImageField file).
 
@@ -70,6 +71,7 @@ def responsive_image(
                 "alt": alt,
                 "img_class": img_class,
                 "loading": loading,
+                "fetchpriority": fetchpriority,
             }
         webp_set.append(f"{webp.url} {width}w")
         fallback_set.append(f"{fallback.url} {width}w")
@@ -84,4 +86,5 @@ def responsive_image(
         "alt": alt,
         "img_class": img_class,
         "loading": loading,
+        "fetchpriority": fetchpriority,
     }

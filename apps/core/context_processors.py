@@ -21,6 +21,13 @@ def site_settings(request):
     return {"site": SiteSetting.load()}
 
 
+def cache_version(request):
+    """Expose the content cache version so ``{% cache %}`` fragments key on it."""
+    from .cache import get_cache_version
+
+    return {"cache_version": get_cache_version()}
+
+
 def structured_data(request):
     """Organization JSON-LD for the public site, exposed as ``organization_jsonld``.
 

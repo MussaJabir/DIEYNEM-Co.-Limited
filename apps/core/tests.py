@@ -158,6 +158,54 @@ class AccessibilityTests(TestCase):
         self.assertContains(response, 'aria-modal="true"')
 
 
+class PerformanceTests(TestCase):
+    """Self-hosted fonts, LCP hint and version-keyed fragment caching."""
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def test_fonts_are_self_hosted(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "css/fonts.css")
+        self.assertNotContains(response, "fonts.googleapis.com")
+        self.assertNotContains(response, "fonts.gstatic.com")
+        # The two above-the-fold faces are preloaded.
+        self.assertContains(response, 'rel="preload"')
+        self.assertContains(response, "manrope-800-latin.woff2")
+
+    def test_hero_image_uses_fetchpriority(self):
+        from apps.projects.models import Project
+
+        Project.objects.create(
+            title="Hero Project", is_featured=True, is_published=True, hero_image="projects/x.jpg"
+        )
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'fetchpriority="high"')
+
+    def test_content_save_bumps_cache_version(self):
+        from apps.core.cache import get_cache_version
+        from apps.services.models import Service
+
+        before = get_cache_version()
+        Service.objects.create(name="Cache Buster")
+        self.assertGreater(get_cache_version(), before)
+
+    def test_unrelated_model_does_not_bump_version(self):
+        from django.contrib.auth.models import User
+
+        from apps.core.cache import get_cache_version
+
+        before = get_cache_version()
+        User.objects.create_user("nobody", password="x")
+        self.assertEqual(get_cache_version(), before)
+
+    def test_home_exposes_cache_version_to_templates(self):
+        response = self.client.get(reverse("home"))
+        self.assertIn("cache_version", response.context)
+
+
 class SeoTests(TestCase):
     def test_sitemap_lists_static_and_content_urls(self):
         Service.objects.create(name="SEO Service", is_published=True)

@@ -60,6 +60,7 @@ TEMPLATES = [
                 "apps.core.context_processors.user_roles",
                 "apps.core.context_processors.site_settings",
                 "apps.core.context_processors.structured_data",
+                "apps.core.context_processors.cache_version",
                 "apps.core.context_processors.dashboard_badges",
             ],
         },
@@ -98,6 +99,16 @@ MEDIA_ROOT = BASE_DIR / "media"
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+
+# Cache backend. Defaults to per-process local memory (fine for a single
+# worker / dev); point ``DJANGO_CACHE_URL`` at Redis or Memcached in prod for a
+# shared cache. Used by the public-page fragment cache (see core.cache_version).
+CACHES = {
+    "default": env.cache_url(
+        "DJANGO_CACHE_URL",
+        default="locmemcache://dieynem-cache",
+    )
 }
 
 # easy-thumbnails: responsive WebP derivatives served via <picture>/srcset.
