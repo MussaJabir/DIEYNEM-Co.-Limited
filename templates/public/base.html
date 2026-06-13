@@ -33,9 +33,21 @@
     .progress-bar{width:var(--target);transition:width 1s cubic-bezier(.22,1,.36,1)}
     .js .progress-bar{width:0}
     .js .progress-bar.is-filled{width:var(--target)}
+    /* Visible keyboard focus on every interactive element (amber ring on a
+       white halo so it reads on both light and navy surfaces). Mouse users
+       are unaffected thanks to :focus-visible. */
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
+    textarea:focus-visible,[tabindex]:focus-visible,summary:focus-visible{
+      outline:3px solid #F59E0B;outline-offset:2px;border-radius:4px;
+    }
+    /* Skip-to-content link: off-screen until focused. */
+    .skip-link{position:absolute;left:8px;top:-48px;z-index:60;background:#0C1B30;color:#fff;
+      padding:10px 16px;border-radius:8px;font-weight:600;transition:top .15s ease}
+    .skip-link:focus{top:8px}
     @media (prefers-reduced-motion: reduce){
       [data-reveal]{opacity:1!important;transform:none!important;transition:none!important}
       .js .progress-bar{width:var(--target)!important;transition:none!important}
+      .skip-link{transition:none}
     }
   </style>
   <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
@@ -47,6 +59,7 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body class="font-sans text-slate-900 bg-white antialiased">
+  <a href="#main" class="skip-link">Skip to content</a>
   <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <a href="{% url 'home' %}" class="font-heading text-xl font-extrabold tracking-tight">DIEYNEM<span class="text-amber-500">.</span></a>
@@ -81,7 +94,7 @@
     </nav>
   </header>
 
-  <main>{% block content %}{% endblock %}</main>
+  <main id="main">{% block content %}{% endblock %}</main>
 
   <footer class="bg-navy-950 text-navy-300 mt-20">
     <div class="max-w-6xl mx-auto px-4 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-sm">

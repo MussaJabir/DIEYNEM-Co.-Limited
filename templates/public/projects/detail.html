@@ -71,17 +71,17 @@
       {% with milestones=project.milestones.all %}
       {% if milestones %}
       <div class="mt-5">
-        <h3 class="text-xs uppercase tracking-wider font-bold text-slate-400 mb-2.5">Milestones</h3>
+        <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2.5">Milestones</h3>
         <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
           {% for m in milestones %}
-          <li class="flex items-center gap-2.5 text-sm {% if m.is_complete %}text-slate-700{% else %}text-slate-400{% endif %}">
+          <li class="flex items-center gap-2.5 text-sm {% if m.is_complete %}text-slate-700{% else %}text-slate-500{% endif %}">
             {% if m.is_complete %}
             <svg class="w-4 h-4 text-ok shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
             {% else %}
             <span class="w-4 h-4 shrink-0 rounded-full border-2 border-slate-300" aria-hidden="true"></span>
             {% endif %}
             <span class="{% if m.is_complete %}font-medium{% endif %}">{{ m.title }}</span>
-            {% if m.date %}<span class="text-xs text-slate-400 ml-auto shrink-0">{{ m.date|date:"M Y" }}</span>{% endif %}
+            {% if m.date %}<span class="text-xs text-slate-500 ml-auto shrink-0">{{ m.date|date:"M Y" }}</span>{% endif %}
           </li>
           {% endfor %}
         </ul>
@@ -92,13 +92,13 @@
       {% with updates=project.updates.all|slice:":4" %}
       {% if updates %}
       <div class="mt-5 border-t border-navy-100 pt-4">
-        <h3 class="text-xs uppercase tracking-wider font-bold text-slate-400 mb-2.5">Latest updates</h3>
+        <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2.5">Latest updates</h3>
         <ul class="space-y-3">
           {% for u in updates %}
           <li class="flex gap-3">
             {% if u.image %}<img src="{{ u.image.url }}" alt="" loading="lazy" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0">{% endif %}
             <div class="min-w-0">
-              <p class="text-xs text-slate-400">{{ u.date|date:"j M Y" }}</p>
+              <p class="text-xs text-slate-500">{{ u.date|date:"j M Y" }}</p>
               <p class="text-sm text-slate-700">{{ u.note }}</p>
             </div>
           </li>
@@ -153,6 +153,7 @@
       </div>
       <!-- Lightbox -->
       <div x-show="open" x-cloak @click="open=false" @keydown.escape.window="open=false" x-transition.opacity
+           role="dialog" aria-modal="true" aria-label="Project photo viewer"
            class="fixed inset-0 z-50 bg-navy-950/90 flex items-center justify-center p-4 cursor-zoom-out">
         <img :src="src" alt="" class="max-h-[90vh] max-w-[92vw] rounded-lg shadow-2xl">
         <button type="button" @click="open=false" class="absolute top-4 right-4 text-white/80 hover:text-white" aria-label="Close">
