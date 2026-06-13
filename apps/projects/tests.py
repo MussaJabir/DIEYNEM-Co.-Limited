@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 
+from apps.services.models import Service
+
 from .models import Project, ProjectMilestone, ProjectUpdate
 
 
@@ -119,6 +121,73 @@ class ProjectPublicTests(TestCase):
         self.assertContains(response, "Scope of work")
         self.assertContains(response, "33kV switchgear")
         self.assertContains(response, "Request a similar project")
+
+
+class ProjectFilterTests(TestCase):
+    def setUp(self):
+        Project.objects.all().delete()
+        self.electrical = Service.objects.create(name="Electrical Installations")
+        self.ict = Service.objects.create(name="ICT & Structured Cabling")
+        self.airport = Project.objects.create(
+            title="Airport Wiring",
+            status=Project.Status.ONGOING,
+            sector=Project.Sector.AVIATION,
+            country="Tanzania",
+            is_published=True,
+        )
+        self.airport.related_services.add(self.electrical)
+        self.school = Project.objects.create(
+            title="School Network",
+            status=Project.Status.COMPLETED,
+            sector=Project.Sector.EDUCATION,
+            country="Uganda",
+            is_published=True,
+        )
+        self.school.related_services.add(self.ict)
+
+    def _titles(self, response):
+        return {p.title for p in response.context["projects"]}
+
+    def test_sector_filter(self):
+        response = self.client.get(reverse("projects:list"), {"sector": "aviation"})
+        self.assertEqual(self._titles(response), {"Airport Wiring"})
+
+    def test_country_filter(self):
+        response = self.client.get(reverse("projects:list"), {"country": "Uganda"})
+        self.assertEqual(self._titles(response), {"School Network"})
+
+    def test_service_filter(self):
+        response = self.client.get(reverse("projects:list"), {"service": self.ict.slug})
+        self.assertEqual(self._titles(response), {"School Network"})
+
+    def test_combined_filters_narrow_results(self):
+        response = self.client.get(
+            reverse("projects:list"), {"status": "ongoing", "sector": "aviation"}
+        )
+        self.assertEqual(self._titles(response), {"Airport Wiring"})
+        # A conflicting pair yields nothing.
+        empty = self.client.get(
+            reverse("projects:list"), {"status": "completed", "sector": "aviation"}
+        )
+        self.assertEqual(self._titles(empty), set())
+
+    def test_filter_options_only_list_used_values(self):
+        response = self.client.get(reverse("projects:list"))
+        sector_values = {v for v, _ in response.context["sectors"]}
+        self.assertEqual(sector_values, {"aviation", "education"})
+        self.assertEqual(response.context["countries"], ["Tanzania", "Uganda"])
+        self.assertFalse(response.context["has_filters"])
+
+    def test_htmx_request_returns_grid_partial_only(self):
+        response = self.client.get(reverse("projects:list"), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "public/projects/_grid.html")
+        self.assertTemplateNotUsed(response, "public/base.html")
+        self.assertNotContains(response, "filter-sector")
+
+    def test_invalid_filter_values_ignored(self):
+        response = self.client.get(reverse("projects:list"), {"status": "bogus", "sector": "nope"})
+        self.assertEqual(self._titles(response), {"Airport Wiring", "School Network"})
 
 
 class OngoingProjectsPublicTests(TestCase):
