@@ -111,6 +111,53 @@ class LeadershipSeedTests(TestCase):
         self.assertTrue(leaders.filter(name="Dickson Nathaniel Chungu").exists())
 
 
+class AccessibilityTests(TestCase):
+    """Structural a11y markers added in the accessibility pass.
+
+    Colour-contrast itself is verified out-of-band with axe-core; these guard
+    the markup affordances so they can't silently regress.
+    """
+
+    def test_skip_link_and_main_landmark(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'href="#main"')
+        self.assertContains(response, "Skip to content")
+        self.assertContains(response, 'id="main"')
+
+    def test_focus_visible_styles_present(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, ":focus-visible")
+        self.assertContains(response, "skip-link")
+
+    def test_certifications_uses_no_misused_definition_list(self):
+        # The cert cards' label/value lines were a <dl> of bare <div>s, which
+        # axe flags as a broken definition list — now plain divs.
+        from apps.credentials.models import Certificate
+
+        Certificate.objects.create(
+            name="CRB Class One", category="registration", issuer="CRB", number="99527"
+        )
+        response = self.client.get(reverse("credentials:list"))
+        self.assertNotContains(response, "<dl")
+        self.assertContains(response, "Issuer:")
+
+    def test_gallery_lightbox_has_dialog_semantics(self):
+        # The lightbox only renders when the gallery has at least one image.
+        from apps.media_center.models import GalleryImage
+
+        buffer = BytesIO()
+        Image.new("RGB", (2, 2), "navy").save(buffer, "PNG")
+        with tempfile.TemporaryDirectory() as media:
+            with override_settings(MEDIA_ROOT=media):
+                GalleryImage.objects.create(
+                    image=SimpleUploadedFile("g.png", buffer.getvalue(), content_type="image/png"),
+                    caption="Site photo",
+                )
+                response = self.client.get(reverse("media_center:gallery"))
+        self.assertContains(response, 'role="dialog"')
+        self.assertContains(response, 'aria-modal="true"')
+
+
 class SeoTests(TestCase):
     def test_sitemap_lists_static_and_content_urls(self):
         Service.objects.create(name="SEO Service", is_published=True)

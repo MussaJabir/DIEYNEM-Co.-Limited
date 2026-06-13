@@ -20,9 +20,9 @@ Project results grid — full page on first load, HTMX-swapped into
     <div class="p-5">
       <div class="mb-2">
         {% if project.status == 'ongoing' %}
-          <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-warn">Ongoing</span>
+          <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Ongoing</span>
         {% else %}
-          <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-ok/10 text-ok">Completed</span>
+          <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-ok/10 text-green-800">Completed</span>
         {% endif %}
       </div>
       <h2 class="font-heading font-bold text-navy-800 leading-snug group-hover:text-navy-600 transition-colors">{{ project.title }}</h2>
