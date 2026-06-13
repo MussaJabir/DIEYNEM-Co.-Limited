@@ -1,6 +1,7 @@
+import csv
 import tempfile
 from datetime import timedelta
-from io import BytesIO
+from io import BytesIO, StringIO
 
 from django.contrib.auth.models import Group, User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -418,6 +419,68 @@ class InquiryDashboardTests(TestCase):
         response = self.client.get(reverse("dashboard:inquiry_list"), {"q": "acme"})
         names = [i.name for i in response.context["inquiries"]]
         self.assertEqual(names, ["Acme Corp"])
+
+    def test_pipeline_counts_and_export_button(self):
+        Inquiry.objects.create(name="Won lead", email="w@x.tz", message="Hi", status="won")
+        Inquiry.objects.create(name="Won two", email="w2@x.tz", message="Hi", status="won")
+        response = self.client.get(reverse("dashboard:inquiry_list"))
+        stages = {s["value"]: s["count"] for s in response.context["pipeline"]}
+        self.assertEqual(stages["won"], 2)
+        self.assertEqual(stages["new"], 1)  # the setUp inquiry
+        self.assertEqual(response.context["pipeline_total"], 3)
+        self.assertContains(response, "Export CSV")
+
+
+class InquiryExportTests(TestCase):
+    def setUp(self):
+        Inquiry.objects.all().delete()
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        Inquiry.objects.create(name="Acme Ltd", email="ops@acme.tz", message="Wiring", status="new")
+        Inquiry.objects.create(name="Beta Co", email="b@beta.tz", message="Quote", status="won")
+        # A message with a comma, quote and newline exercises CSV quoting.
+        Inquiry.objects.create(
+            name="Tricky, Inc",
+            email="c@x.tz",
+            message='Line one, with "quotes"\nLine two',
+            status="won",
+        )
+
+    def _rows(self, response):
+        return list(csv.reader(StringIO(response.content.decode())))
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:inquiry_export"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_export_is_csv_attachment(self):
+        response = self.client.get(reverse("dashboard:inquiry_export"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn("attachment", response["Content-Disposition"])
+        self.assertIn(".csv", response["Content-Disposition"])
+
+    def test_export_has_header_and_all_rows(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export")))
+        self.assertEqual(rows[0][:2], ["Received", "Name"])
+        self.assertEqual(len(rows), 4)  # header + 3 inquiries
+
+    def test_export_preserves_special_characters_in_one_field(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export")))
+        tricky = [r for r in rows if r[1] == "Tricky, Inc"][0]
+        # The comma/quote/newline message survives intact as a single field.
+        self.assertEqual(tricky[9], 'Line one, with "quotes"\nLine two')
+
+    def test_export_respects_status_filter(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export"), {"status": "won"}))
+        names = {r[1] for r in rows[1:]}
+        self.assertEqual(names, {"Beta Co", "Tricky, Inc"})
+
+    def test_export_respects_search(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export"), {"q": "acme"}))
+        self.assertEqual(len(rows), 2)  # header + Acme only
 
 
 class StatisticDashboardTests(TestCase):

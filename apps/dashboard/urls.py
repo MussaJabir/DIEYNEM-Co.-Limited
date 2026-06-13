@@ -32,6 +32,7 @@ urlpatterns = [
     ),
     # Inquiries / leads
     path("inquiries/", views.InquiryListView.as_view(), name="inquiry_list"),
+    path("inquiries/export/", views.InquiryExportView.as_view(), name="inquiry_export"),
     path("inquiries/<int:pk>/", views.InquiryUpdateView.as_view(), name="inquiry_detail"),
     path("inquiries/<int:pk>/delete/", views.InquiryDeleteView.as_view(), name="inquiry_delete"),
     # Statistics
