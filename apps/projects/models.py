@@ -3,6 +3,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from simple_history.models import HistoricalRecords
 
 from apps.core.models import SEOModel, TimeStampedModel
 
@@ -93,6 +94,7 @@ class Project(TimeStampedModel, SEOModel):
     )
 
     objects = ProjectQuerySet.as_manager()
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["order", "-year_end", "title"]

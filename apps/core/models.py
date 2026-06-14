@@ -1,4 +1,5 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class TimeStampedModel(models.Model):
@@ -57,6 +58,8 @@ class SiteSetting(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
 
+    history = HistoricalRecords()
+
     class Meta:
         verbose_name = "Site settings"
         verbose_name_plural = "Site settings"
@@ -106,6 +109,8 @@ class Statistic(TimeStampedModel):
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
+    history = HistoricalRecords()
+
     class Meta:
         ordering = ["order", "id"]
 
@@ -127,6 +132,8 @@ class Client(TimeStampedModel):
     website = models.URLField(blank=True)
     order = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False, help_text="Highlight in the homepage band.")
+
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["order", "name"]
@@ -152,6 +159,8 @@ class TeamMember(TimeStampedModel):
     photo = models.ImageField(upload_to="team/", blank=True, null=True)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["order", "name"]

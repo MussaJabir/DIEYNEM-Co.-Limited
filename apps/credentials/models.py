@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 from apps.core.models import TimeStampedModel
 
@@ -80,6 +81,7 @@ class Certificate(TimeStampedModel):
     order = models.PositiveIntegerField(default=0)
 
     objects = CertificateQuerySet.as_manager()
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["category", "order", "name"]

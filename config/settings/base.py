@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     # Third-party
     "easy_thumbnails",
+    "simple_history",
     # Local apps
     "apps.core",
     "apps.services",
@@ -43,6 +44,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Records the logged-in user on each history record (must follow auth).
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

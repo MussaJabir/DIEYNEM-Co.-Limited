@@ -1,4 +1,5 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from apps.core.models import TimeStampedModel
 
@@ -28,6 +29,8 @@ class Inquiry(TimeStampedModel):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     source = models.CharField(max_length=50, default="quote-form")
     internal_notes = models.TextField(blank=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["-created_at"]
