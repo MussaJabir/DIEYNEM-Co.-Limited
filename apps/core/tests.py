@@ -363,6 +363,20 @@ class DashboardShellTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertIsNone(response.context.get("new_inquiries_count"))
 
+    def test_dashboard_has_dark_mode_toggle_and_no_flash_script(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        # Toggle control, the pre-paint theme script and the scoped override.
+        self.assertContains(response, 'aria-label="Toggle dark mode"')
+        self.assertContains(response, "dz-theme")
+        self.assertContains(response, "html.dark")
+
+    def test_public_site_never_gets_dark_mode(self):
+        # The override is dashboard-scoped; the public base must not ship it.
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, "dz-theme")
+        self.assertNotContains(response, "Toggle dark mode")
+
     def test_new_inquiry_count_available_to_dashboard_staff(self):
         Inquiry.objects.create(name="A", email="a@x.tz", message="hi")
         Inquiry.objects.create(name="B", email="b@x.tz", message="hi")
