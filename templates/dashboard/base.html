@@ -5,12 +5,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Dashboard &middot; DIEYNEM{% endblock %}</title>
+  <!-- Apply the saved theme before first paint so dark mode never flashes. -->
+  <script>try{if(localStorage.getItem('dz-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
   <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
   <style>
     [x-cloak]{display:none!important}
     .htmx-indicator{opacity:0;transition:opacity .2s ease}
     .htmx-request .htmx-indicator,.htmx-request.htmx-indicator{opacity:1}
+
+    /* ============ Dashboard dark mode (navy surfaces) ============
+       Scoped to html.dark, which is only ever set on the dashboard — the
+       public site shares no template and never gets this class. Overrides the
+       handful of surface utilities the dashboard uses, so no per-template
+       dark: variants are needed. */
+    html.dark{color-scheme:dark}
+    html.dark body{background-color:#08111E;color:#DCE8F5}                    /* navy-950 / navy-100 */
+    /* Surfaces */
+    html.dark .bg-white,html.dark .bg-white\/90{background-color:#0C1B30 !important} /* cards / sticky bar -> navy-900 */
+    html.dark .bg-slate-50{background-color:#08111E !important}              /* page/table head -> navy-950 */
+    html.dark .bg-slate-100{background-color:#12294A !important}            /* navy-800 */
+    html.dark .hover\:bg-slate-50:hover{background-color:#12294A !important} /* row hover -> navy-800 */
+    html.dark .bg-navy-50{background-color:#12294A !important}              /* icon chips -> navy-800 */
+    /* The full-width red alert tint would glare on dark — dim to translucent.
+       (bg-amber-100 is left as-is: it backs the small status chips, which read
+       fine on dark.) */
+    html.dark .bg-red-50{background-color:rgba(220,38,38,.12) !important}
+    /* Native file-picker button (::file-selector-button uses file:bg-navy-50). */
+    html.dark input[type=file]::file-selector-button{background-color:#12294A !important;color:#DCE8F5 !important}
+    /* Borders */
+    html.dark .border-slate-200,html.dark .border-slate-100,html.dark .border-slate-300{border-color:#173A66 !important} /* navy-700 */
+    html.dark .divide-slate-100 > * + *{border-color:#12294A !important}
+    /* Text */
+    html.dark .text-slate-900,html.dark .text-navy-800,html.dark .text-navy-900{color:#EEF4FB !important} /* navy-50 */
+    html.dark .text-slate-800,html.dark .text-navy-700{color:#DCE8F5 !important}   /* navy-100 */
+    html.dark .text-slate-700,html.dark .text-navy-600{color:#8FB3DC !important}   /* navy-300 */
+    html.dark .text-slate-600,html.dark .text-slate-500{color:#8FB3DC !important}  /* navy-300 */
+    /* Form controls */
+    html.dark input,html.dark select,html.dark textarea{
+      background-color:#12294A !important;border-color:#173A66 !important;color:#EEF4FB !important;
+    }
+    html.dark input::placeholder,html.dark textarea::placeholder{color:#5089C6 !important}
+    /* Inactive / draft chip keeps contrast on dark */
+    html.dark .bg-slate-100.text-slate-500{background-color:#173A66 !important;color:#8FB3DC !important}
   </style>
   <script defer src="{% static 'js/htmx.min.js' %}"></script>
   <script defer src="{% static 'js/dashboard.js' %}"></script>
@@ -186,8 +223,20 @@
           </svg>
         </button>
         <h1 class="font-heading text-lg font-bold text-navy-800">{% block heading %}Dashboard{% endblock %}</h1>
+
+        <!-- Theme toggle: persists to localStorage; applied pre-paint in <head>. -->
+        <button type="button" x-data="themeToggle" @click="toggle()" :aria-pressed="dark"
+                class="ml-auto p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg x-show="!dark" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+          </svg>
+          <svg x-show="dark" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+          </svg>
+        </button>
         <a href="{% url 'home' %}" target="_blank" rel="noopener"
-           class="ml-auto hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+           class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
           <span>View site</span>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>

@@ -1,6 +1,21 @@
 // Dashboard Alpine components. Loaded (deferred) before Alpine so the
 // `alpine:init` listener is registered before Alpine boots.
 document.addEventListener("alpine:init", () => {
+  // Dark-mode toggle. The saved theme is applied pre-paint in the <head>;
+  // this just reflects/flips it and persists the choice.
+  Alpine.data("themeToggle", () => ({
+    dark: document.documentElement.classList.contains("dark"),
+    toggle() {
+      this.dark = !this.dark;
+      document.documentElement.classList.toggle("dark", this.dark);
+      try {
+        localStorage.setItem("dz-theme", this.dark ? "dark" : "light");
+      } catch (e) {
+        /* storage unavailable — toggle still works for this session */
+      }
+    },
+  }));
+
   // Live image preview: show the existing image, then swap to a local
   // preview of a newly-chosen file (no upload needed).
   Alpine.data("imagePreview", (existing = "") => ({
