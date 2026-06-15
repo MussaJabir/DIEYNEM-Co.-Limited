@@ -31,6 +31,8 @@ class HomePageTests(TestCase):
     def test_home_shows_brand(self):
         response = self.client.get(reverse("home"))
         self.assertContains(response, "DIEYNEM")
+        # Header shows the full company name, not just the short wordmark.
+        self.assertContains(response, "Co. Limited")
 
     def test_footer_uses_site_settings(self):
         response = self.client.get(reverse("home"))
