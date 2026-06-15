@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}DIEYNEM Co. Limited{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Class One electrical, ICT, fire-detection, HVAC, solar and rural-electrification contractor in Tanzania. Since 2011.{% endblock %}">
+  <!-- PWA: installable app -->
+  <link rel="manifest" href="{% url 'manifest' %}">
+  <meta name="theme-color" content="#0C1B30">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+  <link rel="icon" href="{% static 'icons/icon-192.png' %}" type="image/png">
   <link rel="canonical" href="{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
 
   <!-- Open Graph / Twitter -->
@@ -55,6 +60,7 @@
   <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
   <script defer src="{% static 'js/alpine.min.js' %}"></script>
   <script defer src="{% static 'js/public.js' %}"></script>
+  <script>if("serviceWorker"in navigator){addEventListener("load",function(){navigator.serviceWorker.register("{% url 'service_worker' %}").catch(function(){})})}</script>
 
   {% if organization_jsonld %}<script type="application/ld+json">{{ organization_jsonld }}</script>{% endif %}
   {% block structured_data %}{% endblock %}

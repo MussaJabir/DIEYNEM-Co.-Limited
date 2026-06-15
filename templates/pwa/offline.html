@@ -1,0 +1,20 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline &mdash; DIEYNEM Co. Limited</title>
+  <meta name="theme-color" content="#0C1B30">
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+</head>
+<body class="font-sans bg-navy-950 text-navy-100 antialiased min-h-screen flex items-center justify-center px-6">
+  <div class="text-center max-w-md">
+    <p class="font-heading text-3xl font-extrabold text-white">DIEYNEM<span class="text-amber-500">.</span></p>
+    <h1 class="font-heading text-2xl font-bold text-white mt-6">You&rsquo;re offline</h1>
+    <p class="text-navy-300 mt-3">This page isn&rsquo;t available without a connection. Please check your network and try again — pages you&rsquo;ve already visited will still load.</p>
+    <button type="button" onclick="location.reload()"
+            class="inline-block mt-6 bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors">Retry</button>
+  </div>
+</body>
+</html>

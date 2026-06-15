@@ -1,0 +1,17 @@
+{% load static %}{
+  "name": "DIEYNEM Co. Limited",
+  "short_name": "DIEYNEM",
+  "description": "Class One electrical, ICT, fire, HVAC, solar and power-infrastructure contractor in Tanzania.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0C1B30",
+  "theme_color": "#0C1B30",
+  "icons": [
+    { "src": "{% static 'icons/icon-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'icons/icon-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'icons/icon-maskable-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
