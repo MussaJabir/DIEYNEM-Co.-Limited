@@ -39,6 +39,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # Activates the request's language from cookie/session/Accept-Language.
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -58,6 +60,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "django.template.context_processors.i18n",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.core.context_processors.user_roles",
@@ -91,6 +94,19 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Dar_es_Salaam"
 USE_I18N = True
 USE_TZ = True
+
+# Available languages for the public site. English is the default; Swahili
+# translations live in locale/sw and fall back to English until filled in.
+LANGUAGES = [
+    ("en", "English"),
+    ("sw", "Kiswahili"),
+]
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
+# The public language switcher stays hidden until the Swahili catalogue is
+# actually translated (avoids shipping a toggle that just shows English).
+# Flip to True (or set DJANGO_SHOW_LANGUAGE_TOGGLE=1) once locale/sw is filled.
+SHOW_LANGUAGE_TOGGLE = env.bool("DJANGO_SHOW_LANGUAGE_TOGGLE", default=False)
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]

@@ -158,6 +158,42 @@ class AccessibilityTests(TestCase):
         self.assertContains(response, 'aria-modal="true"')
 
 
+class I18nTests(TestCase):
+    """Swahili i18n machinery (translations themselves are filled in later)."""
+
+    def test_default_language_is_english(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Request a Quotation")
+
+    def test_swahili_is_an_available_language(self):
+        from django.conf import settings
+
+        codes = [code for code, _ in settings.LANGUAGES]
+        self.assertIn("sw", codes)
+        self.assertIn("en", codes)
+
+    def test_set_language_switches_active_language(self):
+        from django.conf import settings
+        from django.utils import translation
+
+        response = self.client.post(reverse("set_language"), {"language": "sw", "next": "/"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.cookies[settings.LANGUAGE_COOKIE_NAME].value, "sw")
+        # The catalogue is empty for now, so content still falls back to English.
+        with translation.override("sw"):
+            self.assertEqual(translation.gettext("About"), "About")
+
+    def test_language_toggle_hidden_by_default(self):
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, "lang-select")
+
+    @override_settings(SHOW_LANGUAGE_TOGGLE=True)
+    def test_language_toggle_shown_when_enabled(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "lang-select")
+        self.assertContains(response, reverse("set_language"))
+
+
 class PwaTests(TestCase):
     """Installable PWA: manifest, service worker, offline page, link tags."""
 

@@ -1,15 +1,16 @@
 {% comment %}Closing conversion band. Optional params: cta_title, cta_text.{% endcomment %}
+{% load i18n %}
 <section class="relative overflow-hidden bg-navy-900 text-white">
   <div class="pointer-events-none absolute inset-y-0 right-0 w-1/2 hidden md:block" aria-hidden="true">
     <svg class="absolute right-0 top-0 h-full w-auto opacity-[0.06]" viewBox="0 0 400 600" preserveAspectRatio="none" fill="none"><path d="M140 0 L400 0 L400 600 L0 600 Z" fill="#F59E0B"/></svg>
   </div>
   <div class="relative max-w-6xl mx-auto px-4 py-16 lg:flex items-center justify-between gap-10">
     <div data-reveal>
-      <h2 class="font-heading text-3xl font-extrabold">{{ cta_title|default:"Have a project or tender? Let's talk." }}</h2>
-      <p class="mt-3 text-navy-100 max-w-xl">{{ cta_text|default:"Send us your scope and we'll prepare a detailed quotation — or invite DIEYNEM to tender on your next electrical, ICT, fire, HVAC or power-infrastructure works." }}</p>
+      <h2 class="font-heading text-3xl font-extrabold">{% if cta_title %}{{ cta_title }}{% else %}{% trans "Have a project or tender? Let's talk." %}{% endif %}</h2>
+      <p class="mt-3 text-navy-100 max-w-xl">{% if cta_text %}{{ cta_text }}{% else %}{% trans "Send us your scope and we'll prepare a detailed quotation — or invite DIEYNEM to tender on your next electrical, ICT, fire, HVAC or power-infrastructure works." %}{% endif %}</p>
     </div>
     <a data-reveal data-reveal-delay=".1s" href="{% url 'leads:quote' %}" class="group mt-6 lg:mt-0 shrink-0 inline-flex items-center gap-2 bg-amber-500 text-navy-950 font-semibold px-7 py-3.5 rounded-lg hover:bg-amber-600 transition-colors">
-      Request a Quotation
+      {% trans "Request a Quotation" %}
       <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
     </a>
   </div>

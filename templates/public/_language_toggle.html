@@ -1,0 +1,20 @@
+{% load i18n %}
+{% comment %}
+Language switcher — hidden until SHOW_LANGUAGE_TOGGLE is on (i.e. once the
+Swahili catalogue is actually translated). Posts to Django's set_language,
+which stores the choice in a cookie and redirects back to the current page.
+{% endcomment %}
+{% if show_language_toggle %}
+{% get_current_language as current_lang %}
+<form action="{% url 'set_language' %}" method="post" class="hidden sm:flex items-center">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <label class="sr-only" for="lang-select">{% trans "Language" %}</label>
+  <select id="lang-select" name="language" onchange="this.form.submit()"
+          class="bg-navy-800 text-navy-100 text-sm rounded-lg border border-navy-700 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer">
+    {% for code, label in LANGUAGES %}
+    <option value="{{ code }}" {% if code == current_lang %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+{% endif %}
