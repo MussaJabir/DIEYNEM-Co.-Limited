@@ -815,7 +815,10 @@ class OverviewComplianceTests(TestCase):
         self.assertContains(response, "Expired 3 days ago")
         self.assertContains(response, "Expires in 12 days")
         self.assertContains(response, "Compliance attention needed")
-        self.assertNotContains(response, "Fine")
+        # The current cert is excluded from the compliance panel. (Checked via
+        # context, not the page text: the recent-activity feed may legitimately
+        # mention "Fine" as a recent change.)
+        self.assertNotIn("Fine", [c.name for c in response.context["certs_attention"]])
 
     def test_editor_does_not_see_compliance_panel(self):
         self._make("Lapsed", self.today - timedelta(days=3))
@@ -829,3 +832,73 @@ class OverviewComplianceTests(TestCase):
         self.client.login(username="boss", password="pass12345")
         response = self.client.get(reverse("dashboard:overview"))
         self.assertNotContains(response, "Compliance attention needed")
+
+
+class AuditTrailTests(TestCase):
+    """django-simple-history records who changed what; surfaced on Overview."""
+
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def test_dashboard_edit_records_history_with_user(self):
+        # Create then update a service through the dashboard; both are recorded,
+        # and the middleware stamps the acting user on each entry.
+        self.client.post(
+            reverse("dashboard:service_create"),
+            {
+                "name": "Audited Service",
+                "short_description": "",
+                "full_description": "",
+                "capabilities": "",
+                "icon": "",
+                "order": 10,
+                "is_published": "on",
+                "meta_title": "",
+                "meta_description": "",
+            },
+        )
+        service = Service.objects.get(name="Audited Service")
+        self.client.post(
+            reverse("dashboard:service_update", args=[service.pk]),
+            {
+                "name": "Audited Service v2",
+                "short_description": "",
+                "full_description": "",
+                "capabilities": "",
+                "icon": "",
+                "order": 10,
+                "is_published": "on",
+                "meta_title": "",
+                "meta_description": "",
+            },
+        )
+        history = service.history.all()
+        self.assertEqual(history.count(), 2)
+        self.assertEqual(history.first().get_history_type_display(), "Changed")
+        self.assertEqual(history.last().get_history_type_display(), "Created")
+        self.assertEqual(history.first().history_user, self.editor)
+
+    def test_overview_shows_recent_activity_with_actor(self):
+        self.client.post(
+            reverse("dashboard:client_create"),
+            {"name": "Audited Client", "type": "client", "website": "", "order": 0},
+        )
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertContains(response, "Recent activity")
+        self.assertContains(response, "Audited Client")
+        self.assertContains(response, "editor")
+        self.assertContains(response, "Created")
+
+    def test_recent_activity_merges_models_newest_first(self):
+        from apps.dashboard.activity import recent_activity
+
+        Service.objects.create(name="Older Service")
+        Project.objects.create(title="Newer Project")
+        feed = recent_activity()
+        self.assertGreaterEqual(len(feed), 2)
+        # Project was created last, so it leads the merged feed.
+        self.assertEqual(feed[0]["model"], "Project")
+        self.assertEqual(feed[0]["name"], "Newer Project")
+        self.assertEqual(feed[0]["action"], "Created")

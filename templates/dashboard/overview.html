@@ -65,11 +65,31 @@
   </a>
 </div>
 
-<div class="mt-6 bg-white border border-slate-200 rounded-xl p-6">
-  <h2 class="font-heading font-bold text-navy-800">DIEYNEM admin dashboard</h2>
-  <p class="text-slate-600 text-sm mt-2">
-    Manage projects, services and certificates from the sidebar. The public website
-    updates live as you publish changes.
-  </p>
-</div>
+<section class="mt-6 bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+    <h2 class="font-heading font-bold text-navy-800">Recent activity</h2>
+    <p class="text-xs text-slate-500 mt-0.5">Who changed what, most recent first.</p>
+  </div>
+  {% if recent_activity %}
+  <ul class="divide-y divide-slate-100">
+    {% for item in recent_activity %}
+    <li class="flex items-center gap-3 px-5 sm:px-6 py-3 text-sm">
+      {% if item.action == 'Created' %}<span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-green-800">Created</span>
+      {% elif item.action == 'Deleted' %}<span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-danger/10 text-danger">Deleted</span>
+      {% else %}<span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full bg-info/10 text-info">Changed</span>{% endif %}
+      <div class="min-w-0 flex-1">
+        <span class="text-slate-500">{{ item.model }}:</span>
+        <span class="font-medium text-slate-900">{{ item.name }}</span>
+      </div>
+      <div class="text-right shrink-0 text-xs text-slate-500">
+        <span>{{ item.user.username|default:"System" }}</span>
+        <span class="text-slate-400" title="{{ item.when }}">&middot; {{ item.when|timesince }} ago</span>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="px-5 sm:px-6 py-8 text-center text-sm text-slate-500">No changes recorded yet. Edits you make will appear here.</p>
+  {% endif %}
+</section>
 {% endblock %}

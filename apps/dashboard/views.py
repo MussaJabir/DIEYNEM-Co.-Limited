@@ -22,6 +22,7 @@ from apps.media_center.models import Download, GalleryImage
 from apps.projects.models import Project
 from apps.services.models import Service
 
+from .activity import recent_activity
 from .forms import (
     CertificateForm,
     ClientForm,
@@ -99,6 +100,7 @@ class OverviewView(DashboardAccessMixin, TemplateView):
         context["certs_expired_count"] = sum(1 for c in attention if c.is_expired)
         context["certs_expiring_count"] = sum(1 for c in attention if not c.is_expired)
         context["new_inquiries_count"] = Inquiry.objects.filter(status=Inquiry.Status.NEW).count()
+        context["recent_activity"] = recent_activity()
         return context
 
 

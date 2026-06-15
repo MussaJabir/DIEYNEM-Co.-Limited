@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from apps.core.models import TimeStampedModel
 
@@ -34,6 +35,7 @@ class GalleryImage(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     objects = GalleryImageQuerySet.as_manager()
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["order", "-id"]
@@ -65,6 +67,7 @@ class Download(TimeStampedModel):
     is_public = models.BooleanField(default=True)
 
     objects = DownloadQuerySet.as_manager()
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["order", "title"]
