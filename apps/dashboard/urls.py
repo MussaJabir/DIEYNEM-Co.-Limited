@@ -59,6 +59,11 @@ urlpatterns = [
     path("gallery/new/", views.GalleryImageCreateView.as_view(), name="gallery_create"),
     path("gallery/<int:pk>/edit/", views.GalleryImageUpdateView.as_view(), name="gallery_update"),
     path("gallery/<int:pk>/delete/", views.GalleryImageDeleteView.as_view(), name="gallery_delete"),
+    # Account security / two-factor authentication
+    path("security/", views.SecurityView.as_view(), name="security"),
+    path("security/2fa/enable/", views.TwoFactorEnableView.as_view(), name="two_factor_enable"),
+    path("security/2fa/disable/", views.TwoFactorDisableView.as_view(), name="two_factor_disable"),
+    path("security/2fa/verify/", views.OtpChallengeView.as_view(), name="otp_challenge"),
     # Downloads
     path("downloads/", views.DownloadListView.as_view(), name="download_list"),
     path("downloads/new/", views.DownloadCreateView.as_view(), name="download_create"),

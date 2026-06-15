@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Security &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Account security{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl">
+  <section class="bg-white border border-slate-200 rounded-xl p-6">
+    <div class="flex items-start gap-4">
+      <div class="w-11 h-11 rounded-lg {% if two_factor_enabled %}bg-ok/10 text-ok{% else %}bg-slate-100 text-slate-500{% endif %} flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/>
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2">
+          <h2 class="font-heading font-bold text-navy-800">Two-factor authentication</h2>
+          {% if two_factor_enabled %}
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-ok/10 text-green-800">On</span>
+          {% else %}
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Off</span>
+          {% endif %}
+        </div>
+        <p class="text-sm text-slate-600 mt-1">Add a second step at sign-in using an authenticator app (Google Authenticator, Authy, Microsoft Authenticator). Optional, but recommended for accounts that manage live content.</p>
+
+        {% if two_factor_enabled %}
+        <form method="post" action="{% url 'dashboard:two_factor_disable' %}" class="mt-4"
+              onsubmit="return confirm('Turn off two-factor authentication for your account?');">
+          {% csrf_token %}
+          <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold text-danger border border-danger/30 px-4 py-2 rounded-lg hover:bg-danger/5 transition-colors">Turn off</button>
+        </form>
+        {% else %}
+        <a href="{% url 'dashboard:two_factor_enable' %}" class="inline-flex items-center gap-2 mt-4 bg-navy-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-700 transition-colors">Turn on two-factor</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -6,3 +6,5 @@ whitenoise==6.12.0
 Pillow==12.2.0
 easy-thumbnails==2.10.1
 django-simple-history==3.11.0
+django-otp==1.7.0
+qrcode==8.2

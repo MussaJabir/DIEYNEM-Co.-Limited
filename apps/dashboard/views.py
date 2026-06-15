@@ -1,11 +1,14 @@
 import csv
 from datetime import timedelta
 
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Q
 from django.http import HttpResponse
-from django.urls import reverse_lazy
+from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -14,6 +17,10 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from django_otp import login as otp_login
+from django_otp import match_token, user_has_device
+from django_otp.plugins.otp_static.models import StaticDevice
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from apps.core.models import Client, SiteSetting, Statistic, TeamMember
 from apps.credentials.models import EXPIRY_WARNING_DAYS, Certificate
@@ -39,6 +46,7 @@ from .forms import (
     TeamMemberForm,
 )
 from .mixins import AdministratorRequiredMixin, DashboardAccessMixin
+from .two_factor import issue_backup_tokens, qr_svg
 
 
 class FilterableListMixin:
@@ -684,3 +692,94 @@ class DownloadDeleteView(DashboardAccessMixin, DeleteView):
     model = Download
     template_name = "dashboard/downloads/confirm_delete.html"
     success_url = reverse_lazy("dashboard:download_list")
+
+
+# --- Account security: opt-in two-factor authentication (Editor + Administrator) ---
+
+
+def _safe_next(request, default):
+    """Validate a ``next`` redirect target against the current host."""
+    target = request.POST.get("next") or request.GET.get("next") or ""
+    if target and url_has_allowed_host_and_scheme(
+        target, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return target
+    return default
+
+
+class SecurityView(DashboardAccessMixin, TemplateView):
+    """Account security overview — shows 2FA status and entry points."""
+
+    template_name = "dashboard/security.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["two_factor_enabled"] = user_has_device(self.request.user)
+        return context
+
+
+class TwoFactorEnableView(DashboardAccessMixin, View):
+    """Enrol an authenticator app: show the QR, confirm with a code, then issue
+    one-time backup tokens. Opt-in — a user only lands here by choosing to."""
+
+    template_name = "dashboard/two_factor_enable.html"
+
+    def _unconfirmed_device(self, user):
+        # Reuse an in-progress device so the QR is stable across refreshes.
+        device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+        return device or TOTPDevice.objects.create(user=user, name="default", confirmed=False)
+
+    def _enrol_page(self, request, device):
+        return render(
+            request,
+            self.template_name,
+            {"qr_svg": qr_svg(device.config_url), "secret": device.bin_key.hex()},
+        )
+
+    def get(self, request, *args, **kwargs):
+        if user_has_device(request.user):
+            return redirect("dashboard:security")
+        return self._enrol_page(request, self._unconfirmed_device(request.user))
+
+    def post(self, request, *args, **kwargs):
+        if user_has_device(request.user):
+            return redirect("dashboard:security")
+        device = self._unconfirmed_device(request.user)
+        if device.verify_token(request.POST.get("otp_token", "").strip()):
+            device.confirmed = True
+            device.save()
+            tokens = issue_backup_tokens(request.user)
+            messages.success(request, "Two-factor authentication is now on.")
+            return render(request, "dashboard/two_factor_backup.html", {"backup_tokens": tokens})
+        messages.error(request, "That code didn't match — try again.")
+        return self._enrol_page(request, device)
+
+
+class TwoFactorDisableView(DashboardAccessMixin, View):
+    """Turn 2FA off — removes the authenticator and backup devices."""
+
+    def post(self, request, *args, **kwargs):
+        TOTPDevice.objects.filter(user=request.user).delete()
+        StaticDevice.objects.filter(user=request.user).delete()
+        messages.success(request, "Two-factor authentication is now off.")
+        return redirect("dashboard:security")
+
+
+class OtpChallengeView(DashboardAccessMixin, View):
+    """Post-login code prompt for users who have 2FA enabled."""
+
+    template_name = "dashboard/otp_challenge.html"
+
+    def get(self, request, *args, **kwargs):
+        if not user_has_device(request.user) or request.user.is_verified():
+            return redirect(_safe_next(request, reverse("dashboard:overview")))
+        return render(request, self.template_name, {"next": _safe_next(request, "")})
+
+    def post(self, request, *args, **kwargs):
+        token = request.POST.get("otp_token", "").strip()
+        device = match_token(request.user, token)
+        if device:
+            otp_login(request, device)
+            return redirect(_safe_next(request, reverse("dashboard:overview")))
+        messages.error(request, "That code didn't match — try again.")
+        return render(request, self.template_name, {"next": _safe_next(request, "")})
