@@ -8,7 +8,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from apps.core.sitemaps import sitemaps
-from apps.core.views import robots_txt
+from apps.core.views import ManifestView, OfflineView, ServiceWorkerView, robots_txt
 from apps.projects.views import OngoingProjectListView
 
 urlpatterns = [
@@ -24,6 +24,10 @@ urlpatterns = [
     # SEO
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),
+    # PWA — root-scoped so the service worker controls the whole site.
+    path("manifest.webmanifest", ManifestView.as_view(), name="manifest"),
+    path("sw.js", ServiceWorkerView.as_view(), name="service_worker"),
+    path("offline/", OfflineView.as_view(), name="offline"),
     path("dashboard/", include("apps.dashboard.urls")),
     path("services/", include("apps.services.urls")),
     # Top-level destination (a headline nav page), so it sits outside the

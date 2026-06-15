@@ -50,6 +50,26 @@ class AboutView(TemplateView):
         return context
 
 
+class ManifestView(TemplateView):
+    """Web app manifest — makes the site installable as a PWA."""
+
+    template_name = "pwa/manifest.webmanifest"
+    content_type = "application/manifest+json"
+
+
+class ServiceWorkerView(TemplateView):
+    """Service worker, served from the site root so its scope is the whole site."""
+
+    template_name = "pwa/sw.js"
+    content_type = "application/javascript"
+
+
+class OfflineView(TemplateView):
+    """Fallback page the service worker serves when a navigation fails offline."""
+
+    template_name = "pwa/offline.html"
+
+
 def robots_txt(request):
     """Serve /robots.txt — crawlers welcome on the public site, not the admin."""
     sitemap_url = request.build_absolute_uri(reverse("sitemap"))

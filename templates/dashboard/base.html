@@ -5,6 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Dashboard &middot; DIEYNEM{% endblock %}</title>
+  <!-- PWA: installable app (the worker bypasses dashboard content for caching). -->
+  <link rel="manifest" href="{% url 'manifest' %}">
+  <meta name="theme-color" content="#0C1B30">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+  <link rel="icon" href="{% static 'icons/icon-192.png' %}" type="image/png">
   <!-- Apply the saved theme before first paint so dark mode never flashes. -->
   <script>try{if(localStorage.getItem('dz-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
   <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
@@ -52,6 +57,7 @@
   <script defer src="{% static 'js/htmx.min.js' %}"></script>
   <script defer src="{% static 'js/dashboard.js' %}"></script>
   <script defer src="{% static 'js/alpine.min.js' %}"></script>
+  <script>if("serviceWorker"in navigator){addEventListener("load",function(){navigator.serviceWorker.register("{% url 'service_worker' %}").catch(function(){})})}</script>
 </head>
 <body class="font-sans bg-slate-50 text-slate-900 antialiased" x-data="{ sidebarOpen: false }">
 

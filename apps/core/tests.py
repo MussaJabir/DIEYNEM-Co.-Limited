@@ -158,6 +158,43 @@ class AccessibilityTests(TestCase):
         self.assertContains(response, 'aria-modal="true"')
 
 
+class PwaTests(TestCase):
+    """Installable PWA: manifest, service worker, offline page, link tags."""
+
+    def test_manifest_served_as_json_with_icons(self):
+        response = self.client.get("/manifest.webmanifest")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/manifest+json")
+        data = json.loads(response.content)
+        self.assertEqual(data["display"], "standalone")
+        self.assertEqual(data["start_url"], "/")
+        self.assertEqual(len(data["icons"]), 3)
+        self.assertTrue(any(i["purpose"] == "maskable" for i in data["icons"]))
+
+    def test_service_worker_served_at_root_scope(self):
+        response = self.client.get("/sw.js")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("javascript", response["Content-Type"])
+        body = response.content.decode()
+        # Has the lifecycle + fetch handler (needed for installability) and
+        # deliberately bypasses the dashboard/admin.
+        self.assertIn('addEventListener("install"', body)
+        self.assertIn('addEventListener("fetch"', body)
+        self.assertIn("/dashboard/", body)
+        self.assertIn("/offline/", body)
+
+    def test_offline_page(self):
+        response = self.client.get("/offline/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "offline")
+
+    def test_pages_link_manifest_and_register_sw(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'rel="manifest"')
+        self.assertContains(response, 'name="theme-color"')
+        self.assertContains(response, "serviceWorker")
+
+
 class PerformanceTests(TestCase):
     """Self-hosted fonts, LCP hint and version-keyed fragment caching."""
 
