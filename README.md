@@ -1,6 +1,9 @@
 # DIEYNEM Co. Limited — Website & Admin Dashboard
 
 [![CI](https://github.com/MussaJabir/DIEYNEM-Co.-Limited/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/MussaJabir/DIEYNEM-Co.-Limited/actions/workflows/ci.yml)
+[![Deploy](https://github.com/MussaJabir/DIEYNEM-Co.-Limited/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/MussaJabir/DIEYNEM-Co.-Limited/actions/workflows/deploy.yml)
+
+**Live:** [dieynem.bjptechnologies.co.tz](https://dieynem.bjptechnologies.co.tz)
 
 A portfolio-driven **credibility platform** for DIEYNEM Co. Limited — a Tanzanian Class One electrical, ICT, fire-detection, HVAC, solar and rural-electrification contractor — backed by a **custom-branded admin dashboard** for in-house content management.
 
@@ -14,7 +17,7 @@ A portfolio-driven **credibility platform** for DIEYNEM Co. Limited — a Tanzan
 | Database | PostgreSQL (prod) · SQLite (dev) |
 | Frontend | Django templates · Tailwind CSS · Alpine.js · HTMX |
 | Admin | Custom dashboard app (not Django admin) |
-| Hosting | Ubuntu VPS (Gunicorn + Nginx) — *planned* |
+| Hosting | Ubuntu · Apache (reverse-proxy) → Gunicorn → PostgreSQL · TLS via certbot |
 
 ## Documentation
 
@@ -25,7 +28,7 @@ A portfolio-driven **credibility platform** for DIEYNEM Co. Limited — a Tanzan
 | `implementation_plan.md` | Lean phase-by-phase execution checklist |
 | `CLAUDE.md` | Conventions for Claude Code / contributors |
 
-## Project structure (planned — see build scope §4)
+## Project structure (see build scope §4)
 
 ```
 config/        # settings (base/dev/prod), urls, wsgi
@@ -43,12 +46,11 @@ static/        # tailwind input/output, js, icons
 
 ## Local development
 
-> Project scaffold lands in the `phase0/setup` PR. Setup steps will be finalised then.
-
 ```bash
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
-python manage.py migrate
+python manage.py migrate           # also seeds verified content
+npm install && npm run tailwind:build   # compile Tailwind CSS
 python manage.py runserver
 ```
 
@@ -64,6 +66,18 @@ Flow: branch off `develop` → build (with tests) → PR into `develop` → revi
 ## Automated PR reports
 
 When a PR is **merged**, a GitHub Action generates a branded PDF report (PR summary, commits, files changed, diff stats, test status) and commits it to the **`reports`** branch — directly viewable on GitHub, plus uploaded as a workflow artifact. See [`reports` branch](https://github.com/MussaJabir/DIEYNEM-Co.-Limited/tree/reports).
+
+## Deployment
+
+Hosted on an Ubuntu server: Apache reverse-proxies to Gunicorn (systemd) over a
+unix socket, backed by PostgreSQL, with TLS via certbot.
+
+**Auto-deploy:** merging `develop → main` runs the full test suite, then deploys
+over SSH — it pulls `main`, rebuilds Tailwind, applies migrations (which seed
+content), collects static files, and restarts Gunicorn.
+
+One-time server setup, the systemd/Apache config and the deploy script live in
+[`deploy/`](deploy/) — see [`deploy/README.md`](deploy/README.md) for the full runbook.
 
 ## License
 
