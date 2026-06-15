@@ -312,6 +312,13 @@ class ResponsiveImageTagTests(TestCase):
         self.assertIn('alt="Jane"', html)
         self.assertIn('sizes="50vw"', html)
 
+    def test_emits_width_and_height_to_prevent_layout_shift(self):
+        # A 1200x800 source cropped 1:1 -> a square largest derivative; the
+        # width/height attrs carry that intrinsic ratio so the box is reserved.
+        member = TeamMember.objects.create(name="Sized", role="MD", photo=_jpeg(size=(1200, 800)))
+        html = self._render(member.photo, alt="Sized", ratio="1:1")
+        self.assertRegex(html, r'width="\d+"\s+height="\d+"')
+
     def test_no_image_renders_nothing(self):
         html = self._render("", alt="x").strip()
         self.assertEqual(html, "")
