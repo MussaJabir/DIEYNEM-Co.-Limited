@@ -39,6 +39,8 @@ class HomePageTests(TestCase):
         self.assertContains(response, "P.O. Box 38075")
 
     def test_home_exposes_credibility_stats(self):
+        # Clear the seeded numbers band so the computed fallback renders.
+        Statistic.objects.all().delete()
         response = self.client.get(reverse("home"))
         stats = response.context["stats"]
         self.assertEqual(stats["years"], timezone.localdate().year - 2011)
@@ -63,6 +65,8 @@ class HomePageTests(TestCase):
         self.assertNotContains(response, "Years in business")
 
     def test_home_falls_back_to_computed_stats_without_statistics(self):
+        # Clear the seeded numbers band to exercise the computed fallback.
+        Statistic.objects.all().delete()
         self.assertFalse(Statistic.objects.exists())
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Years in business")
@@ -109,6 +113,48 @@ class LeadershipSeedTests(TestCase):
         leaders = TeamMember.objects.filter(group=TeamMember.Group.LEADERSHIP)
         self.assertEqual(leaders.count(), 3)
         self.assertTrue(leaders.filter(name="Dickson Nathaniel Chungu").exists())
+
+
+class ContentGapSeedTests(TestCase):
+    """The 0007 seed fills the homepage numbers/clients bands and engineers."""
+
+    def test_homepage_statistics_seeded(self):
+        labels = set(Statistic.objects.values_list("label", flat=True))
+        self.assertTrue(
+            {
+                "Years of experience",
+                "Km of MV power line",
+                "Transformers installed",
+                "Solar street lights",
+                "Customer connections",
+            }
+            <= labels
+        )
+        # The explicit, verified figure for solar lights.
+        solar = Statistic.objects.get(label="Solar street lights")
+        self.assertEqual((solar.value, solar.suffix), (800, "+"))
+
+    def test_clients_band_seeded_with_types(self):
+        clients = Client.objects.all()
+        self.assertGreaterEqual(clients.count(), 10)
+        self.assertTrue(
+            Client.objects.filter(
+                name="Beijing Construction Engineering Group",
+                type=Client.Type.MAIN_CONTRACTOR,
+            ).exists()
+        )
+        self.assertTrue(
+            Client.objects.filter(
+                name="Tanzania Bureau of Standards (TBS)", type=Client.Type.CLIENT
+            ).exists()
+        )
+        # Marquee clients are featured for the compact homepage band.
+        self.assertTrue(Client.objects.filter(is_featured=True).count() >= 6)
+
+    def test_engineering_team_seeded(self):
+        engineers = TeamMember.objects.filter(group=TeamMember.Group.ENGINEER)
+        self.assertEqual(engineers.count(), 3)
+        self.assertTrue(engineers.filter(name="Rozalia Aloyce", qualification="Eng.").exists())
 
 
 class AccessibilityTests(TestCase):
@@ -374,6 +420,7 @@ class StatisticModelTests(TestCase):
         self.assertEqual(str(stat), "Line: ~120 km")
 
     def test_default_ordering_by_order(self):
+        Statistic.objects.all().delete()  # ignore the seeded numbers band
         Statistic.objects.create(label="B", value=2, order=2)
         Statistic.objects.create(label="A", value=1, order=1)
         self.assertEqual([s.label for s in Statistic.objects.all()], ["A", "B"])
