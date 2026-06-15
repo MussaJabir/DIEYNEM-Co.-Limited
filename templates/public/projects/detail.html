@@ -1,0 +1,202 @@
+{% extends "public/base.html" %}
+{% load media_extras %}
+
+{% block title %}{{ project.meta_title|default:project.title }} &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}{{ project.meta_description|default:project.overview|truncatewords:30 }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ project.meta_title|default:project.title }}{% endblock %}
+{% block og_description %}{{ project.meta_description|default:project.overview|truncatewords:30 }}{% endblock %}
+{% block og_image %}{% if project.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ project.og_image.url }}">{% elif project.hero_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ project.hero_image.url }}">{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "{{ project.title|escapejs }}",
+  {% if project.overview %}"description": "{{ project.overview|escapejs }}",{% endif %}
+  {% if project.hero_image %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ project.hero_image.url }}",{% endif %}
+  {% if project.location %}"locationCreated": "{{ project.location|escapejs }}, {{ project.country|escapejs }}",{% endif %}
+  "creator": {"@type": "Organization", "name": "{{ site.company_name|escapejs }}"},
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Case-study hero -->
+<section class="relative overflow-hidden bg-gradient-to-br from-navy-900 to-navy-950 text-white">
+  <div class="pointer-events-none absolute inset-y-0 right-0 w-1/2 hidden md:block" aria-hidden="true">
+    <svg class="absolute right-0 top-0 h-full w-auto opacity-[0.06]" viewBox="0 0 400 600" preserveAspectRatio="none" fill="none"><path d="M140 0 L400 0 L400 600 L0 600 Z" fill="#F59E0B"/></svg>
+  </div>
+  <div class="relative max-w-5xl mx-auto px-4 pt-16 pb-20">
+    <p data-reveal class="text-amber-500 font-semibold uppercase tracking-widest text-sm"><a href="{% url 'projects:list' %}" class="hover:underline">Projects</a></p>
+    <div data-reveal data-reveal-delay=".05s" class="mt-3 flex flex-wrap items-center gap-2">
+      {% if project.status == 'ongoing' %}<span class="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-amber-500 text-navy-950">Ongoing</span>{% else %}<span class="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-ok text-white">Completed</span>{% endif %}
+      {% if project.sector %}<span class="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-white/10 text-navy-100">{{ project.get_sector_display }}</span>{% endif %}
+    </div>
+    <h1 data-reveal data-reveal-delay=".1s" class="font-heading text-4xl md:text-5xl font-extrabold mt-3 leading-tight">{{ project.title }}</h1>
+    {% if project.overview %}<p data-reveal data-reveal-delay=".2s" class="mt-4 text-navy-100 max-w-2xl text-lg">{{ project.overview }}</p>{% endif %}
+  </div>
+</section>
+
+{% if project.hero_image %}
+<div class="max-w-5xl mx-auto px-4 -mt-10 relative z-10" data-reveal>
+  {% responsive_image project.hero_image alt=project.title img_class="w-full h-64 sm:h-96 object-cover rounded-2xl border border-slate-200 shadow-xl" sizes="(min-width: 1024px) 1024px, 100vw" ratio="16:9" loading="eager" %}
+</div>
+{% endif %}
+
+<section class="max-w-5xl mx-auto px-4 py-16 grid gap-10 lg:grid-cols-3">
+  <div class="lg:col-span-2 space-y-10">
+    {% if project.is_ongoing %}
+    <div data-reveal class="bg-navy-50/60 border border-navy-100 rounded-xl p-6">
+      <div class="flex items-center justify-between gap-3 mb-1">
+        <h2 class="font-heading text-xl font-bold text-navy-800">Live status</h2>
+        {% if project.last_updated_label %}<span class="text-xs text-slate-500">Updated {{ project.last_updated_label|date:"j M Y" }}</span>{% endif %}
+      </div>
+
+      {% with progress=project.display_progress %}
+      {% if progress is not None %}
+      <div class="mt-4">
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-1.5">
+          <span>Progress</span>
+          <span class="text-navy-700 tabular-nums">{{ progress }}%</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-white overflow-hidden border border-slate-200">
+          <div class="h-full rounded-full bg-amber-500 progress-bar" style="--target: {{ progress }}%"></div>
+        </div>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      {% with milestones=project.milestones.all %}
+      {% if milestones %}
+      <div class="mt-5">
+        <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2.5">Milestones</h3>
+        <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
+          {% for m in milestones %}
+          <li class="flex items-center gap-2.5 text-sm {% if m.is_complete %}text-slate-700{% else %}text-slate-500{% endif %}">
+            {% if m.is_complete %}
+            <svg class="w-4 h-4 text-ok shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+            {% else %}
+            <span class="w-4 h-4 shrink-0 rounded-full border-2 border-slate-300" aria-hidden="true"></span>
+            {% endif %}
+            <span class="{% if m.is_complete %}font-medium{% endif %}">{{ m.title }}</span>
+            {% if m.date %}<span class="text-xs text-slate-500 ml-auto shrink-0">{{ m.date|date:"M Y" }}</span>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      {% with updates=project.updates.all|slice:":4" %}
+      {% if updates %}
+      <div class="mt-5 border-t border-navy-100 pt-4">
+        <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2.5">Latest updates</h3>
+        <ul class="space-y-3">
+          {% for u in updates %}
+          <li class="flex gap-3">
+            {% if u.image %}<img src="{{ u.image.url }}" alt="" loading="lazy" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0">{% endif %}
+            <div class="min-w-0">
+              <p class="text-xs text-slate-500">{{ u.date|date:"j M Y" }}</p>
+              <p class="text-sm text-slate-700">{{ u.note }}</p>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% endwith %}
+    </div>
+    {% endif %}
+
+    {% if project.scope_list %}
+    <div data-reveal>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-4">Scope of work</h2>
+      <ul class="space-y-2.5">
+        {% for item in project.scope_list %}
+        <li class="flex gap-2.5 text-slate-700">
+          <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          <span>{{ item }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if project.highlight_list %}
+    <div data-reveal>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-4">Technical highlights</h2>
+      <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+        {% for item in project.highlight_list %}
+        <li class="flex gap-2.5 text-slate-700">
+          <svg class="w-5 h-5 text-navy-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+          <span>{{ item }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if project.images.all %}
+    <div data-reveal x-data="{ open:false, src:'' }">
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-4">Gallery</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {% for img in project.images.all %}
+        <figure>
+          <button type="button" @click="src='{{ img.image.url }}'; open=true" class="block w-full overflow-hidden rounded-lg group cursor-zoom-in">
+            {% responsive_image img.image alt=img.caption img_class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105" sizes="(min-width: 640px) 320px, 50vw" ratio="4:3" %}
+          </button>
+          {% if img.caption %}<figcaption class="text-xs text-slate-500 mt-1">{{ img.caption }}</figcaption>{% endif %}
+        </figure>
+        {% endfor %}
+      </div>
+      <!-- Lightbox -->
+      <div x-show="open" x-cloak @click="open=false" @keydown.escape.window="open=false" x-transition.opacity
+           role="dialog" aria-modal="true" aria-label="Project photo viewer"
+           class="fixed inset-0 z-50 bg-navy-950/90 flex items-center justify-center p-4 cursor-zoom-out">
+        <img :src="src" alt="" class="max-h-[90vh] max-w-[92vw] rounded-lg shadow-2xl">
+        <button type="button" @click="open=false" class="absolute top-4 right-4 text-white/80 hover:text-white" aria-label="Close">
+          <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if project.outcome %}
+    <div data-reveal>
+      <h2 class="font-heading text-xl font-bold text-navy-800 mb-3">Outcome</h2>
+      <p class="text-slate-700 leading-relaxed">{{ project.outcome }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-4" data-reveal data-reveal-delay=".1s">
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 text-sm">
+      <h2 class="font-heading font-bold text-navy-800 mb-3">Project details</h2>
+      <dl class="space-y-3">
+        {% if project.client_name %}<div><dt class="text-slate-500">Client / employer</dt><dd class="text-slate-800 font-medium">{{ project.client_name }}</dd></div>{% endif %}
+        {% if project.main_contractor %}<div><dt class="text-slate-500">Main contractor</dt><dd class="text-slate-800">{{ project.main_contractor }}</dd></div>{% endif %}
+        {% if project.consultant %}<div><dt class="text-slate-500">Consultant</dt><dd class="text-slate-800">{{ project.consultant }}</dd></div>{% endif %}
+        {% if project.location %}<div><dt class="text-slate-500">Location</dt><dd class="text-slate-800">{{ project.location }}, {{ project.country }}</dd></div>{% endif %}
+        {% if project.year_display %}<div><dt class="text-slate-500">Year</dt><dd class="text-slate-800">{{ project.year_display }}</dd></div>{% endif %}
+        {% if project.role %}<div><dt class="text-slate-500">Our role</dt><dd class="text-slate-800">{{ project.get_role_display }}</dd></div>{% endif %}
+        {% if project.show_value %}<div><dt class="text-slate-500">Contract value</dt><dd class="text-slate-800 font-semibold">{{ project.contract_value }}</dd></div>{% endif %}
+      </dl>
+    </div>
+
+    {% if project.related_services.all %}
+    <div class="bg-white border border-slate-200 rounded-xl p-5">
+      <h2 class="font-heading font-bold text-navy-800 mb-3 text-sm">Systems installed</h2>
+      <div class="flex flex-wrap gap-2">
+        {% for svc in project.related_services.all %}<a href="{{ svc.get_absolute_url }}" class="text-xs px-2.5 py-1 rounded-full bg-navy-50 text-navy-700 hover:bg-navy-100 transition-colors">{{ svc.name }}</a>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'leads:quote' %}" class="block text-center bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors">Request a similar project</a>
+  </aside>
+</section>
+
+{% include "public/_cta_band.html" %}
+{% endblock %}

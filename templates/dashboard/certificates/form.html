@@ -1,0 +1,20 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}New{% endif %} certificate &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}{% if form.instance.pk %}Edit certificate{% else %}New certificate{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl">
+  <form method="post" enctype="multipart/form-data" x-data="{ saving: false }" @submit="saving = true" class="space-y-5">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-red-50 border border-red-200 text-danger px-4 py-2 text-sm">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% include "dashboard/_form_sections.html" %}
+
+    {% url 'dashboard:certificate_list' as cancel_url %}
+    {% include "dashboard/_form_actions.html" with cancel_url=cancel_url save_label="Save certificate" %}
+  </form>
+</div>
+{% endblock %}

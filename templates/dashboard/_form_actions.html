@@ -1,0 +1,18 @@
+{% comment %}
+Sticky save/cancel bar pinned to the bottom of the form viewport.
+Expects: cancel_url (str), save_label (str, optional).
+Must sit inside a <form x-data="{ saving: false }" @submit="saving = true">.
+{% endcomment %}
+<div class="sticky bottom-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-white/90 backdrop-blur border-t border-slate-200 flex justify-between items-center">
+  {% if cancel_url %}
+  <a href="{{ cancel_url }}" class="text-slate-500 text-sm font-semibold px-4 py-2.5 rounded-lg hover:text-slate-700 transition-colors">Cancel</a>
+  {% else %}<span></span>{% endif %}
+  <button type="submit" :disabled="saving"
+          class="inline-flex items-center gap-2 bg-navy-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-navy-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+    <svg x-show="saving" x-cloak class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+    <span>{{ save_label|default:"Save" }}</span>
+  </button>
+</div>

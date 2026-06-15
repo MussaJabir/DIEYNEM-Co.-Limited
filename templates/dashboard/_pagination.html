@@ -1,0 +1,28 @@
+{% comment %}
+Prev/next pager for the dashboard data tables.
+Expects: page_obj, is_paginated, querystring (active filters minus `page`).
+Links carry both href (no-JS reload) and hx-get (live swap into #results).
+{% endcomment %}
+{% if is_paginated %}
+<div class="flex items-center justify-between px-4 py-3 border-t border-slate-100 text-sm">
+  <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  <div class="flex items-center gap-1">
+    {% if page_obj.has_previous %}
+    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}"
+       hx-get="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}"
+       hx-target="#results" hx-push-url="true"
+       class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">Previous</a>
+    {% else %}
+    <span class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-300 font-semibold">Previous</span>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}"
+       hx-get="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}"
+       hx-target="#results" hx-push-url="true"
+       class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">Next</a>
+    {% else %}
+    <span class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-300 font-semibold">Next</span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

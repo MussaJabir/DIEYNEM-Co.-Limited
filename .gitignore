@@ -9,6 +9,8 @@ db.sqlite3
 local_settings.py
 /staticfiles/
 /media/
+# Compiled translation catalogues — build artifact; run compilemessages.
+*.mo
 
 # ---- Virtual environments ----
 venv/
@@ -37,8 +39,12 @@ package-lock.json.lock
 .DS_Store
 Thumbs.db
 
+# ---- Reference material (third-party templates — kept local, NOT committed) ----
+homerise/
+
 # ---- Project working files (not for the repo) ----
 .work/
+report_output/
 prompt.txt
 # Source company-profile PDF (30 MB — kept local, not committed)
 COMPANY PROFILE FOR DIEYNEM CO LTD - 2026.pdf
@@ -49,3 +55,4 @@ COMPANY PROFILE FOR DIEYNEM CO LTD - 2026.pdf
 .coverage
 htmlcov/
 .ruff_cache/
+.playwright-mcp/

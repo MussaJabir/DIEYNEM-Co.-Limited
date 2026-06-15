@@ -1,0 +1,149 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DIEYNEM Co. Limited{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Class One electrical, ICT, fire-detection, HVAC, solar and rural-electrification contractor in Tanzania. Since 2011.{% endblock %}">
+  <!-- PWA: installable app -->
+  <link rel="manifest" href="{% url 'manifest' %}">
+  <meta name="theme-color" content="#0C1B30">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+  <link rel="icon" href="{% static 'icons/icon-192.png' %}" type="image/png">
+  <link rel="canonical" href="{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="{{ site.company_name }}">
+  <meta property="og:title" content="{% block og_title %}DIEYNEM Co. Limited — Class One Engineering Contractor{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Class One electrical, ICT, fire-detection, HVAC, solar and rural-electrification contractor in Tanzania. Since 2011.{% endblock %}">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  {% block og_image %}{% if site.default_og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.default_og_image.url }}">{% endif %}{% endblock %}
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Self-hosted fonts (no render-blocking third-party request). Preload the
+       two faces used in above-the-fold text so they paint without a swap flash. -->
+  <link rel="preload" href="{% static 'fonts/inter-400-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/manrope-800-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+  <!-- Mark JS as available before first paint so progressively-enhanced
+       animations can start from their pre-animation state without a flash. -->
+  <script>document.documentElement.classList.add('js')</script>
+  <style>
+    [x-cloak]{display:none!important}
+    [data-reveal]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+    [data-reveal].is-visible{opacity:1;transform:none}
+    /* Progress bars animate their fill on scroll-in. Without JS the bar shows
+       its true width (var --target); with JS it starts at 0 and fills to target. */
+    .progress-bar{width:var(--target);transition:width 1s cubic-bezier(.22,1,.36,1)}
+    .js .progress-bar{width:0}
+    .js .progress-bar.is-filled{width:var(--target)}
+    /* Visible keyboard focus on every interactive element (amber ring on a
+       white halo so it reads on both light and navy surfaces). Mouse users
+       are unaffected thanks to :focus-visible. */
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
+    textarea:focus-visible,[tabindex]:focus-visible,summary:focus-visible{
+      outline:3px solid #F59E0B;outline-offset:2px;border-radius:4px;
+    }
+    /* Skip-to-content link: off-screen until focused. */
+    .skip-link{position:absolute;left:8px;top:-48px;z-index:60;background:#0C1B30;color:#fff;
+      padding:10px 16px;border-radius:8px;font-weight:600;transition:top .15s ease}
+    .skip-link:focus{top:8px}
+    @media (prefers-reduced-motion: reduce){
+      [data-reveal]{opacity:1!important;transform:none!important;transition:none!important}
+      .js .progress-bar{width:var(--target)!important;transition:none!important}
+      .skip-link{transition:none}
+    }
+  </style>
+  <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
+  <script defer src="{% static 'js/alpine.min.js' %}"></script>
+  <script defer src="{% static 'js/public.js' %}"></script>
+  <script>if("serviceWorker"in navigator){addEventListener("load",function(){navigator.serviceWorker.register("{% url 'service_worker' %}").catch(function(){})})}</script>
+
+  {% if organization_jsonld %}<script type="application/ld+json">{{ organization_jsonld }}</script>{% endif %}
+  {% block structured_data %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="font-sans text-slate-900 bg-white antialiased">
+  <a href="#main" class="skip-link">{% trans "Skip to content" %}</a>
+  <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="{% url 'home' %}" class="font-heading text-xl font-extrabold tracking-tight">DIEYNEM<span class="text-amber-500">.</span></a>
+      <nav class="hidden md:flex gap-7 text-sm text-navy-100">
+        <a href="{% url 'home' %}" class="hover:text-white transition-colors">{% trans "Home" %}</a>
+        <a href="{% url 'about' %}" class="hover:text-white transition-colors">{% trans "About" %}</a>
+        <a href="{% url 'services:list' %}" class="hover:text-white transition-colors">{% trans "Services" %}</a>
+        <a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">{% trans "Projects" %}</a>
+        <a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">{% trans "Ongoing" %}</a>
+        <a href="{% url 'media_center:gallery' %}" class="hover:text-white transition-colors">{% trans "Gallery" %}</a>
+        <a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">{% trans "Certifications" %}</a>
+        <a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">{% trans "Contact" %}</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        {% include "public/_language_toggle.html" %}
+        <a href="{% url 'leads:quote' %}" class="hidden sm:inline-block bg-amber-500 text-navy-950 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors">{% trans "Request Quotation" %}</a>
+        <button type="button" @click="open = !open" class="md:hidden p-2 -mr-1 rounded-lg hover:bg-navy-800 transition-colors" :aria-expanded="open" aria-label="Toggle menu">
+          <svg x-show="!open" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          <svg x-show="open" x-cloak class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <nav x-show="open" x-cloak x-transition.opacity class="md:hidden border-t border-navy-800 px-4 py-3 space-y-1 text-navy-100">
+      <a href="{% url 'home' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Home" %}</a>
+      <a href="{% url 'about' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "About" %}</a>
+      <a href="{% url 'services:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Services" %}</a>
+      <a href="{% url 'projects:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Projects" %}</a>
+      <a href="{% url 'ongoing_projects' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Ongoing" %}</a>
+      <a href="{% url 'media_center:gallery' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Gallery" %}</a>
+      <a href="{% url 'credentials:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Certifications" %}</a>
+      <a href="{% url 'leads:quote' %}" @click="open=false" class="block px-3 py-2 rounded-lg bg-amber-500 text-navy-950 font-semibold text-center mt-2">{% trans "Request Quotation" %}</a>
+    </nav>
+  </header>
+
+  <main id="main">{% block content %}{% endblock %}</main>
+
+  <footer class="bg-navy-950 text-navy-300 mt-20">
+    <div class="max-w-6xl mx-auto px-4 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+      <div class="lg:col-span-2">
+        <p class="font-heading text-white font-extrabold text-xl">{{ site.company_name }}<span class="text-amber-500">.</span></p>
+        {% if site.motto %}<p class="mt-2 text-amber-500 font-medium">{{ site.motto }}</p>{% endif %}
+        <p class="mt-3 max-w-sm text-navy-400">{% trans "Class One electrical, ICT, fire, HVAC, solar and power-infrastructure contractor serving government, institutional and corporate clients across Tanzania." %}</p>
+        {% if site.social_links %}
+        <p class="mt-4 flex flex-wrap gap-x-3">
+          {% for name, url in site.social_links %}<a href="{{ url }}" class="hover:text-white underline">{{ name }}</a>{% endfor %}
+        </p>
+        {% endif %}
+      </div>
+      <div>
+        <p class="font-heading text-white font-bold mb-3">{% trans "Explore" %}</p>
+        <ul class="space-y-2">
+          <li><a href="{% url 'about' %}" class="hover:text-white transition-colors">{% trans "About" %}</a></li>
+          <li><a href="{% url 'services:list' %}" class="hover:text-white transition-colors">{% trans "Services" %}</a></li>
+          <li><a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">{% trans "Projects" %}</a></li>
+          <li><a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">{% trans "Ongoing Projects" %}</a></li>
+          <li><a href="{% url 'media_center:gallery' %}" class="hover:text-white transition-colors">{% trans "Gallery" %}</a></li>
+          <li><a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">{% trans "Certifications" %}</a></li>
+          <li><a href="{% url 'media_center:downloads' %}" class="hover:text-white transition-colors">{% trans "Downloads" %}</a></li>
+          <li><a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">{% trans "Request a Quotation" %}</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-heading text-white font-bold mb-3">{% trans "Contact" %}</p>
+        {% if site.po_box %}<p>{{ site.po_box }}</p>{% endif %}
+        {% if site.physical_address %}<p class="mt-1 text-navy-400">{{ site.physical_address }}</p>{% endif %}
+        {% if site.phone_list %}<p class="mt-2">{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
+        {% if site.email_list %}<p class="mt-1">{% for e in site.email_list %}<a href="mailto:{{ e }}" class="hover:text-white underline">{{ e }}</a>{% if not forloop.last %} &middot; {% endif %}{% endfor %}</p>{% endif %}
+      </div>
+    </div>
+    <div class="border-t border-navy-800">
+      <div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between text-navy-400 text-xs">
+        <p>&copy; {% now "Y" %} {{ site.company_name }}. {% trans "All rights reserved." %}</p>
+        {% if site.footer_text %}<p>{{ site.footer_text }}</p>{% endif %}
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Delete client &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Delete client{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-lg bg-white border border-slate-200 rounded-xl p-6">
+  <p class="text-slate-700">Are you sure you want to delete <strong>{{ object.name }}</strong>? This cannot be undone.</p>
+  <form method="post" class="mt-5 flex justify-end gap-3">
+    {% csrf_token %}
+    <a href="{% url 'dashboard:client_list' %}" class="text-slate-500 text-sm font-semibold px-4 py-2.5">Cancel</a>
+    <button type="submit" class="bg-danger text-white font-semibold px-5 py-2.5 rounded-lg hover:opacity-90">Delete</button>
+  </form>
+</div>
+{% endblock %}

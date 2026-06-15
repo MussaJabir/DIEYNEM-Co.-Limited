@@ -1,0 +1,19 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Site Settings &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Site Settings{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl">
+  <form method="post" enctype="multipart/form-data" x-data="{ saving: false }" @submit="saving = true" class="space-y-5">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-red-50 border border-red-200 text-danger px-4 py-2 text-sm">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% include "dashboard/_form_sections.html" %}
+
+    {% include "dashboard/_form_actions.html" with save_label="Save settings" %}
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{
+  "name": "dieynem-website",
+  "version": "0.0.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "Tailwind build tooling for the DIEYNEM Co. Limited website.",
+  "scripts": {
+    "tailwind:build": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.out.css --minify",
+    "tailwind:watch": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.out.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

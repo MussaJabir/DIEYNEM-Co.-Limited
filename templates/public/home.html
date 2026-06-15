@@ -1,0 +1,238 @@
+{% extends "public/base.html" %}
+{% load media_extras cache i18n %}
+
+{% block title %}DIEYNEM Co. Limited — Electrical, ICT, Fire, HVAC &amp; Power Infrastructure{% endblock %}
+
+{% block content %}
+{% with hero_project=featured_projects.0 %}
+<!-- ============ Hero ============ -->
+<section class="relative overflow-hidden bg-gradient-to-br from-navy-900 to-navy-950 text-white">
+  <div class="pointer-events-none absolute inset-y-0 right-0 w-2/3 hidden lg:block" aria-hidden="true">
+    <svg class="absolute right-0 top-0 h-full w-auto opacity-[0.06]" viewBox="0 0 400 600" preserveAspectRatio="none" fill="none"><path d="M140 0 L400 0 L400 600 L0 600 Z" fill="#F59E0B"/></svg>
+  </div>
+  <div class="relative max-w-6xl mx-auto px-4 py-20 lg:py-28 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p data-reveal class="text-amber-500 font-semibold tracking-widest uppercase text-sm">{% trans "Class One Engineering Contractor · Since 2011" %}</p>
+      <h1 data-reveal data-reveal-delay=".1s" class="font-heading text-4xl md:text-5xl font-extrabold mt-4 leading-tight">{% trans "Powering Tanzania's Landmark Buildings &amp; Infrastructure" %}</h1>
+      <p data-reveal data-reveal-delay=".2s" class="mt-6 text-navy-100 text-lg max-w-xl">{% trans "Electrical, ICT, fire-detection, air-conditioning, mechanical-ventilation, solar and rural-electrification works for government, institutional and corporate clients." %}</p>
+      <div data-reveal data-reveal-delay=".3s" class="mt-8 flex flex-wrap gap-4">
+        <a href="{% url 'leads:quote' %}" class="group inline-flex items-center gap-2 bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors">
+          {% trans "Request a Quotation" %}
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+        <a href="{% url 'projects:list' %}" class="inline-flex items-center gap-2 border border-navy-400 text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-800 transition-colors">{% trans "View Projects" %}</a>
+      </div>
+    </div>
+    <div data-reveal data-reveal-delay=".25s" class="relative hidden lg:block">
+      <div class="absolute -inset-3 bg-amber-500/20 rounded-2xl -rotate-3" aria-hidden="true"></div>
+      <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl aspect-[4/3]">
+        {% if hero_project.hero_image %}
+          {% responsive_image hero_project.hero_image alt=hero_project.title img_class="w-full h-full object-cover" sizes="(min-width: 1024px) 600px, 100vw" ratio="4:3" loading="eager" fetchpriority="high" %}
+        {% else %}
+          <div class="w-full h-full bg-navy-800 flex items-center justify-center"><span class="font-heading text-white/15 font-extrabold text-4xl">DIEYNEM.</span></div>
+        {% endif %}
+      </div>
+      <div class="absolute -bottom-5 -left-5 bg-white text-navy-900 rounded-xl shadow-xl px-5 py-4">
+        <p class="font-heading text-3xl font-extrabold text-navy-700 tabular-nums"><span data-count-to="{{ stats.projects }}">0</span>+</p>
+        <p class="text-xs text-slate-500 uppercase tracking-wide mt-0.5">{% trans "Projects delivered" %}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Trust strip ============ -->
+<section class="border-b border-slate-200 bg-slate-50">
+  <div class="max-w-6xl mx-auto px-4 py-5 flex flex-wrap gap-x-8 gap-y-2 text-sm text-slate-700 font-medium">
+    <span class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> CRB Specialist Contractor &mdash; Class One</span>
+    <span class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> Electrical Contractors Class I</span>
+    <span class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> OSHA Registered</span>
+    <span class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> WCF Registered</span>
+    <span class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> Established 2011</span>
+  </div>
+</section>
+
+<!-- ============ Credibility numbers ============ -->
+<section class="bg-navy-900 text-white">
+  <div class="max-w-6xl mx-auto px-4 py-14 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+    {% cache 3600 home_stats cache_version %}
+    {% if statistics %}
+      {% for stat in statistics %}
+      <div data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' '.3s' %}">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums">{{ stat.prefix }}<span data-count-to="{{ stat.value }}">0</span>{{ stat.suffix }}</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{{ stat.label }}</p>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div data-reveal>
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.years }}">0</span></p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Years in business" %}</p>
+      </div>
+      <div data-reveal data-reveal-delay=".1s">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.projects }}">0</span>+</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Projects delivered" %}</p>
+      </div>
+      <div data-reveal data-reveal-delay=".2s">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.services }}">0</span></p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Service lines" %}</p>
+      </div>
+      <div data-reveal data-reveal-delay=".3s">
+        <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.certificates }}">0</span></p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Certifications" %}</p>
+      </div>
+    {% endif %}
+    {% endcache %}
+  </div>
+</section>
+
+<!-- ============ Services ============ -->
+{% if featured_services %}
+<section id="services" class="max-w-6xl mx-auto px-4 py-20">
+  <div class="max-w-2xl">
+    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "What we do" %}</p>
+    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Engineering services under one roof" %}</h2>
+  </div>
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
+    {% cache 3600 home_services cache_version %}
+    {% for service in featured_services %}
+    <a href="{{ service.get_absolute_url }}" data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' %}"
+       class="group block bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+      <div class="w-12 h-12 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-navy-950 transition-colors">
+        {% include "public/_service_icon.html" %}
+      </div>
+      <h3 class="font-heading font-bold text-navy-800 mt-4 group-hover:text-navy-600 transition-colors">{{ service.name }}</h3>
+      <p class="text-slate-600 text-sm mt-2">{{ service.short_description }}</p>
+      <span class="inline-flex items-center gap-1 text-amber-700 text-sm font-semibold mt-4">{% trans "Learn more" %}
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+      </span>
+    </a>
+    {% endfor %}
+    {% endcache %}
+  </div>
+  <div class="mt-10"><a href="{% url 'services:list' %}" class="inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">{% trans "View all services" %}
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a></div>
+</section>
+{% endif %}
+
+<!-- ============ Featured projects ============ -->
+{% if featured_projects %}
+<section id="projects" class="bg-slate-50 border-t border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "Our work" %}</p>
+        <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Featured projects" %}</h2>
+      </div>
+      <a href="{% url 'projects:list' %}" class="hidden sm:inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">{% trans "View all" %}
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
+      {% cache 3600 home_featured_projects cache_version %}
+      {% for project in featured_projects %}
+      <a href="{{ project.get_absolute_url }}" data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' %}"
+         class="group block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200">
+        <div class="relative h-48 overflow-hidden">
+          {% if project.hero_image %}
+            {% responsive_image project.hero_image alt=project.title img_class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" sizes="(min-width: 1024px) 384px, (min-width: 640px) 50vw, 100vw" ratio="16:9" %}
+          {% else %}
+            <div class="w-full h-full bg-gradient-to-br from-navy-700 to-navy-900 flex items-center justify-center"><span class="font-heading text-white/20 font-extrabold text-2xl">DIEYNEM.</span></div>
+          {% endif %}
+          {% if project.sector %}<span class="absolute top-3 left-3 text-[10px] uppercase font-bold px-2 py-1 rounded-full bg-white/90 text-navy-700">{{ project.get_sector_display }}</span>{% endif %}
+        </div>
+        <div class="p-5">
+          <div class="mb-2">
+            {% if project.status == 'ongoing' %}<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Ongoing</span>{% else %}<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-ok/10 text-green-800">Completed</span>{% endif %}
+          </div>
+          <h3 class="font-heading font-bold text-navy-800 leading-snug group-hover:text-navy-600 transition-colors">{{ project.title }}</h3>
+          <p class="text-slate-500 text-sm mt-2">{{ project.location }}{% if project.year_display %} &middot; {{ project.year_display }}{% endif %}</p>
+        </div>
+      </a>
+      {% endfor %}
+      {% endcache %}
+    </div>
+    <div class="mt-10 sm:hidden"><a href="{% url 'projects:list' %}" class="text-navy-700 font-semibold">{% trans "View all projects" %} &rarr;</a></div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============ Why DIEYNEM ============ -->
+<section class="max-w-6xl mx-auto px-4 py-20">
+  <div class="max-w-2xl">
+    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "Why DIEYNEM" %}</p>
+    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Built to be trusted on critical works" %}</h2>
+  </div>
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-10">
+    <div data-reveal class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+      </div>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "Class One registration" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "Licensed to bid and deliver the largest electrical and building-services contracts." %}</p>
+    </div>
+    <div data-reveal data-reveal-delay=".1s" class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
+      </div>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "In-house teams" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "Multidisciplinary engineers and technicians across electrical, ICT, fire and HVAC." %}</p>
+    </div>
+    <div data-reveal data-reveal-delay=".2s" class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z"/></svg>
+      </div>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "Compliance &amp; safety" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "OSHA and WCF registered, with documented standards on every site." %}</p>
+    </div>
+    <div data-reveal data-reveal-delay=".3s" class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+      </div>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "Nationwide delivery" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "Projects delivered for clients in Dar es Salaam, Arusha and across Tanzania." %}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Clients / partners ============ -->
+{% if clients %}
+<section class="bg-slate-50 border-t border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-16">
+    <div class="text-center max-w-2xl mx-auto">
+      <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "Trusted by" %}</p>
+      <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Clients &amp; partners" %}</h2>
+    </div>
+    <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      {% for client in clients %}
+      <div data-reveal data-reveal-delay="{% cycle '0s' '.05s' '.1s' '.15s' '.2s' %}"
+           class="flex items-center justify-center bg-white border border-slate-200 rounded-xl p-5 h-24 grayscale hover:grayscale-0 transition-all duration-200">
+        {% if client.logo %}
+          {% if client.website %}<a href="{{ client.website }}" target="_blank" rel="noopener" class="block">{% endif %}
+          {% responsive_image client.logo alt=client.name img_class="max-h-12 max-w-full object-contain" sizes="200px" %}
+          {% if client.website %}</a>{% endif %}
+        {% else %}
+          <span class="font-heading font-bold text-navy-700 text-center text-sm">{{ client.name }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============ CTA band ============ -->
+<section class="relative overflow-hidden bg-navy-900 text-white">
+  <div class="pointer-events-none absolute inset-y-0 right-0 w-1/2 hidden md:block" aria-hidden="true">
+    <svg class="absolute right-0 top-0 h-full w-auto opacity-[0.06]" viewBox="0 0 400 600" preserveAspectRatio="none" fill="none"><path d="M140 0 L400 0 L400 600 L0 600 Z" fill="#F59E0B"/></svg>
+  </div>
+  <div class="relative max-w-6xl mx-auto px-4 py-16 lg:flex items-center justify-between gap-10">
+    <div data-reveal>
+      <h2 class="font-heading text-3xl font-extrabold">Have a project or tender? Let&rsquo;s talk.</h2>
+      <p class="mt-3 text-navy-100 max-w-xl">Send us your scope and we&rsquo;ll prepare a detailed quotation — or invite DIEYNEM to tender on your next electrical, ICT, fire, HVAC or power-infrastructure works.</p>
+    </div>
+    <a data-reveal data-reveal-delay=".1s" href="{% url 'leads:quote' %}" class="group mt-6 lg:mt-0 shrink-0 inline-flex items-center gap-2 bg-amber-500 text-navy-950 font-semibold px-7 py-3.5 rounded-lg hover:bg-amber-600 transition-colors">
+      Request a Quotation
+      <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+    </a>
+  </div>
+</section>
+{% endwith %}
+{% endblock %}

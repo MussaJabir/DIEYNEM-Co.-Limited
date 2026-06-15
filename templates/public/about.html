@@ -1,0 +1,133 @@
+{% extends "public/base.html" %}
+{% load media_extras %}
+
+{% block title %}About DIEYNEM Co. Limited — Class One Engineering Contractor{% endblock %}
+{% block meta_description %}DIEYNEM Co. Limited is a Dar es Salaam–based multi-disciplinary engineering contractor, incorporated in 2011 and registered with the Contractors Registration Board as a Specialist Contractor, Class One.{% endblock %}
+
+{% block content %}
+{% include "public/_page_header.html" with eyebrow="About us" title="A Class One engineering contractor, building Tanzania since 2011" subtitle="Multi-disciplinary electrical, ICT, fire, HVAC and power-infrastructure works — installed, tested and commissioned for government, institutional and corporate clients." %}
+
+<!-- ============ Overview & history ============ -->
+<section class="max-w-6xl mx-auto px-4 py-16 lg:py-20 grid lg:grid-cols-3 gap-12">
+  <div class="lg:col-span-2 space-y-5">
+    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">Who we are</p>
+    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800">One contractor, accountable end to end</h2>
+    <p data-reveal class="text-slate-700 leading-relaxed">
+      DIEYNEM Co. Limited is a Dar es Salaam–based multi-disciplinary engineering contractor,
+      incorporated in 2011 and registered with the Contractors Registration Board as a
+      Specialist Contractor, Class One. Our work spans complete building services — electrical,
+      ICT, fire-detection, air-conditioning and mechanical ventilation — alongside large-scale
+      rural electrification and solar street-lighting infrastructure across Tanzania and Uganda.
+    </p>
+    <p data-reveal class="text-slate-700 leading-relaxed">
+      We supply, install, test and commission complete electrical and electronic building
+      systems — and we build the power infrastructure that energises them. One contractor,
+      accountable from the 33kV switchgear to the last light fitting.
+    </p>
+  </div>
+
+  <!-- Quick facts -->
+  <aside data-reveal data-reveal-delay=".1s" class="bg-slate-50 border border-slate-200 rounded-2xl p-6 h-fit">
+    <h3 class="font-heading font-bold text-navy-800 mb-4">At a glance</h3>
+    <dl class="space-y-4 text-sm">
+      <div>
+        <dt class="text-slate-500">In operation</dt>
+        <dd class="text-navy-800 font-semibold tabular-nums"><span data-count-to="{{ years_in_operation }}">0</span> years (since {{ founded_year }})</dd>
+      </div>
+      <div>
+        <dt class="text-slate-500">Registration</dt>
+        <dd class="text-navy-800 font-semibold">CRB Specialist Contractor — Class One</dd>
+      </div>
+      <div>
+        <dt class="text-slate-500">Incorporated</dt>
+        <dd class="text-navy-800 font-semibold">22 March 2011, Companies Act 2002</dd>
+      </div>
+      <div>
+        <dt class="text-slate-500">Operating in</dt>
+        <dd class="text-navy-800 font-semibold">Tanzania &amp; Uganda</dd>
+      </div>
+    </dl>
+    <a href="{% url 'credentials:list' %}" class="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+      View our certifications
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+    </a>
+  </aside>
+</section>
+
+<!-- ============ History timeline ============ -->
+<section class="bg-slate-50 border-y border-slate-200">
+  <div class="max-w-5xl mx-auto px-4 py-16 lg:py-20">
+    <div class="max-w-2xl">
+      <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">Our journey</p>
+      <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Milestones</h2>
+    </div>
+    <ol class="mt-10 relative border-l-2 border-navy-100 space-y-8">
+      <li data-reveal class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full bg-amber-500 border-2 border-white" aria-hidden="true"></span>
+        <h3 class="font-heading font-bold text-navy-800">2011 — Incorporated</h3>
+        <p class="text-slate-600 text-sm mt-1">Registered under the Companies Act 2002 and accredited by the Contractors Registration Board as a Specialist Contractor, Class One.</p>
+      </li>
+      <li data-reveal class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full bg-navy-300 border-2 border-white" aria-hidden="true"></span>
+        <h3 class="font-heading font-bold text-navy-800">Cross-border delivery</h3>
+        <p class="text-slate-600 text-sm mt-1">Rural-electrification works delivered in Uganda — extending our power-infrastructure capability beyond Tanzania.</p>
+      </li>
+      <li data-reveal class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full bg-navy-300 border-2 border-white" aria-hidden="true"></span>
+        <h3 class="font-heading font-bold text-navy-800">Landmark buildings</h3>
+        <p class="text-slate-600 text-sm mt-1">Complete electrical, ICT and HVAC systems for the 19-floor Pan African Postal Union building in Arusha and the Tanzania Bureau of Standards laboratories.</p>
+      </li>
+      <li data-reveal class="ml-6">
+        <span class="absolute -left-[9px] w-4 h-4 rounded-full bg-amber-500 border-2 border-white" aria-hidden="true"></span>
+        <h3 class="font-heading font-bold text-navy-800">2026 — National airports</h3>
+        <p class="text-slate-600 text-sm mt-1">Active works across national airport projects — installation, testing and commissioning at infrastructure scale.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ Motto band ============ -->
+{% if site.motto %}
+<section class="bg-navy-900 text-white">
+  <div class="max-w-4xl mx-auto px-4 py-16 text-center">
+    <svg class="w-10 h-10 text-amber-500 mx-auto mb-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.13 9.36c.18-.66.5-1.27.95-1.83.46-.56 1.03-1 1.72-1.31l-.6-1.22c-1.06.4-1.95 1.05-2.66 1.95-.71.9-1.07 1.95-1.07 3.15v4.5h3.66V9.36H9.13zm7.5 0c.18-.66.5-1.27.95-1.83.46-.56 1.03-1 1.72-1.31l-.6-1.22c-1.06.4-1.95 1.05-2.66 1.95-.71.9-1.07 1.95-1.07 3.15v4.5h3.66V9.36h-1.93z"/></svg>
+    <p data-reveal class="font-heading text-3xl md:text-4xl font-extrabold">&ldquo;{{ site.motto }}&rdquo;</p>
+    <p data-reveal data-reveal-delay=".1s" class="mt-4 text-navy-200 max-w-xl mx-auto">Documented standards, certified compliance and tested-and-commissioned delivery on every contract — from the largest tower to the last connection.</p>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============ Leadership & technical team ============ -->
+{% if team_groups %}
+<section class="max-w-6xl mx-auto px-4 py-16 lg:py-20">
+  <div class="max-w-2xl">
+    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">Our people</p>
+    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Leadership &amp; technical team</h2>
+    <p data-reveal class="text-slate-600 mt-3">A registered, multi-disciplinary team of directors, engineers and technicians.</p>
+  </div>
+
+  {% for group in team_groups %}
+  <div class="mt-12">
+    <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-5">{{ group.label }}</h3>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {% for member in group.members %}
+      <div data-reveal data-reveal-delay="{% cycle '0s' '.1s' '.2s' %}" class="bg-white border border-slate-200 rounded-xl p-6 flex items-center gap-4">
+        {% if member.photo %}
+          <span class="block w-16 h-16 shrink-0">{% responsive_image member.photo alt=member.display_name img_class="w-16 h-16 rounded-full object-cover bg-slate-50 border border-slate-200" sizes="64px" ratio="1:1" %}</span>
+        {% else %}
+          <span class="w-16 h-16 rounded-full bg-navy-700 text-white flex items-center justify-center font-heading font-bold text-xl shrink-0" aria-hidden="true">{{ member.name|slice:":1"|upper }}</span>
+        {% endif %}
+        <div class="min-w-0">
+          <p class="font-heading font-bold text-navy-800 leading-snug">{{ member.display_name }}</p>
+          <p class="text-slate-500 text-sm mt-0.5">{{ member.role }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% include "public/_cta_band.html" %}
+{% endblock %}

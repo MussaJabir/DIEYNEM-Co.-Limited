@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIEYNEM — Phase 3 Progress Report (Polish, Performance &amp; Launch-Readiness)</title>
+<style>
+  /* ---- Keep colours when printing / saving as PDF ---- */
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    size: A4;
+    margin: 14mm 13mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1F2937;
+    line-height: 1.55;
+    font-size: 10.5pt;
+    background: #f1f5f9;
+  }
+  .page {
+    max-width: 210mm;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 16mm 14mm;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    background: #0C1B30;
+    color: #fff;
+    border-radius: 12px;
+    border-left: 7px solid #F59E0B;
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .hero .brand { font-size: 26pt; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
+  .hero .brand .dot { color: #F59E0B; }
+  .hero .brand-sub { font-size: 9.5pt; color: #8FB3DC; margin-top: 6px; }
+  .hero .meta { text-align: right; font-size: 9.5pt; color: #DCE8F5; }
+  .hero .meta .rep { font-size: 11pt; font-weight: 700; color: #fff; }
+  .badge-done {
+    display: inline-block; margin-top: 8px; padding: 4px 13px; border-radius: 9999px;
+    background: #F59E0B; color: #0C1B30; font-size: 8.5pt; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .05em;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  h2 {
+    font-size: 13.5pt; color: #1E4E86; margin: 26px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid #E2E8F0; font-weight: 800; letter-spacing: -0.2px;
+  }
+  p { margin-bottom: 8px; }
+
+  /* ---- Executive summary ---- */
+  .summary {
+    background: linear-gradient(135deg, #EEF4FB 0%, #F8FAFC 100%);
+    border: 1px solid #DCE8F5; border-left: 5px solid #F59E0B; border-radius: 10px;
+    padding: 16px 18px; margin-top: 18px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .summary p { color: #12294A; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* ---- Stat grid ---- */
+  .stats { margin: 20px 0 4px; font-size: 0; }
+  .stat {
+    display: inline-block; width: 19%; margin-right: 1.1%; vertical-align: top;
+    background: #fff; border: 1px solid #E2E8F0; border-top: 3px solid #1E4E86;
+    border-radius: 8px; padding: 11px 12px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .stat.last { margin-right: 0; }
+  .stat .n { font-size: 19pt; font-weight: 800; color: #1E4E86; line-height: 1.05; }
+  .stat .n.amber { color: #D97706; }
+  .stat .l { font-size: 7.8pt; color: #64748B; text-transform: uppercase; letter-spacing: .04em; margin-top: 5px; }
+
+  /* ---- Two-column tick lists ---- */
+  .features { list-style: none; columns: 2; column-gap: 26px; margin-top: 4px; }
+  .features li {
+    position: relative; padding-left: 19px; font-size: 9.7pt; color: #1F2937;
+    margin-bottom: 7px; break-inside: avoid;
+  }
+  .features li::before {
+    content: "\2713"; position: absolute; left: 0; color: #1E4E86; font-weight: 800;
+  }
+  .features.amber li::before { color: #F59E0B; }
+  .features strong { color: #12294A; }
+
+  /* ---- Module cards ---- */
+  .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .module {
+    border: 1px solid #E2E8F0; border-left: 4px solid #1E4E86; border-radius: 8px;
+    padding: 11px 13px; background: #fff; break-inside: avoid;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .head { display: flex; justify-content: space-between; align-items: center; }
+  .module .name { font-weight: 800; font-size: 10pt; color: #12294A; }
+  .module .chip {
+    font-size: 7.8pt; font-weight: 800; text-transform: uppercase; padding: 2px 8px;
+    border-radius: 9999px; background: #DCFCE7; color: #16A34A;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .desc { font-size: 9pt; color: #475569; margin-top: 4px; }
+
+  /* ---- Reliability cards ---- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .card {
+    border: 1px solid #E2E8F0; border-radius: 8px; padding: 11px 13px; background: #fff;
+    break-inside: avoid;
+  }
+  .card .t { font-weight: 800; color: #12294A; font-size: 9.8pt; margin-bottom: 3px; }
+  .card .d { font-size: 9pt; color: #475569; }
+
+  /* ---- Callout ---- */
+  .callout {
+    background: #FEF3C7; border: 1px solid #FBBF24; border-radius: 8px;
+    padding: 13px 15px; margin-top: 12px; font-size: 9.8pt; color: #92400E;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .callout strong { color: #78350F; }
+  .callout ul { margin: 6px 0 6px 18px; }
+  .callout li { margin-bottom: 2px; }
+
+  footer {
+    margin-top: 30px; padding-top: 14px; border-top: 1px solid #E2E8F0;
+    text-align: center; font-size: 8.8pt; color: #94A3B8;
+  }
+  footer strong { color: #1E4E86; }
+
+  @media print {
+    body { background: #fff; }
+    .page { padding: 0; margin: 0; max-width: none; }
+    .modules, .grid2, .stats, .features { page-break-inside: auto; }
+    .module, .card, .stat, .summary, .callout { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="brand">DIEYNEM<span class="dot">.</span></div>
+      <div class="brand-sub">Co. Limited &middot; Electrical &middot; ICT &middot; Fire &middot; HVAC &middot; Power Infrastructure</div>
+    </div>
+    <div class="meta">
+      <div class="rep">Phase 3 Progress Report &mdash; Polish, Performance &amp; Launch-Readiness</div>
+      <div style="margin-top:5px;">Date: <strong style="color:#fff;">15 June 2026</strong></div>
+      <div>Prepared for DIEYNEM Co. Limited</div>
+      <span class="badge-done">&bull; Phase 3 Complete</span>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <h2>Summary</h2>
+  <div class="summary">
+    <p><strong>Phase 3 is complete &mdash; the website and dashboard are now polished, fast and ready to prepare for launch.</strong> Where the earlier phases built the website and gave it a premium look, this phase focused on the finishing touches that make it feel professional, perform well, and stay easy and safe to manage.</p>
+    <p>For your visitors, the public site is now <strong>faster, smoother and easier for everyone to use</strong> &mdash; with instant project filtering, the ability to install it like an app, and the groundwork for a Swahili version. For your team, the admin dashboard gained an <strong>enquiry pipeline with export, a full change history, a dark mode, and optional two-factor security.</strong></p>
+    <p>Just as importantly, the website now <strong>launches already populated with your real company information</strong> &mdash; your headline figures, your client and partner names, and your engineering team &mdash; so it never looks empty. It was delivered as <strong>twelve carefully reviewed releases</strong>, each automatically tested before going live, with all existing content preserved.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="n amber">12</div><div class="l">Reviewed releases</div></div>
+    <div class="stat"><div class="n">7</div><div class="l">Website improvements</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">Dashboard upgrades</div></div>
+    <div class="stat"><div class="n">224</div><div class="l">Automated tests</div></div>
+    <div class="stat last"><div class="n">100%</div><div class="l">Tested before live</div></div>
+  </div>
+
+  <!-- PUBLIC SITE -->
+  <h2>Your public website — what improved</h2>
+  <ul class="features">
+    <li><strong>Instant project filtering</strong> &mdash; visitors narrow your portfolio by service, sector, country and status, without the page reloading</li>
+    <li>Ongoing projects show <strong>animated progress bars</strong> that fill as visitors scroll &mdash; the site looks live and current</li>
+    <li><strong>Faster loading</strong> &mdash; fonts and assets are served from your own site, with smart caching</li>
+    <li>The page <strong>no longer jumps or shifts</strong> while images load &mdash; a calmer, more professional feel</li>
+    <li><strong>Usable by everyone</strong> &mdash; keyboard navigation, screen-reader support and strong colour contrast</li>
+    <li><strong>Installable as an app</strong> on phones and computers, with a basic page even when offline</li>
+    <li><strong>Swahili groundwork</strong> laid &mdash; a Swahili version can be switched on once the wording is translated</li>
+  </ul>
+
+  <!-- DASHBOARD -->
+  <h2>Your admin dashboard — what improved</h2>
+  <ul class="features amber">
+    <li>A new <strong>enquiry pipeline overview</strong> with <strong>one-click export to a spreadsheet (CSV)</strong></li>
+    <li>A <strong>dark mode</strong> for comfortable use in low light</li>
+    <li>A complete <strong>change history</strong> &mdash; see who edited what, and when</li>
+    <li>A <strong>recent-activity feed</strong> on the overview so nothing slips by</li>
+    <li><strong>Optional two-factor authentication</strong> &mdash; each user can add a second sign-in step for extra security</li>
+  </ul>
+
+  <!-- MODULES -->
+  <h2>What we delivered</h2>
+  <div class="modules">
+    <div class="module">
+      <div class="head"><span class="name">Instant project filtering</span><span class="chip">Done</span></div>
+      <div class="desc">Visitors filter the portfolio by service, sector, country and status with no page reload &mdash; finding relevant work in seconds.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Faster &amp; smoother site</span><span class="chip">Done</span></div>
+      <div class="desc">Self-hosted fonts, smart caching and animated progress &mdash; plus a fix so pages no longer shift while loading.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Accessible to everyone</span><span class="chip">Done</span></div>
+      <div class="desc">Keyboard focus, a skip-to-content link, screen-reader semantics and improved colour contrast throughout.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Installable app (offline-ready)</span><span class="chip">Done</span></div>
+      <div class="desc">Visitors can add the site to a phone or desktop like an app, with a simple page shown even with no connection.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Swahili-ready groundwork</span><span class="chip">Done</span></div>
+      <div class="desc">The framework for a Swahili version is in place; the toggle stays hidden until the translations are supplied.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Launch-ready content</span><span class="chip">Done</span></div>
+      <div class="desc">Your real figures, client/partner names and engineering team are pre-loaded, so the site is never empty on day one.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Enquiry pipeline &amp; export</span><span class="chip">Done</span></div>
+      <div class="desc">A clear overview of incoming enquiries with one-click export to a spreadsheet for follow-up and reporting.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Change history &amp; security</span><span class="chip">Done</span></div>
+      <div class="desc">A full audit trail of edits, a recent-activity feed, a dashboard dark mode, and optional two-factor sign-in.</div>
+    </div>
+  </div>
+
+  <!-- RELIABILITY -->
+  <h2>How we kept it fast, safe and consistent</h2>
+  <div class="grid2">
+    <div class="card"><div class="t">Tested before going live</div><div class="d">224 automated tests run on every release, and each change was reviewed before it could affect the live site.</div></div>
+    <div class="card"><div class="t">Light and fast</div><div class="d">Built with your existing tools and no heavy add-ons, so pages stay quick to load on any connection.</div></div>
+    <div class="card"><div class="t">Looks right everywhere</div><div class="d">Checked on phone, tablet and computer &mdash; in both the normal and new dark theme.</div></div>
+    <div class="card"><div class="t">One consistent brand</div><div class="d">The same navy &amp; amber identity and components are reused across every page, old and new.</div></div>
+    <div class="card"><div class="t">Considerate motion</div><div class="d">Animations are subtle and automatically switch off for visitors who prefer reduced motion.</div></div>
+    <div class="card"><div class="t">Nothing lost</div><div class="d">Existing content and settings were preserved; the new company content was added, not replaced.</div></div>
+  </div>
+
+  <!-- NEXT -->
+  <h2>What&rsquo;s next — going live</h2>
+  <div class="callout">
+    <strong>The website is feature-complete and ready to prepare for its public launch.</strong>
+    Before it goes live, three short steps remain:
+    <ul>
+      <li><strong>Confirm the flagged figures</strong> &mdash; the VAT number, a few contract values, and the office plot number &mdash; so they appear correctly. Until confirmed, they stay hidden.</li>
+      <li><strong>Add your images</strong> &mdash; company logo, project photos, client logos and certificate scans &mdash; all uploadable directly from your dashboard (the site works fully without them in the meantime).</li>
+      <li>Give the new pages a final look-over and tell us of any wording to adjust.</li>
+    </ul>
+    On your word, we prepare the final production release and the upgraded, content-filled site goes live.
+  </div>
+
+  <footer>
+    Phase 3 Progress Report &middot; 15 June 2026 &middot; <strong>DIEYNEM Co. Limited</strong> &middot; Quality is our Motto
+  </footer>
+
+</div>
+</body>
+</html>

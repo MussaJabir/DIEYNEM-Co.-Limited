@@ -1,0 +1,58 @@
+{% extends "public/base.html" %}
+
+{% block title %}{{ service.meta_title|default:service.name }} &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}{{ service.meta_description|default:service.short_description }}{% endblock %}
+{% block og_title %}{{ service.meta_title|default:service.name }}{% endblock %}
+{% block og_description %}{{ service.meta_description|default:service.short_description }}{% endblock %}
+{% block og_image %}{% if service.og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ service.og_image.url }}">{% elif service.hero_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ service.hero_image.url }}">{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "{{ service.name|escapejs }}",
+  "serviceType": "{{ service.name|escapejs }}",
+  {% if service.short_description %}"description": "{{ service.short_description|escapejs }}",{% endif %}
+  "areaServed": "Tanzania",
+  "provider": {"@type": "Organization", "name": "{{ site.company_name|escapejs }}"},
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ service.get_absolute_url }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+{% url 'services:list' as services_url %}
+{% include "public/_page_header.html" with eyebrow="Services" eyebrow_url=services_url title=service.name subtitle=service.short_description %}
+
+<section class="max-w-5xl mx-auto px-4 py-16 grid gap-10 lg:grid-cols-3">
+  <div class="lg:col-span-2" data-reveal>
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-12 h-12 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center shrink-0">
+        {% include "public/_service_icon.html" %}
+      </div>
+      <h2 class="font-heading text-2xl font-extrabold text-navy-800">What we deliver</h2>
+    </div>
+    <div class="space-y-4 text-slate-700 leading-relaxed">
+      {% if service.full_description %}{{ service.full_description|linebreaks }}{% else %}<p>{{ service.short_description }}</p>{% endif %}
+    </div>
+  </div>
+  <div data-reveal data-reveal-delay=".1s">
+    {% if service.capability_list %}
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+      <h3 class="font-heading font-bold text-navy-800 mb-3">Capabilities</h3>
+      <ul class="space-y-2.5">
+        {% for cap in service.capability_list %}
+        <li class="flex gap-2.5 text-sm text-slate-700">
+          <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          <span>{{ cap }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <a href="{% url 'leads:quote' %}" class="block text-center mt-4 bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors">Request a Quotation</a>
+  </div>
+</section>
+
+{% include "public/_cta_band.html" %}
+{% endblock %}

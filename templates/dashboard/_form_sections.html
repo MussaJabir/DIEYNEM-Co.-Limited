@@ -1,0 +1,51 @@
+{% comment %}
+Renders a StyledModelForm as two-column section cards.
+Expects:
+  form        -> a StyledModelForm exposing iter_fieldsets()
+  collapsible -> optional bool; when true each section is an Alpine accordion
+                 card (first section + any section with errors start open).
+Wide fields span both columns; everything else pairs up on sm+ screens.
+{% endcomment %}
+{% for fs in form.iter_fieldsets %}
+{% if collapsible %}
+<section x-data="{ open: {% if forloop.first or fs.has_errors %}true{% else %}false{% endif %} }"
+         class="bg-white border rounded-xl overflow-hidden {% if fs.has_errors %}border-danger/40{% else %}border-slate-200{% endif %}">
+  <button type="button" @click="open = !open" :aria-expanded="open"
+          class="w-full flex items-center justify-between gap-3 px-5 sm:px-6 py-4 text-left hover:bg-slate-50 transition-colors">
+    <span class="flex items-center gap-2">
+      <span class="font-heading font-bold text-navy-800">{{ fs.legend }}</span>
+      {% if fs.has_errors %}<span class="inline-flex w-2 h-2 rounded-full bg-danger" title="This section has errors"></span>{% endif %}
+    </span>
+    <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+    </svg>
+  </button>
+  <div x-show="open" x-transition.opacity class="px-5 sm:px-6 pb-5 sm:pb-6">
+    {% if fs.description %}<p class="text-xs text-slate-500 mb-4">{{ fs.description }}</p>{% endif %}
+    <div class="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+      {% for item in fs.fields %}
+      <div class="{% if item.wide %}sm:col-span-2{% endif %}">
+        {% include "dashboard/_field.html" with field=item.field %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="bg-white border border-slate-200 rounded-xl p-5 sm:p-6">
+  {% if fs.legend %}
+  <div class="mb-4">
+    <h2 class="font-heading font-bold text-navy-800">{{ fs.legend }}</h2>
+    {% if fs.description %}<p class="text-xs text-slate-500 mt-1">{{ fs.description }}</p>{% endif %}
+  </div>
+  {% endif %}
+  <div class="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+    {% for item in fs.fields %}
+    <div class="{% if item.wide %}sm:col-span-2{% endif %}">
+      {% include "dashboard/_field.html" with field=item.field %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endfor %}

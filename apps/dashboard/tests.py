@@ -1,0 +1,1084 @@
+import csv
+import tempfile
+from datetime import timedelta
+from io import BytesIO, StringIO
+
+from django.contrib.auth.models import Group, User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
+from PIL import Image
+
+from apps.core.models import Client, SiteSetting, Statistic, TeamMember
+from apps.credentials.models import Certificate
+from apps.dashboard.forms import (
+    CertificateForm,
+    ClientForm,
+    DownloadForm,
+    GalleryImageForm,
+    ProjectForm,
+    ProjectImageFormSet,
+    ServiceForm,
+    SiteSettingForm,
+    StatisticForm,
+    TeamMemberForm,
+)
+from apps.leads.models import Inquiry
+from apps.media_center.models import Download, GalleryImage
+from apps.projects.models import Project
+from apps.services.models import Service
+
+
+def _png_upload(name="photo.png"):
+    """A valid in-memory PNG for ImageField uploads in tests."""
+    buffer = BytesIO()
+    Image.new("RGB", (2, 2), "navy").save(buffer, "PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
+
+
+class DashboardAccessTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.administrator = User.objects.create_user("boss", password="pass12345")
+        self.administrator.groups.add(Group.objects.get(name="Administrator"))
+
+    def test_anonymous_redirected_to_login(self):
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response.url)
+
+    def test_editor_can_access_overview(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_denied_administrator_area(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:settings"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_administrator_can_open_settings(self):
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:settings"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Company identity")
+
+    def test_administrator_can_save_settings(self):
+        self.client.login(username="boss", password="pass12345")
+        data = {
+            "company_name": "DIEYNEM Co. Limited",
+            "motto": "Quality is our Motto",
+            "po_box": "P.O. Box 38075, Dar es Salaam, Tanzania",
+            "physical_address": "Magomeni, Kinondoni, Dar es Salaam",
+            "phones": "+255 22 2171512",
+            "emails": "info@dieynem.co.tz",
+            "map_embed": "",
+            "facebook_url": "https://facebook.com/dieynem",
+            "instagram_url": "",
+            "linkedin_url": "",
+            "footer_text": "Licensed Class One contractor.",
+        }
+        response = self.client.post(reverse("dashboard:settings"), data)
+        self.assertEqual(response.status_code, 302)
+        setting = SiteSetting.load()
+        self.assertEqual(setting.footer_text, "Licensed Class One contractor.")
+        self.assertEqual(setting.facebook_url, "https://facebook.com/dieynem")
+
+
+class ServiceDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {
+            "name": "New Service",
+            "short_description": "",
+            "full_description": "",
+            "capabilities": "",
+            "icon": "",
+            "order": 10,
+            "is_published": "on",
+            "meta_title": "",
+            "meta_description": "",
+        }
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:service_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:service_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_create(self):
+        response = self.client.post(reverse("dashboard:service_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Service.objects.filter(name="New Service").exists())
+
+    def test_editor_can_update(self):
+        service = Service.objects.create(name="Old", order=5)
+        response = self.client.post(
+            reverse("dashboard:service_update", args=[service.pk]),
+            self._form_data(name="Renamed", order=5),
+        )
+        self.assertEqual(response.status_code, 302)
+        service.refresh_from_db()
+        self.assertEqual(service.name, "Renamed")
+
+    def test_editor_can_delete(self):
+        service = Service.objects.create(name="ToDelete")
+        response = self.client.post(reverse("dashboard:service_delete", args=[service.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Service.objects.filter(pk=service.pk).exists())
+
+    def test_published_filter(self):
+        Service.objects.all().delete()  # ignore migration-seeded content
+        Service.objects.create(name="Live", is_published=True)
+        Service.objects.create(name="Hidden", is_published=False)
+        response = self.client.get(reverse("dashboard:service_list"), {"published": "draft"})
+        names = [s.name for s in response.context["services"]]
+        self.assertEqual(names, ["Hidden"])
+
+
+class ProjectDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {
+            "title": "New Project",
+            "status": "completed",
+            "client_name": "",
+            "main_contractor": "",
+            "consultant": "",
+            "location": "",
+            "country": "Tanzania",
+            "sector": "",
+            "role": "",
+            "year_start": "",
+            "year_end": "",
+            "completion_date": "",
+            "overview": "",
+            "scope_of_work": "",
+            "technical_highlights": "",
+            "outcome": "",
+            "contract_value": "",
+            "contract_value_visible": "on",
+            "progress_percent": "",
+            "last_updated_label": "",
+            "order": 0,
+            "meta_title": "",
+            "meta_description": "",
+            # Empty inline image formset
+            "images-TOTAL_FORMS": "0",
+            "images-INITIAL_FORMS": "0",
+            "images-MIN_NUM_FORMS": "0",
+            "images-MAX_NUM_FORMS": "1000",
+            # Empty inline milestone formset
+            "milestones-TOTAL_FORMS": "0",
+            "milestones-INITIAL_FORMS": "0",
+            "milestones-MIN_NUM_FORMS": "0",
+            "milestones-MAX_NUM_FORMS": "1000",
+            # Empty inline update formset
+            "updates-TOTAL_FORMS": "0",
+            "updates-INITIAL_FORMS": "0",
+            "updates-MIN_NUM_FORMS": "0",
+            "updates-MAX_NUM_FORMS": "1000",
+        }
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_create(self):
+        response = self.client.post(reverse("dashboard:project_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Project.objects.filter(title="New Project").exists())
+
+    def test_editor_can_update(self):
+        project = Project.objects.create(title="Old Project")
+        response = self.client.post(
+            reverse("dashboard:project_update", args=[project.pk]),
+            self._form_data(title="Renamed Project"),
+        )
+        self.assertEqual(response.status_code, 302)
+        project.refresh_from_db()
+        self.assertEqual(project.title, "Renamed Project")
+
+    def test_editor_can_delete(self):
+        project = Project.objects.create(title="ToDelete")
+        response = self.client.post(reverse("dashboard:project_delete", args=[project.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Project.objects.filter(pk=project.pk).exists())
+
+    def test_image_form_has_preview_and_add_button(self):
+        project = Project.objects.create(title="Has images")
+        response = self.client.get(reverse("dashboard:project_update", args=[project.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "imageFormset(")
+        self.assertContains(response, "Add another image")
+        self.assertContains(response, "__prefix__")  # empty-form template present
+        self.assertContains(response, 'accept="image/*"')  # preview-style picker
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_create_project_with_gallery_image(self):
+        data = self._form_data(
+            **{
+                "images-TOTAL_FORMS": "1",
+                "images-0-order": "0",
+                "images-0-show_in_gallery": "on",
+                "images-0-image": _png_upload(),
+            }
+        )
+        response = self.client.post(reverse("dashboard:project_create"), data)
+        self.assertEqual(response.status_code, 302)
+        project = Project.objects.get(title="New Project")
+        self.assertEqual(project.images.count(), 1)
+
+    def test_create_project_with_milestone_and_update(self):
+        data = self._form_data(
+            **{
+                "status": "ongoing",
+                "progress_percent": "45",
+                "milestones-TOTAL_FORMS": "1",
+                "milestones-0-title": "Cabling complete",
+                "milestones-0-is_complete": "on",
+                "milestones-0-order": "0",
+                "updates-TOTAL_FORMS": "1",
+                "updates-0-date": "2026-06-01",
+                "updates-0-note": "Main panel energised.",
+            }
+        )
+        response = self.client.post(reverse("dashboard:project_create"), data)
+        self.assertEqual(response.status_code, 302)
+        project = Project.objects.get(title="New Project")
+        self.assertEqual(project.progress_percent, 45)
+        self.assertEqual(project.milestones.count(), 1)
+        self.assertTrue(project.milestones.first().is_complete)
+        self.assertEqual(project.updates.count(), 1)
+        self.assertEqual(project.updates.first().note, "Main panel energised.")
+
+    def test_editor_shows_milestone_and_update_sections(self):
+        project = Project.objects.create(title="Ongoing one", status=Project.Status.ONGOING)
+        response = self.client.get(reverse("dashboard:project_update", args=[project.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ongoing progress")
+        self.assertContains(response, "Milestones")
+        self.assertContains(response, "Add milestone")
+        self.assertContains(response, "Project updates")
+        self.assertContains(response, "Post an update")
+        # Generic add-row Alpine helper is wired for the new formsets.
+        self.assertContains(response, "inlineFormset(")
+
+    def test_search_filters_projects(self):
+        Project.objects.all().delete()  # ignore migration-seeded content
+        Project.objects.create(title="Alpha Tower")
+        Project.objects.create(title="Beta Bridge")
+        response = self.client.get(reverse("dashboard:project_list"), {"q": "Alpha"})
+        titles = [p.title for p in response.context["projects"]]
+        self.assertEqual(titles, ["Alpha Tower"])
+
+    def test_status_filter(self):
+        Project.objects.all().delete()  # ignore migration-seeded content
+        Project.objects.create(title="Done one", status=Project.Status.COMPLETED)
+        Project.objects.create(title="Live one", status=Project.Status.ONGOING)
+        response = self.client.get(
+            reverse("dashboard:project_list"), {"status": Project.Status.ONGOING}
+        )
+        titles = [p.title for p in response.context["projects"]]
+        self.assertEqual(titles, ["Live one"])
+
+    def test_list_is_paginated(self):
+        Project.objects.all().delete()  # ignore migration-seeded content
+        for i in range(13):
+            Project.objects.create(title=f"Project {i:02d}")
+        page1 = self.client.get(reverse("dashboard:project_list"))
+        self.assertEqual(page1.context["paginator"].count, 13)
+        self.assertEqual(len(page1.context["projects"]), 12)
+        page2 = self.client.get(reverse("dashboard:project_list"), {"page": 2})
+        self.assertEqual(len(page2.context["projects"]), 1)
+
+    def test_htmx_request_returns_table_fragment_only(self):
+        response = self.client.get(reverse("dashboard:project_list"), HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "dashboard/projects/_table.html")
+        self.assertTemplateNotUsed(response, "dashboard/base.html")
+
+
+class CertificateDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.administrator = User.objects.create_user("boss", password="pass12345")
+        self.administrator.groups.add(Group.objects.get(name="Administrator"))
+
+    def _form_data(self, **overrides):
+        data = {
+            "name": "New Certificate",
+            "category": "registration",
+            "issuer": "",
+            "number": "",
+            "description": "",
+            "issue_date": "",
+            "valid_to": "",
+            "downloadable": "on",
+            "related_project": "",
+            "is_published": "on",
+            "order": 0,
+        }
+        data.update(overrides)
+        return data
+
+    def test_editor_denied(self):
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:certificate_list"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_administrator_can_list(self):
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:certificate_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_administrator_can_create(self):
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.post(reverse("dashboard:certificate_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Certificate.objects.filter(name="New Certificate").exists())
+
+    def test_administrator_can_delete(self):
+        self.client.login(username="boss", password="pass12345")
+        cert = Certificate.objects.create(name="ToDelete", category="safety")
+        response = self.client.post(reverse("dashboard:certificate_delete", args=[cert.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Certificate.objects.filter(pk=cert.pk).exists())
+
+    def test_validity_filter_returns_only_expired(self):
+        self.client.login(username="boss", password="pass12345")
+        Certificate.objects.all().delete()  # ignore migration-seeded content
+        today = timezone.localdate()
+        Certificate.objects.create(
+            name="Lapsed", category="safety", valid_to=today - timedelta(days=1)
+        )
+        Certificate.objects.create(
+            name="Good", category="safety", valid_to=today + timedelta(days=365)
+        )
+        response = self.client.get(reverse("dashboard:certificate_list"), {"validity": "expired"})
+        names = [c.name for c in response.context["certificates"]]
+        self.assertEqual(names, ["Lapsed"])
+
+
+class InquiryDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        self.inquiry = Inquiry.objects.create(name="Lead", email="lead@x.tz", message="Hello")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:inquiry_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:inquiry_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_update_status(self):
+        response = self.client.post(
+            reverse("dashboard:inquiry_detail", args=[self.inquiry.pk]),
+            {"status": "contacted", "internal_notes": "Called them."},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.inquiry.refresh_from_db()
+        self.assertEqual(self.inquiry.status, "contacted")
+        self.assertEqual(self.inquiry.internal_notes, "Called them.")
+
+    def test_editor_can_delete(self):
+        response = self.client.post(reverse("dashboard:inquiry_delete", args=[self.inquiry.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Inquiry.objects.filter(pk=self.inquiry.pk).exists())
+
+    def test_search_filters_inquiries(self):
+        Inquiry.objects.create(name="Acme Corp", email="ops@acme.tz", message="Hi")
+        response = self.client.get(reverse("dashboard:inquiry_list"), {"q": "acme"})
+        names = [i.name for i in response.context["inquiries"]]
+        self.assertEqual(names, ["Acme Corp"])
+
+    def test_pipeline_counts_and_export_button(self):
+        Inquiry.objects.create(name="Won lead", email="w@x.tz", message="Hi", status="won")
+        Inquiry.objects.create(name="Won two", email="w2@x.tz", message="Hi", status="won")
+        response = self.client.get(reverse("dashboard:inquiry_list"))
+        stages = {s["value"]: s["count"] for s in response.context["pipeline"]}
+        self.assertEqual(stages["won"], 2)
+        self.assertEqual(stages["new"], 1)  # the setUp inquiry
+        self.assertEqual(response.context["pipeline_total"], 3)
+        self.assertContains(response, "Export CSV")
+
+
+class InquiryExportTests(TestCase):
+    def setUp(self):
+        Inquiry.objects.all().delete()
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        Inquiry.objects.create(name="Acme Ltd", email="ops@acme.tz", message="Wiring", status="new")
+        Inquiry.objects.create(name="Beta Co", email="b@beta.tz", message="Quote", status="won")
+        # A message with a comma, quote and newline exercises CSV quoting.
+        Inquiry.objects.create(
+            name="Tricky, Inc",
+            email="c@x.tz",
+            message='Line one, with "quotes"\nLine two',
+            status="won",
+        )
+
+    def _rows(self, response):
+        return list(csv.reader(StringIO(response.content.decode())))
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:inquiry_export"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_export_is_csv_attachment(self):
+        response = self.client.get(reverse("dashboard:inquiry_export"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn("attachment", response["Content-Disposition"])
+        self.assertIn(".csv", response["Content-Disposition"])
+
+    def test_export_has_header_and_all_rows(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export")))
+        self.assertEqual(rows[0][:2], ["Received", "Name"])
+        self.assertEqual(len(rows), 4)  # header + 3 inquiries
+
+    def test_export_preserves_special_characters_in_one_field(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export")))
+        tricky = [r for r in rows if r[1] == "Tricky, Inc"][0]
+        # The comma/quote/newline message survives intact as a single field.
+        self.assertEqual(tricky[9], 'Line one, with "quotes"\nLine two')
+
+    def test_export_respects_status_filter(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export"), {"status": "won"}))
+        names = {r[1] for r in rows[1:]}
+        self.assertEqual(names, {"Beta Co", "Tricky, Inc"})
+
+    def test_export_respects_search(self):
+        rows = self._rows(self.client.get(reverse("dashboard:inquiry_export"), {"q": "acme"}))
+        self.assertEqual(len(rows), 2)  # header + Acme only
+
+
+class StatisticDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {"label": "Km of line", "value": 120, "prefix": "", "suffix": " km", "order": 0}
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:statistic_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:statistic_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_editor_can_create(self):
+        response = self.client.post(
+            reverse("dashboard:statistic_create"), self._form_data(is_active="on")
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Statistic.objects.filter(label="Km of line").exists())
+
+    def test_editor_can_delete(self):
+        stat = Statistic.objects.create(label="ToDelete", value=1)
+        response = self.client.post(reverse("dashboard:statistic_delete", args=[stat.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Statistic.objects.filter(pk=stat.pk).exists())
+
+    def test_active_filter(self):
+        Statistic.objects.create(label="Live", value=1, is_active=True)
+        Statistic.objects.create(label="Hidden", value=2, is_active=False)
+        response = self.client.get(reverse("dashboard:statistic_list"), {"active": "inactive"})
+        labels = [s.label for s in response.context["statistics"]]
+        self.assertEqual(labels, ["Hidden"])
+
+
+class ClientDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {"name": "Tanesco", "type": "client", "website": "", "order": 0}
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:client_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_create(self):
+        response = self.client.post(reverse("dashboard:client_create"), self._form_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Client.objects.filter(name="Tanesco").exists())
+
+    def test_editor_can_delete(self):
+        obj = Client.objects.create(name="ToDelete")
+        response = self.client.post(reverse("dashboard:client_delete", args=[obj.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Client.objects.filter(pk=obj.pk).exists())
+
+    def test_type_filter(self):
+        Client.objects.all().delete()  # ignore the seeded clients band
+        Client.objects.create(name="A Client", type=Client.Type.CLIENT)
+        Client.objects.create(name="A Partner", type=Client.Type.PARTNER)
+        response = self.client.get(reverse("dashboard:client_list"), {"type": "partner"})
+        names = [c.name for c in response.context["clients"]]
+        self.assertEqual(names, ["A Partner"])
+
+
+class TeamMemberDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _form_data(self, **overrides):
+        data = {
+            "name": "Jane Doe",
+            "qualification": "Eng.",
+            "role": "Managing Director",
+            "group": "leadership",
+            "order": 0,
+        }
+        data.update(overrides)
+        return data
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:team_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_create(self):
+        response = self.client.post(
+            reverse("dashboard:team_create"), self._form_data(is_active="on")
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(TeamMember.objects.filter(name="Jane Doe").exists())
+
+    def test_editor_can_delete(self):
+        member = TeamMember.objects.create(name="ToDelete", role="X")
+        response = self.client.post(reverse("dashboard:team_delete", args=[member.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(TeamMember.objects.filter(pk=member.pk).exists())
+
+    def test_group_filter(self):
+        TeamMember.objects.all().delete()  # ignore the seeded leadership + engineers
+        TeamMember.objects.create(name="Lead One", role="MD", group=TeamMember.Group.LEADERSHIP)
+        TeamMember.objects.create(name="Eng One", role="Engineer", group=TeamMember.Group.ENGINEER)
+        response = self.client.get(reverse("dashboard:team_list"), {"group": "engineer"})
+        names = [m.name for m in response.context["members"]]
+        self.assertEqual(names, ["Eng One"])
+
+
+class GalleryDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:gallery_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:gallery_list"))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_editor_can_create(self):
+        data = {
+            "title": "Switchgear",
+            "caption": "",
+            "category": "Switchgear",
+            "related_project": "",
+            "order": 0,
+            "is_active": "on",
+            "image": _png_upload(),
+        }
+        response = self.client.post(reverse("dashboard:gallery_create"), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(GalleryImage.objects.filter(title="Switchgear").exists())
+
+    def test_editor_can_delete(self):
+        image = GalleryImage.objects.create(image="x.jpg", title="ToDelete")
+        response = self.client.post(reverse("dashboard:gallery_delete", args=[image.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(GalleryImage.objects.filter(pk=image.pk).exists())
+
+    def test_active_filter(self):
+        GalleryImage.objects.create(image="a.jpg", title="Live", is_active=True)
+        GalleryImage.objects.create(image="b.jpg", title="Hidden", is_active=False)
+        response = self.client.get(reverse("dashboard:gallery_list"), {"active": "inactive"})
+        titles = [g.title for g in response.context["images"]]
+        self.assertEqual(titles, ["Hidden"])
+
+
+class DownloadDashboardTests(TestCase):
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def _pdf(self, name="profile.pdf"):
+        return SimpleUploadedFile(name, b"%PDF-1.4 fake", content_type="application/pdf")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        response = self.client.get(reverse("dashboard:download_list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_editor_can_list(self):
+        response = self.client.get(reverse("dashboard:download_list"))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_editor_can_create(self):
+        data = {
+            "title": "Company Profile 2026",
+            "description": "",
+            "category": "company_profile",
+            "order": 0,
+            "is_public": "on",
+            "file": self._pdf(),
+        }
+        response = self.client.post(reverse("dashboard:download_create"), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Download.objects.filter(title="Company Profile 2026").exists())
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_editor_can_delete(self):
+        download = Download.objects.create(title="ToDelete", file=self._pdf())
+        response = self.client.post(reverse("dashboard:download_delete", args=[download.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Download.objects.filter(pk=download.pk).exists())
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_category_filter(self):
+        Download.objects.create(
+            title="A Profile", file=self._pdf(), category=Download.Category.COMPANY_PROFILE
+        )
+        Download.objects.create(
+            title="A Brochure", file=self._pdf(), category=Download.Category.BROCHURE
+        )
+        response = self.client.get(reverse("dashboard:download_list"), {"category": "brochure"})
+        titles = [d.title for d in response.context["downloads"]]
+        self.assertEqual(titles, ["A Brochure"])
+
+
+class DashboardFormLayoutTests(TestCase):
+    """Two-column fieldset rendering for the dashboard forms."""
+
+    def test_fieldsets_render_every_field(self):
+        # Guards against a field being dropped from a form's ``fieldsets``.
+        for form_cls in (
+            ProjectForm,
+            ServiceForm,
+            CertificateForm,
+            SiteSettingForm,
+            StatisticForm,
+            ClientForm,
+            TeamMemberForm,
+            GalleryImageForm,
+            DownloadForm,
+        ):
+            form = form_cls()
+            rendered = {
+                item["field"].name
+                for section in form.iter_fieldsets()
+                for item in section["fields"]
+            }
+            self.assertEqual(
+                rendered,
+                set(form.fields),
+                msg=f"{form_cls.__name__}.fieldsets must render every field",
+            )
+
+    def test_form_without_fieldsets_renders_one_section(self):
+        SiteSettingForm.fieldsets, saved = [], SiteSettingForm.fieldsets
+        try:
+            sections = list(SiteSettingForm().iter_fieldsets())
+        finally:
+            SiteSettingForm.fieldsets = saved
+        self.assertEqual(len(sections), 1)
+        self.assertIsNone(sections[0]["legend"])
+
+    def test_project_form_renders_grouped_sections(self):
+        editor = User.objects.create_user("editor", password="pass12345")
+        editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:project_create"))
+        self.assertEqual(response.status_code, 200)
+        # Section legends present.
+        self.assertContains(response, "Basics")
+        self.assertContains(response, "Story")
+        # Every key input still rendered.
+        self.assertContains(response, 'name="title"')
+        self.assertContains(response, 'name="overview"')
+        self.assertContains(response, 'name="meta_description"')
+        # Sticky save bar with submit-spinner wiring.
+        self.assertContains(response, "Save project")
+        self.assertContains(response, "saving = true")
+        # Collapsible accordion sections.
+        self.assertContains(response, ':aria-expanded="open"')
+
+    def test_image_fields_detected_excluding_plain_files(self):
+        self.assertIn("hero_image", ProjectForm().image_fields)
+        self.assertIn("display_image", CertificateForm().image_fields)
+        # The certificate scan is a plain FileField, not an image preview.
+        self.assertNotIn("file", CertificateForm().image_fields)
+        self.assertEqual(SiteSettingForm().image_fields, {"logo", "default_og_image"})
+
+    def test_image_formset_has_no_always_on_blank_rows(self):
+        self.assertEqual(ProjectImageFormSet.extra, 0)
+
+    def test_section_flags_errors_for_auto_open(self):
+        # A bound form missing a required field marks that section so the
+        # template can open it automatically.
+        form = ProjectForm(data={"status": "completed", "country": "Tanzania", "order": "0"})
+        self.assertFalse(form.is_valid())  # title is required
+        sections = {s["legend"]: s["has_errors"] for s in form.iter_fieldsets()}
+        self.assertTrue(sections["Basics"], "Basics holds the missing title")
+        self.assertFalse(sections["Story"], "Story fields are all optional")
+
+
+class OverviewComplianceTests(TestCase):
+    """Certificate expiry warnings on the dashboard Overview (< 60 days)."""
+
+    def setUp(self):
+        Certificate.objects.all().delete()
+        self.today = timezone.localdate()
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.administrator = User.objects.create_user("boss", password="pass12345")
+        self.administrator.groups.add(Group.objects.get(name="Administrator"))
+
+    def _make(self, name, valid_to):
+        return Certificate.objects.create(name=name, category="safety", valid_to=valid_to)
+
+    def test_panel_counts_split_expired_and_expiring(self):
+        self._make("Lapsed", self.today - timedelta(days=3))
+        self._make("Soon", self.today + timedelta(days=12))
+        self._make("Fine", self.today + timedelta(days=400))  # not in attention
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.context["certs_expired_count"], 1)
+        self.assertEqual(response.context["certs_expiring_count"], 1)
+        self.assertEqual(response.context["certs_attention_count"], 2)
+
+    def test_panel_orders_most_urgent_first(self):
+        self._make("Soon", self.today + timedelta(days=30))
+        self._make("Lapsed", self.today - timedelta(days=5))
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        names = [c.name for c in response.context["certs_attention"]]
+        self.assertEqual(names, ["Lapsed", "Soon"])
+
+    def test_panel_shows_day_counts_and_excludes_current(self):
+        self._make("Lapsed", self.today - timedelta(days=3))
+        self._make("Soon", self.today + timedelta(days=12))
+        self._make("Fine", self.today + timedelta(days=400))
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertContains(response, "Expired 3 days ago")
+        self.assertContains(response, "Expires in 12 days")
+        self.assertContains(response, "Compliance attention needed")
+        # The current cert is excluded from the compliance panel. (Checked via
+        # context, not the page text: the recent-activity feed may legitimately
+        # mention "Fine" as a recent change.)
+        self.assertNotIn("Fine", [c.name for c in response.context["certs_attention"]])
+
+    def test_editor_does_not_see_compliance_panel(self):
+        self._make("Lapsed", self.today - timedelta(days=3))
+        self.client.login(username="editor", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Compliance attention needed")
+
+    def test_no_panel_when_all_current(self):
+        self._make("Fine", self.today + timedelta(days=400))
+        self.client.login(username="boss", password="pass12345")
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertNotContains(response, "Compliance attention needed")
+
+
+class AuditTrailTests(TestCase):
+    """django-simple-history records who changed what; surfaced on Overview."""
+
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+        self.client.login(username="editor", password="pass12345")
+
+    def test_dashboard_edit_records_history_with_user(self):
+        # Create then update a service through the dashboard; both are recorded,
+        # and the middleware stamps the acting user on each entry.
+        self.client.post(
+            reverse("dashboard:service_create"),
+            {
+                "name": "Audited Service",
+                "short_description": "",
+                "full_description": "",
+                "capabilities": "",
+                "icon": "",
+                "order": 10,
+                "is_published": "on",
+                "meta_title": "",
+                "meta_description": "",
+            },
+        )
+        service = Service.objects.get(name="Audited Service")
+        self.client.post(
+            reverse("dashboard:service_update", args=[service.pk]),
+            {
+                "name": "Audited Service v2",
+                "short_description": "",
+                "full_description": "",
+                "capabilities": "",
+                "icon": "",
+                "order": 10,
+                "is_published": "on",
+                "meta_title": "",
+                "meta_description": "",
+            },
+        )
+        history = service.history.all()
+        self.assertEqual(history.count(), 2)
+        self.assertEqual(history.first().get_history_type_display(), "Changed")
+        self.assertEqual(history.last().get_history_type_display(), "Created")
+        self.assertEqual(history.first().history_user, self.editor)
+
+    def test_overview_shows_recent_activity_with_actor(self):
+        self.client.post(
+            reverse("dashboard:client_create"),
+            {"name": "Audited Client", "type": "client", "website": "", "order": 0},
+        )
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertContains(response, "Recent activity")
+        self.assertContains(response, "Audited Client")
+        self.assertContains(response, "editor")
+        self.assertContains(response, "Created")
+
+    def test_recent_activity_merges_models_newest_first(self):
+        from apps.dashboard.activity import recent_activity
+
+        Service.objects.create(name="Older Service")
+        Project.objects.create(title="Newer Project")
+        feed = recent_activity()
+        self.assertGreaterEqual(len(feed), 2)
+        # Project was created last, so it leads the merged feed.
+        self.assertEqual(feed[0]["model"], "Project")
+        self.assertEqual(feed[0]["name"], "Newer Project")
+        self.assertEqual(feed[0]["action"], "Created")
+
+
+class TwoFactorTests(TestCase):
+    """Opt-in per-user two-factor authentication for the dashboard."""
+
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+
+    # --- helpers ---------------------------------------------------------
+
+    def _confirmed_totp_device(self, user):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        return TOTPDevice.objects.create(user=user, name="default", confirmed=True)
+
+    def _current_token(self, device):
+        from django_otp.oath import totp
+
+        return totp(
+            device.bin_key,
+            step=device.step,
+            t0=device.t0,
+            digits=device.digits,
+            drift=device.drift,
+        )
+
+    def _login(self):
+        self.client.login(username="editor", password="pass12345")
+
+    # --- opt-in: a user with no device is never challenged ---------------
+
+    def test_security_page_shows_off_without_device(self):
+        self._login()
+        response = self.client.get(reverse("dashboard:security"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["two_factor_enabled"])
+        self.assertContains(response, "Turn on two-factor")
+
+    def test_user_without_device_is_not_gated(self):
+        self._login()
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 200)
+
+    # --- enable / confirm flow ------------------------------------------
+
+    def test_enable_get_shows_qr_and_secret(self):
+        self._login()
+        response = self.client.get(reverse("dashboard:two_factor_enable"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<svg")
+        self.assertContains(response, response.context["secret"])
+
+    def test_enable_post_with_valid_code_confirms_and_shows_backup_codes(self):
+        from django_otp.plugins.otp_static.models import StaticDevice
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        self._login()
+        # GET first to create the unconfirmed device, then confirm it.
+        self.client.get(reverse("dashboard:two_factor_enable"))
+        device = TOTPDevice.objects.get(user=self.editor)
+        self.assertFalse(device.confirmed)
+        response = self.client.post(
+            reverse("dashboard:two_factor_enable"),
+            {"otp_token": self._current_token(device)},
+        )
+        self.assertEqual(response.status_code, 200)
+        device.refresh_from_db()
+        self.assertTrue(device.confirmed)
+        self.assertEqual(len(response.context["backup_tokens"]), 10)
+        self.assertTrue(StaticDevice.objects.filter(user=self.editor).exists())
+
+    def test_enable_post_with_bad_code_does_not_confirm(self):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        self._login()
+        self.client.get(reverse("dashboard:two_factor_enable"))
+        response = self.client.post(
+            reverse("dashboard:two_factor_enable"),
+            {"otp_token": "000000"},
+        )
+        self.assertEqual(response.status_code, 200)
+        device = TOTPDevice.objects.get(user=self.editor)
+        self.assertFalse(device.confirmed)
+
+    # --- gate: enrolled but unverified is redirected to the challenge ----
+
+    def test_enrolled_unverified_user_is_redirected_to_challenge(self):
+        self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("dashboard:otp_challenge"), response.url)
+
+    def test_challenge_page_itself_is_not_gated(self):
+        self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.get(reverse("dashboard:otp_challenge"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_challenge_with_valid_totp_grants_access(self):
+        device = self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": self._current_token(device), "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(response.status_code, 302)
+        # Now verified — the overview opens directly.
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 200)
+
+    def test_challenge_with_backup_token_grants_access_once(self):
+        from apps.dashboard.two_factor import issue_backup_tokens
+
+        self._confirmed_totp_device(self.editor)
+        tokens = issue_backup_tokens(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": tokens[0], "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 200)
+
+        # The same backup token cannot be reused in a fresh session.
+        self.client.logout()
+        self._login()
+        replay = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": tokens[0], "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(replay.status_code, 200)
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 302)
+
+    def test_challenge_with_bad_code_does_not_verify(self):
+        self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": "000000", "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 302)
+
+    def test_challenge_rejects_unsafe_next(self):
+        device = self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": self._current_token(device), "next": "https://evil.example.com"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("dashboard:overview"))
+
+    # --- disable ---------------------------------------------------------
+
+    def test_disable_removes_devices_and_lifts_gate(self):
+        from django_otp.plugins.otp_static.models import StaticDevice
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        from apps.dashboard.two_factor import issue_backup_tokens
+
+        device = self._confirmed_totp_device(self.editor)
+        issue_backup_tokens(self.editor)
+        self._login()
+        # Verify so the disable POST is reachable through the gate.
+        self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": self._current_token(device), "next": reverse("dashboard:overview")},
+        )
+        response = self.client.post(reverse("dashboard:two_factor_disable"))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(TOTPDevice.objects.filter(user=self.editor).exists())
+        self.assertFalse(StaticDevice.objects.filter(user=self.editor).exists())
+        # A fresh login is no longer gated.
+        self.client.logout()
+        self._login()
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 200)

@@ -1,0 +1,105 @@
+{% extends "public/base.html" %}
+{% load media_extras %}
+
+{% block title %}Ongoing Projects &mdash; DIEYNEM Co. Limited{% endblock %}
+{% block meta_description %}Live status of DIEYNEM Co. Limited's ongoing projects — progress, milestones and the latest site updates across our active electrical, ICT and infrastructure works.{% endblock %}
+
+{% block content %}
+{% include "public/_page_header.html" with eyebrow="Live portfolio" title="Ongoing Projects" subtitle="Active works in progress — tracked by milestone and updated from site as each project advances." %}
+
+<section class="max-w-5xl mx-auto px-4 py-16 space-y-10">
+  {% for project in projects %}
+  <article data-reveal class="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+    <div class="grid md:grid-cols-3">
+      <!-- Visual / status -->
+      <div class="relative md:col-span-1 min-h-[12rem] bg-gradient-to-br from-navy-800 to-navy-950">
+        {% if project.hero_image %}
+          {% responsive_image project.hero_image alt=project.title img_class="absolute inset-0 w-full h-full object-cover" sizes="(min-width: 768px) 33vw, 100vw" ratio="4:3" %}
+        {% else %}
+          <div class="absolute inset-0 flex items-center justify-center"><span class="font-heading text-white/20 font-extrabold text-3xl">DIEYNEM.</span></div>
+        {% endif %}
+        <span class="absolute top-3 left-3 text-[10px] uppercase font-bold px-2 py-1 rounded-full bg-amber-500 text-navy-950">Ongoing</span>
+      </div>
+
+      <!-- Body -->
+      <div class="md:col-span-2 p-6 sm:p-7">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          {% if project.sector %}<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-navy-50 text-navy-700">{{ project.get_sector_display }}</span>{% endif %}
+          {% if project.last_updated_label %}<span class="text-xs text-slate-500">Updated {{ project.last_updated_label|date:"j M Y" }}</span>{% endif %}
+        </div>
+        <h2 class="font-heading text-xl font-bold text-navy-800 leading-snug">
+          <a href="{{ project.get_absolute_url }}" class="hover:text-navy-600 transition-colors">{{ project.title }}</a>
+        </h2>
+        {% if project.location %}<p class="text-slate-500 text-sm mt-1">{{ project.location }}, {{ project.country }}</p>{% endif %}
+
+        {% with progress=project.display_progress %}
+        {% if progress is not None %}
+        <div class="mt-5">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-1.5">
+            <span>Progress</span>
+            <span class="text-navy-700 tabular-nums">{{ progress }}%</span>
+          </div>
+          <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full rounded-full bg-amber-500 progress-bar" style="--target: {{ progress }}%"></div>
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% with milestones=project.milestones.all %}
+        {% if milestones %}
+        <div class="mt-5">
+          <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2.5">Milestones</h3>
+          <ul class="space-y-1.5">
+            {% for m in milestones %}
+            <li class="flex items-center gap-2.5 text-sm {% if m.is_complete %}text-slate-700{% else %}text-slate-500{% endif %}">
+              {% if m.is_complete %}
+              <svg class="w-4 h-4 text-ok shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              {% else %}
+              <span class="w-4 h-4 shrink-0 rounded-full border-2 border-slate-300" aria-hidden="true"></span>
+              {% endif %}
+              <span class="{% if m.is_complete %}font-medium{% endif %}">{{ m.title }}</span>
+              {% if m.date %}<span class="text-xs text-slate-500 ml-auto shrink-0">{{ m.date|date:"M Y" }}</span>{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% with updates=project.updates.all|slice:":3" %}
+        {% if updates %}
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <h3 class="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2.5">Latest updates</h3>
+          <ul class="space-y-3">
+            {% for u in updates %}
+            <li class="flex gap-3">
+              {% if u.image %}<span class="block w-12 h-12 shrink-0">{% responsive_image u.image alt="" img_class="w-12 h-12 rounded-lg object-cover border border-slate-200" sizes="48px" ratio="1:1" %}</span>{% endif %}
+              <div class="min-w-0">
+                <p class="text-xs text-slate-500">{{ u.date|date:"j M Y" }}</p>
+                <p class="text-sm text-slate-700">{{ u.note }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <a href="{{ project.get_absolute_url }}" class="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-navy-600 hover:text-navy-700 transition-colors">
+          View project
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </article>
+  {% empty %}
+  <div class="text-center py-16">
+    <p class="text-slate-500">No ongoing projects to show right now.</p>
+    <a href="{% url 'projects:list' %}" class="inline-block mt-4 text-navy-600 font-semibold hover:text-navy-700 transition-colors">Browse completed projects &rarr;</a>
+  </div>
+  {% endfor %}
+</section>
+
+{% include "public/_cta_band.html" %}
+{% endblock %}

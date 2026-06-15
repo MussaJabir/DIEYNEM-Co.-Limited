@@ -1,0 +1,39 @@
+{% comment %}Inquiries table fragment — full page on load, HTMX swap on filter/page.{% endcomment %}
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <div class="px-4 py-3 border-b border-slate-100">
+    <p class="text-sm text-slate-500">{{ page_obj.paginator.count }} inquir{{ page_obj.paginator.count|pluralize:"y,ies" }}{% if q %} matching &ldquo;{{ q }}&rdquo;{% endif %}</p>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600 text-left">
+        <tr>
+          <th class="px-4 py-3 font-semibold">From</th>
+          <th class="px-4 py-3 font-semibold">Service</th>
+          <th class="px-4 py-3 font-semibold">Received</th>
+          <th class="px-4 py-3 font-semibold">Status</th>
+          <th class="px-4 py-3 font-semibold text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inquiry in inquiries %}
+        <tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+          <td class="px-4 py-3">
+            <a href="{% url 'dashboard:inquiry_detail' inquiry.pk %}" class="font-medium text-navy-700 hover:underline">{{ inquiry.name }}</a>
+            <div class="text-xs text-slate-500">{{ inquiry.email }}</div>
+          </td>
+          <td class="px-4 py-3 text-slate-500">{{ inquiry.service_interest|default:"&mdash;" }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ inquiry.created_at|date:"d M Y" }}</td>
+          <td class="px-4 py-3">{% include "dashboard/inquiries/_status_chip.html" with status=inquiry.status label=inquiry.get_status_display %}</td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'dashboard:inquiry_detail' inquiry.pk %}" class="text-navy-600 font-semibold hover:underline">Open</a>
+            <a href="{% url 'dashboard:inquiry_delete' inquiry.pk %}" class="ml-3 text-danger font-semibold hover:underline">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">{% if q or active_status %}No inquiries match your filters.{% else %}No inquiries yet.{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "dashboard/_pagination.html" %}
+</div>
