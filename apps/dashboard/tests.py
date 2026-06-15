@@ -902,3 +902,181 @@ class AuditTrailTests(TestCase):
         self.assertEqual(feed[0]["model"], "Project")
         self.assertEqual(feed[0]["name"], "Newer Project")
         self.assertEqual(feed[0]["action"], "Created")
+
+
+class TwoFactorTests(TestCase):
+    """Opt-in per-user two-factor authentication for the dashboard."""
+
+    def setUp(self):
+        self.editor = User.objects.create_user("editor", password="pass12345")
+        self.editor.groups.add(Group.objects.get(name="Editor"))
+
+    # --- helpers ---------------------------------------------------------
+
+    def _confirmed_totp_device(self, user):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        return TOTPDevice.objects.create(user=user, name="default", confirmed=True)
+
+    def _current_token(self, device):
+        from django_otp.oath import totp
+
+        return totp(
+            device.bin_key,
+            step=device.step,
+            t0=device.t0,
+            digits=device.digits,
+            drift=device.drift,
+        )
+
+    def _login(self):
+        self.client.login(username="editor", password="pass12345")
+
+    # --- opt-in: a user with no device is never challenged ---------------
+
+    def test_security_page_shows_off_without_device(self):
+        self._login()
+        response = self.client.get(reverse("dashboard:security"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["two_factor_enabled"])
+        self.assertContains(response, "Turn on two-factor")
+
+    def test_user_without_device_is_not_gated(self):
+        self._login()
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 200)
+
+    # --- enable / confirm flow ------------------------------------------
+
+    def test_enable_get_shows_qr_and_secret(self):
+        self._login()
+        response = self.client.get(reverse("dashboard:two_factor_enable"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<svg")
+        self.assertContains(response, response.context["secret"])
+
+    def test_enable_post_with_valid_code_confirms_and_shows_backup_codes(self):
+        from django_otp.plugins.otp_static.models import StaticDevice
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        self._login()
+        # GET first to create the unconfirmed device, then confirm it.
+        self.client.get(reverse("dashboard:two_factor_enable"))
+        device = TOTPDevice.objects.get(user=self.editor)
+        self.assertFalse(device.confirmed)
+        response = self.client.post(
+            reverse("dashboard:two_factor_enable"),
+            {"otp_token": self._current_token(device)},
+        )
+        self.assertEqual(response.status_code, 200)
+        device.refresh_from_db()
+        self.assertTrue(device.confirmed)
+        self.assertEqual(len(response.context["backup_tokens"]), 10)
+        self.assertTrue(StaticDevice.objects.filter(user=self.editor).exists())
+
+    def test_enable_post_with_bad_code_does_not_confirm(self):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        self._login()
+        self.client.get(reverse("dashboard:two_factor_enable"))
+        response = self.client.post(
+            reverse("dashboard:two_factor_enable"),
+            {"otp_token": "000000"},
+        )
+        self.assertEqual(response.status_code, 200)
+        device = TOTPDevice.objects.get(user=self.editor)
+        self.assertFalse(device.confirmed)
+
+    # --- gate: enrolled but unverified is redirected to the challenge ----
+
+    def test_enrolled_unverified_user_is_redirected_to_challenge(self):
+        self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.get(reverse("dashboard:overview"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("dashboard:otp_challenge"), response.url)
+
+    def test_challenge_page_itself_is_not_gated(self):
+        self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.get(reverse("dashboard:otp_challenge"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_challenge_with_valid_totp_grants_access(self):
+        device = self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": self._current_token(device), "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(response.status_code, 302)
+        # Now verified — the overview opens directly.
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 200)
+
+    def test_challenge_with_backup_token_grants_access_once(self):
+        from apps.dashboard.two_factor import issue_backup_tokens
+
+        self._confirmed_totp_device(self.editor)
+        tokens = issue_backup_tokens(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": tokens[0], "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 200)
+
+        # The same backup token cannot be reused in a fresh session.
+        self.client.logout()
+        self._login()
+        replay = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": tokens[0], "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(replay.status_code, 200)
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 302)
+
+    def test_challenge_with_bad_code_does_not_verify(self):
+        self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": "000000", "next": reverse("dashboard:overview")},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 302)
+
+    def test_challenge_rejects_unsafe_next(self):
+        device = self._confirmed_totp_device(self.editor)
+        self._login()
+        response = self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": self._current_token(device), "next": "https://evil.example.com"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("dashboard:overview"))
+
+    # --- disable ---------------------------------------------------------
+
+    def test_disable_removes_devices_and_lifts_gate(self):
+        from django_otp.plugins.otp_static.models import StaticDevice
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        from apps.dashboard.two_factor import issue_backup_tokens
+
+        device = self._confirmed_totp_device(self.editor)
+        issue_backup_tokens(self.editor)
+        self._login()
+        # Verify so the disable POST is reachable through the gate.
+        self.client.post(
+            reverse("dashboard:otp_challenge"),
+            {"otp_token": self._current_token(device), "next": reverse("dashboard:overview")},
+        )
+        response = self.client.post(reverse("dashboard:two_factor_disable"))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(TOTPDevice.objects.filter(user=self.editor).exists())
+        self.assertFalse(StaticDevice.objects.filter(user=self.editor).exists())
+        # A fresh login is no longer gated.
+        self.client.logout()
+        self._login()
+        self.assertEqual(self.client.get(reverse("dashboard:overview")).status_code, 200)

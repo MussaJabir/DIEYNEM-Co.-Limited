@@ -25,6 +25,9 @@ INSTALLED_APPS = [
     # Third-party
     "easy_thumbnails",
     "simple_history",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_static",
     # Local apps
     "apps.core",
     "apps.services",
@@ -44,6 +47,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Sets request.user.is_verified() for opt-in dashboard 2FA (after auth).
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Records the logged-in user on each history record (must follow auth).

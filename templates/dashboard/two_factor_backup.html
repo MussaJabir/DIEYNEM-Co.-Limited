@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Backup codes &middot; DIEYNEM Admin{% endblock %}
+{% block heading %}Save your backup codes{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl">
+  <section class="bg-white border border-slate-200 rounded-xl p-6">
+    <div class="rounded-lg bg-amber-100 border border-amber-400 text-warn px-4 py-3 text-sm">
+      <strong>Two-factor is on.</strong> Save these one-time backup codes somewhere safe — each works once if you ever lose access to your authenticator app. They won't be shown again.
+    </div>
+    <ul class="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 font-mono text-navy-800 text-sm">
+      {% for token in backup_tokens %}<li class="tabular-nums">{{ token }}</li>{% endfor %}
+    </ul>
+    <a href="{% url 'dashboard:security' %}" class="inline-block mt-6 bg-navy-600 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-navy-700 transition-colors">I've saved them — done</a>
+  </section>
+</div>
+{% endblock %}
