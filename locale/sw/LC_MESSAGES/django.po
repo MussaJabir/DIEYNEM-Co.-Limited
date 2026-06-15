@@ -1,0 +1,223 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-15 09:22+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/core/tests.py:184 templates/public/base.html:76
+#: templates/public/base.html:96 templates/public/base.html:123
+msgid "About"
+msgstr ""
+
+#: templates/public/_cta_band.html:10
+msgid "Have a project or tender? Let's talk."
+msgstr ""
+
+#: templates/public/_cta_band.html:11
+msgid ""
+"Send us your scope and we'll prepare a detailed quotation — or invite "
+"DIEYNEM to tender on your next electrical, ICT, fire, HVAC or power-"
+"infrastructure works."
+msgstr ""
+
+#: templates/public/_cta_band.html:14 templates/public/base.html:130
+#: templates/public/home.html:20
+msgid "Request a Quotation"
+msgstr ""
+
+#: templates/public/_language_toggle.html:12
+msgid "Language"
+msgstr ""
+
+#: templates/public/base.html:70
+msgid "Skip to content"
+msgstr ""
+
+#: templates/public/base.html:75 templates/public/base.html:95
+msgid "Home"
+msgstr ""
+
+#: templates/public/base.html:77 templates/public/base.html:97
+#: templates/public/base.html:124
+msgid "Services"
+msgstr ""
+
+#: templates/public/base.html:78 templates/public/base.html:98
+#: templates/public/base.html:125
+msgid "Projects"
+msgstr ""
+
+#: templates/public/base.html:79 templates/public/base.html:99
+msgid "Ongoing"
+msgstr ""
+
+#: templates/public/base.html:80 templates/public/base.html:100
+#: templates/public/base.html:127
+msgid "Gallery"
+msgstr ""
+
+#: templates/public/base.html:81 templates/public/base.html:101
+#: templates/public/base.html:128 templates/public/home.html:80
+msgid "Certifications"
+msgstr ""
+
+#: templates/public/base.html:82 templates/public/base.html:134
+msgid "Contact"
+msgstr ""
+
+#: templates/public/base.html:86 templates/public/base.html:102
+msgid "Request Quotation"
+msgstr ""
+
+#: templates/public/base.html:113
+msgid ""
+"Class One electrical, ICT, fire, HVAC, solar and power-infrastructure "
+"contractor serving government, institutional and corporate clients across "
+"Tanzania."
+msgstr ""
+
+#: templates/public/base.html:121
+msgid "Explore"
+msgstr ""
+
+#: templates/public/base.html:126
+msgid "Ongoing Projects"
+msgstr ""
+
+#: templates/public/base.html:129
+msgid "Downloads"
+msgstr ""
+
+#: templates/public/base.html:143
+msgid "All rights reserved."
+msgstr ""
+
+#: templates/public/home.html:15
+msgid "Class One Engineering Contractor · Since 2011"
+msgstr ""
+
+#: templates/public/home.html:16
+msgid "Powering Tanzania's Landmark Buildings &amp; Infrastructure"
+msgstr ""
+
+#: templates/public/home.html:17
+msgid ""
+"Electrical, ICT, fire-detection, air-conditioning, mechanical-ventilation, "
+"solar and rural-electrification works for government, institutional and "
+"corporate clients."
+msgstr ""
+
+#: templates/public/home.html:23
+msgid "View Projects"
+msgstr ""
+
+#: templates/public/home.html:37 templates/public/home.html:72
+msgid "Projects delivered"
+msgstr ""
+
+#: templates/public/home.html:68
+msgid "Years in business"
+msgstr ""
+
+#: templates/public/home.html:76
+msgid "Service lines"
+msgstr ""
+
+#: templates/public/home.html:91
+msgid "What we do"
+msgstr ""
+
+#: templates/public/home.html:92
+msgid "Engineering services under one roof"
+msgstr ""
+
+#: templates/public/home.html:104
+msgid "Learn more"
+msgstr ""
+
+#: templates/public/home.html:111
+msgid "View all services"
+msgstr ""
+
+#: templates/public/home.html:122
+msgid "Our work"
+msgstr ""
+
+#: templates/public/home.html:123
+msgid "Featured projects"
+msgstr ""
+
+#: templates/public/home.html:125
+msgid "View all"
+msgstr ""
+
+#: templates/public/home.html:152
+msgid "View all projects"
+msgstr ""
+
+#: templates/public/home.html:160
+msgid "Why DIEYNEM"
+msgstr ""
+
+#: templates/public/home.html:161
+msgid "Built to be trusted on critical works"
+msgstr ""
+
+#: templates/public/home.html:168
+msgid "Class One registration"
+msgstr ""
+
+#: templates/public/home.html:169
+msgid ""
+"Licensed to bid and deliver the largest electrical and building-services "
+"contracts."
+msgstr ""
+
+#: templates/public/home.html:175
+msgid "In-house teams"
+msgstr ""
+
+#: templates/public/home.html:176
+msgid ""
+"Multidisciplinary engineers and technicians across electrical, ICT, fire and "
+"HVAC."
+msgstr ""
+
+#: templates/public/home.html:182
+msgid "Compliance &amp; safety"
+msgstr ""
+
+#: templates/public/home.html:183
+msgid "OSHA and WCF registered, with documented standards on every site."
+msgstr ""
+
+#: templates/public/home.html:189
+msgid "Nationwide delivery"
+msgstr ""
+
+#: templates/public/home.html:190
+msgid ""
+"Projects delivered for clients in Dar es Salaam, Arusha and across Tanzania."
+msgstr ""
+
+#: templates/public/home.html:200
+msgid "Trusted by"
+msgstr ""
+
+#: templates/public/home.html:201
+msgid "Clients &amp; partners"
+msgstr ""

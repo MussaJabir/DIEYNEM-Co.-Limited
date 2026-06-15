@@ -9,6 +9,8 @@ db.sqlite3
 local_settings.py
 /staticfiles/
 /media/
+# Compiled translation catalogues — build artifact; run compilemessages.
+*.mo
 
 # ---- Virtual environments ----
 venv/

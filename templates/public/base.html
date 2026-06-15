@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,22 +67,23 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body class="font-sans text-slate-900 bg-white antialiased">
-  <a href="#main" class="skip-link">Skip to content</a>
+  <a href="#main" class="skip-link">{% trans "Skip to content" %}</a>
   <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <a href="{% url 'home' %}" class="font-heading text-xl font-extrabold tracking-tight">DIEYNEM<span class="text-amber-500">.</span></a>
       <nav class="hidden md:flex gap-7 text-sm text-navy-100">
-        <a href="{% url 'home' %}" class="hover:text-white transition-colors">Home</a>
-        <a href="{% url 'about' %}" class="hover:text-white transition-colors">About</a>
-        <a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a>
-        <a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a>
-        <a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">Ongoing</a>
-        <a href="{% url 'media_center:gallery' %}" class="hover:text-white transition-colors">Gallery</a>
-        <a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">Certifications</a>
-        <a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">Contact</a>
+        <a href="{% url 'home' %}" class="hover:text-white transition-colors">{% trans "Home" %}</a>
+        <a href="{% url 'about' %}" class="hover:text-white transition-colors">{% trans "About" %}</a>
+        <a href="{% url 'services:list' %}" class="hover:text-white transition-colors">{% trans "Services" %}</a>
+        <a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">{% trans "Projects" %}</a>
+        <a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">{% trans "Ongoing" %}</a>
+        <a href="{% url 'media_center:gallery' %}" class="hover:text-white transition-colors">{% trans "Gallery" %}</a>
+        <a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">{% trans "Certifications" %}</a>
+        <a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">{% trans "Contact" %}</a>
       </nav>
       <div class="flex items-center gap-2">
-        <a href="{% url 'leads:quote' %}" class="hidden sm:inline-block bg-amber-500 text-navy-950 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors">Request Quotation</a>
+        {% include "public/_language_toggle.html" %}
+        <a href="{% url 'leads:quote' %}" class="hidden sm:inline-block bg-amber-500 text-navy-950 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors">{% trans "Request Quotation" %}</a>
         <button type="button" @click="open = !open" class="md:hidden p-2 -mr-1 rounded-lg hover:bg-navy-800 transition-colors" :aria-expanded="open" aria-label="Toggle menu">
           <svg x-show="!open" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
           <svg x-show="open" x-cloak class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -91,14 +92,14 @@
     </div>
     <!-- Mobile menu -->
     <nav x-show="open" x-cloak x-transition.opacity class="md:hidden border-t border-navy-800 px-4 py-3 space-y-1 text-navy-100">
-      <a href="{% url 'home' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Home</a>
-      <a href="{% url 'about' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">About</a>
-      <a href="{% url 'services:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Services</a>
-      <a href="{% url 'projects:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Projects</a>
-      <a href="{% url 'ongoing_projects' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Ongoing</a>
-      <a href="{% url 'media_center:gallery' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Gallery</a>
-      <a href="{% url 'credentials:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">Certifications</a>
-      <a href="{% url 'leads:quote' %}" @click="open=false" class="block px-3 py-2 rounded-lg bg-amber-500 text-navy-950 font-semibold text-center mt-2">Request Quotation</a>
+      <a href="{% url 'home' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Home" %}</a>
+      <a href="{% url 'about' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "About" %}</a>
+      <a href="{% url 'services:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Services" %}</a>
+      <a href="{% url 'projects:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Projects" %}</a>
+      <a href="{% url 'ongoing_projects' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Ongoing" %}</a>
+      <a href="{% url 'media_center:gallery' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Gallery" %}</a>
+      <a href="{% url 'credentials:list' %}" @click="open=false" class="block px-3 py-2 rounded-lg hover:bg-navy-800">{% trans "Certifications" %}</a>
+      <a href="{% url 'leads:quote' %}" @click="open=false" class="block px-3 py-2 rounded-lg bg-amber-500 text-navy-950 font-semibold text-center mt-2">{% trans "Request Quotation" %}</a>
     </nav>
   </header>
 
@@ -109,7 +110,7 @@
       <div class="lg:col-span-2">
         <p class="font-heading text-white font-extrabold text-xl">{{ site.company_name }}<span class="text-amber-500">.</span></p>
         {% if site.motto %}<p class="mt-2 text-amber-500 font-medium">{{ site.motto }}</p>{% endif %}
-        <p class="mt-3 max-w-sm text-navy-400">Class One electrical, ICT, fire, HVAC, solar and power-infrastructure contractor serving government, institutional and corporate clients across Tanzania.</p>
+        <p class="mt-3 max-w-sm text-navy-400">{% trans "Class One electrical, ICT, fire, HVAC, solar and power-infrastructure contractor serving government, institutional and corporate clients across Tanzania." %}</p>
         {% if site.social_links %}
         <p class="mt-4 flex flex-wrap gap-x-3">
           {% for name, url in site.social_links %}<a href="{{ url }}" class="hover:text-white underline">{{ name }}</a>{% endfor %}
@@ -117,20 +118,20 @@
         {% endif %}
       </div>
       <div>
-        <p class="font-heading text-white font-bold mb-3">Explore</p>
+        <p class="font-heading text-white font-bold mb-3">{% trans "Explore" %}</p>
         <ul class="space-y-2">
-          <li><a href="{% url 'about' %}" class="hover:text-white transition-colors">About</a></li>
-          <li><a href="{% url 'services:list' %}" class="hover:text-white transition-colors">Services</a></li>
-          <li><a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">Projects</a></li>
-          <li><a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">Ongoing Projects</a></li>
-          <li><a href="{% url 'media_center:gallery' %}" class="hover:text-white transition-colors">Gallery</a></li>
-          <li><a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">Certifications</a></li>
-          <li><a href="{% url 'media_center:downloads' %}" class="hover:text-white transition-colors">Downloads</a></li>
-          <li><a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">Request a Quotation</a></li>
+          <li><a href="{% url 'about' %}" class="hover:text-white transition-colors">{% trans "About" %}</a></li>
+          <li><a href="{% url 'services:list' %}" class="hover:text-white transition-colors">{% trans "Services" %}</a></li>
+          <li><a href="{% url 'projects:list' %}" class="hover:text-white transition-colors">{% trans "Projects" %}</a></li>
+          <li><a href="{% url 'ongoing_projects' %}" class="hover:text-white transition-colors">{% trans "Ongoing Projects" %}</a></li>
+          <li><a href="{% url 'media_center:gallery' %}" class="hover:text-white transition-colors">{% trans "Gallery" %}</a></li>
+          <li><a href="{% url 'credentials:list' %}" class="hover:text-white transition-colors">{% trans "Certifications" %}</a></li>
+          <li><a href="{% url 'media_center:downloads' %}" class="hover:text-white transition-colors">{% trans "Downloads" %}</a></li>
+          <li><a href="{% url 'leads:quote' %}" class="hover:text-white transition-colors">{% trans "Request a Quotation" %}</a></li>
         </ul>
       </div>
       <div>
-        <p class="font-heading text-white font-bold mb-3">Contact</p>
+        <p class="font-heading text-white font-bold mb-3">{% trans "Contact" %}</p>
         {% if site.po_box %}<p>{{ site.po_box }}</p>{% endif %}
         {% if site.physical_address %}<p class="mt-1 text-navy-400">{{ site.physical_address }}</p>{% endif %}
         {% if site.phone_list %}<p class="mt-2">{{ site.phone_list|join:" &middot; " }}</p>{% endif %}
@@ -139,7 +140,7 @@
     </div>
     <div class="border-t border-navy-800">
       <div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between text-navy-400 text-xs">
-        <p>&copy; {% now "Y" %} {{ site.company_name }}. All rights reserved.</p>
+        <p>&copy; {% now "Y" %} {{ site.company_name }}. {% trans "All rights reserved." %}</p>
         {% if site.footer_text %}<p>{{ site.footer_text }}</p>{% endif %}
       </div>
     </div>

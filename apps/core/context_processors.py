@@ -17,8 +17,13 @@ def user_roles(request):
 
 
 def site_settings(request):
-    """Expose the singleton SiteSetting to all templates as ``site``."""
-    return {"site": SiteSetting.load()}
+    """Expose the singleton SiteSetting (and the language-toggle flag)."""
+    from django.conf import settings
+
+    return {
+        "site": SiteSetting.load(),
+        "show_language_toggle": settings.SHOW_LANGUAGE_TOGGLE,
+    }
 
 
 def cache_version(request):

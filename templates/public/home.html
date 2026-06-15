@@ -1,5 +1,5 @@
 {% extends "public/base.html" %}
-{% load media_extras cache %}
+{% load media_extras cache i18n %}
 
 {% block title %}DIEYNEM Co. Limited — Electrical, ICT, Fire, HVAC &amp; Power Infrastructure{% endblock %}
 
@@ -12,15 +12,15 @@
   </div>
   <div class="relative max-w-6xl mx-auto px-4 py-20 lg:py-28 grid lg:grid-cols-2 gap-14 items-center">
     <div>
-      <p data-reveal class="text-amber-500 font-semibold tracking-widest uppercase text-sm">Class One Engineering Contractor &middot; Since 2011</p>
-      <h1 data-reveal data-reveal-delay=".1s" class="font-heading text-4xl md:text-5xl font-extrabold mt-4 leading-tight">Powering Tanzania&rsquo;s Landmark Buildings &amp; Infrastructure</h1>
-      <p data-reveal data-reveal-delay=".2s" class="mt-6 text-navy-100 text-lg max-w-xl">Electrical, ICT, fire-detection, air-conditioning, mechanical-ventilation, solar and rural-electrification works for government, institutional and corporate clients.</p>
+      <p data-reveal class="text-amber-500 font-semibold tracking-widest uppercase text-sm">{% trans "Class One Engineering Contractor · Since 2011" %}</p>
+      <h1 data-reveal data-reveal-delay=".1s" class="font-heading text-4xl md:text-5xl font-extrabold mt-4 leading-tight">{% trans "Powering Tanzania's Landmark Buildings &amp; Infrastructure" %}</h1>
+      <p data-reveal data-reveal-delay=".2s" class="mt-6 text-navy-100 text-lg max-w-xl">{% trans "Electrical, ICT, fire-detection, air-conditioning, mechanical-ventilation, solar and rural-electrification works for government, institutional and corporate clients." %}</p>
       <div data-reveal data-reveal-delay=".3s" class="mt-8 flex flex-wrap gap-4">
         <a href="{% url 'leads:quote' %}" class="group inline-flex items-center gap-2 bg-amber-500 text-navy-950 font-semibold px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors">
-          Request a Quotation
+          {% trans "Request a Quotation" %}
           <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
         </a>
-        <a href="{% url 'projects:list' %}" class="inline-flex items-center gap-2 border border-navy-400 text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-800 transition-colors">View Projects</a>
+        <a href="{% url 'projects:list' %}" class="inline-flex items-center gap-2 border border-navy-400 text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-800 transition-colors">{% trans "View Projects" %}</a>
       </div>
     </div>
     <div data-reveal data-reveal-delay=".25s" class="relative hidden lg:block">
@@ -34,7 +34,7 @@
       </div>
       <div class="absolute -bottom-5 -left-5 bg-white text-navy-900 rounded-xl shadow-xl px-5 py-4">
         <p class="font-heading text-3xl font-extrabold text-navy-700 tabular-nums"><span data-count-to="{{ stats.projects }}">0</span>+</p>
-        <p class="text-xs text-slate-500 uppercase tracking-wide mt-0.5">Projects delivered</p>
+        <p class="text-xs text-slate-500 uppercase tracking-wide mt-0.5">{% trans "Projects delivered" %}</p>
       </div>
     </div>
   </div>
@@ -65,19 +65,19 @@
     {% else %}
       <div data-reveal>
         <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.years }}">0</span></p>
-        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Years in business</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Years in business" %}</p>
       </div>
       <div data-reveal data-reveal-delay=".1s">
         <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.projects }}">0</span>+</p>
-        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Projects delivered</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Projects delivered" %}</p>
       </div>
       <div data-reveal data-reveal-delay=".2s">
         <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.services }}">0</span></p>
-        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Service lines</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Service lines" %}</p>
       </div>
       <div data-reveal data-reveal-delay=".3s">
         <p class="font-heading text-4xl md:text-5xl font-extrabold text-amber-500 tabular-nums"><span data-count-to="{{ stats.certificates }}">0</span></p>
-        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">Certifications</p>
+        <p class="mt-2 text-sm text-navy-200 uppercase tracking-wide">{% trans "Certifications" %}</p>
       </div>
     {% endif %}
     {% endcache %}
@@ -88,8 +88,8 @@
 {% if featured_services %}
 <section id="services" class="max-w-6xl mx-auto px-4 py-20">
   <div class="max-w-2xl">
-    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">What we do</p>
-    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Engineering services under one roof</h2>
+    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "What we do" %}</p>
+    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Engineering services under one roof" %}</h2>
   </div>
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
     {% cache 3600 home_services cache_version %}
@@ -101,14 +101,14 @@
       </div>
       <h3 class="font-heading font-bold text-navy-800 mt-4 group-hover:text-navy-600 transition-colors">{{ service.name }}</h3>
       <p class="text-slate-600 text-sm mt-2">{{ service.short_description }}</p>
-      <span class="inline-flex items-center gap-1 text-amber-700 text-sm font-semibold mt-4">Learn more
+      <span class="inline-flex items-center gap-1 text-amber-700 text-sm font-semibold mt-4">{% trans "Learn more" %}
         <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
       </span>
     </a>
     {% endfor %}
     {% endcache %}
   </div>
-  <div class="mt-10"><a href="{% url 'services:list' %}" class="inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">View all services
+  <div class="mt-10"><a href="{% url 'services:list' %}" class="inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">{% trans "View all services" %}
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a></div>
 </section>
 {% endif %}
@@ -119,10 +119,10 @@
   <div class="max-w-6xl mx-auto px-4 py-20">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">Our work</p>
-        <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Featured projects</h2>
+        <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "Our work" %}</p>
+        <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Featured projects" %}</h2>
       </div>
-      <a href="{% url 'projects:list' %}" class="hidden sm:inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">View all
+      <a href="{% url 'projects:list' %}" class="hidden sm:inline-flex items-center gap-1 text-navy-700 font-semibold hover:text-navy-900">{% trans "View all" %}
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a>
     </div>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10">
@@ -149,7 +149,7 @@
       {% endfor %}
       {% endcache %}
     </div>
-    <div class="mt-10 sm:hidden"><a href="{% url 'projects:list' %}" class="text-navy-700 font-semibold">View all projects &rarr;</a></div>
+    <div class="mt-10 sm:hidden"><a href="{% url 'projects:list' %}" class="text-navy-700 font-semibold">{% trans "View all projects" %} &rarr;</a></div>
   </div>
 </section>
 {% endif %}
@@ -157,37 +157,37 @@
 <!-- ============ Why DIEYNEM ============ -->
 <section class="max-w-6xl mx-auto px-4 py-20">
   <div class="max-w-2xl">
-    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">Why DIEYNEM</p>
-    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Built to be trusted on critical works</h2>
+    <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "Why DIEYNEM" %}</p>
+    <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Built to be trusted on critical works" %}</h2>
   </div>
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-10">
     <div data-reveal class="bg-white border border-slate-200 rounded-xl p-6">
       <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
       </div>
-      <h3 class="font-heading font-bold text-navy-800 mt-4">Class One registration</h3>
-      <p class="text-slate-600 text-sm mt-2">Licensed to bid and deliver the largest electrical and building-services contracts.</p>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "Class One registration" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "Licensed to bid and deliver the largest electrical and building-services contracts." %}</p>
     </div>
     <div data-reveal data-reveal-delay=".1s" class="bg-white border border-slate-200 rounded-xl p-6">
       <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
       </div>
-      <h3 class="font-heading font-bold text-navy-800 mt-4">In-house teams</h3>
-      <p class="text-slate-600 text-sm mt-2">Multidisciplinary engineers and technicians across electrical, ICT, fire and HVAC.</p>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "In-house teams" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "Multidisciplinary engineers and technicians across electrical, ICT, fire and HVAC." %}</p>
     </div>
     <div data-reveal data-reveal-delay=".2s" class="bg-white border border-slate-200 rounded-xl p-6">
       <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z"/></svg>
       </div>
-      <h3 class="font-heading font-bold text-navy-800 mt-4">Compliance &amp; safety</h3>
-      <p class="text-slate-600 text-sm mt-2">OSHA and WCF registered, with documented standards on every site.</p>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "Compliance &amp; safety" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "OSHA and WCF registered, with documented standards on every site." %}</p>
     </div>
     <div data-reveal data-reveal-delay=".3s" class="bg-white border border-slate-200 rounded-xl p-6">
       <div class="w-11 h-11 rounded-lg bg-navy-50 text-navy-600 flex items-center justify-center">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
       </div>
-      <h3 class="font-heading font-bold text-navy-800 mt-4">Nationwide delivery</h3>
-      <p class="text-slate-600 text-sm mt-2">Projects delivered for clients in Dar es Salaam, Arusha and across Tanzania.</p>
+      <h3 class="font-heading font-bold text-navy-800 mt-4">{% trans "Nationwide delivery" %}</h3>
+      <p class="text-slate-600 text-sm mt-2">{% trans "Projects delivered for clients in Dar es Salaam, Arusha and across Tanzania." %}</p>
     </div>
   </div>
 </section>
@@ -197,8 +197,8 @@
 <section class="bg-slate-50 border-t border-slate-200">
   <div class="max-w-6xl mx-auto px-4 py-16">
     <div class="text-center max-w-2xl mx-auto">
-      <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">Trusted by</p>
-      <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">Clients &amp; partners</h2>
+      <p data-reveal class="text-amber-700 font-semibold uppercase tracking-widest text-sm">{% trans "Trusted by" %}</p>
+      <h2 data-reveal data-reveal-delay=".1s" class="font-heading text-3xl md:text-4xl font-extrabold text-navy-800 mt-2">{% trans "Clients &amp; partners" %}</h2>
     </div>
     <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
       {% for client in clients %}
