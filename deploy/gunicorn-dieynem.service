@@ -20,6 +20,9 @@ User=www-data
 Group=www-data
 WorkingDirectory=/var/www/dieynem.bjptechnologies.co.tz
 Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+# www-data's home is /var/www (not writable by it); point HOME at the runtime
+# dir so Gunicorn 26's control server can create its dot-dir without erroring.
+Environment=HOME=/run/dieynem
 
 # systemd creates /run/dieynem (owned by www-data) for the proxy socket.
 RuntimeDirectory=dieynem

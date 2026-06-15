@@ -27,6 +27,18 @@ pip install --quiet -r requirements.txt
 echo "==> Applying database migrations (also seeds verified content)"
 python manage.py migrate --noinput
 
+# Recompile Tailwind from source. The output (static/css/tailwind.out.css) is
+# gitignored, so it must be rebuilt on every deploy or template class changes
+# would ship stale styles. Uses the standalone Tailwind CLI (no Node) installed
+# at /usr/local/bin/tailwindcss — see deploy/README.md.
+echo "==> Building Tailwind CSS"
+if command -v tailwindcss >/dev/null 2>&1; then
+    tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.out.css --minify
+else
+    echo "ERROR: tailwindcss CLI not found — install it per deploy/README.md." >&2
+    exit 1
+fi
+
 echo "==> Collecting static files"
 python manage.py collectstatic --noinput
 

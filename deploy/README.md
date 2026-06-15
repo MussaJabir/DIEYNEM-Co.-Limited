@@ -55,6 +55,16 @@ sudo apt install -y python3-pip python3-venv \
 sudo a2enmod proxy proxy_http headers     # enable the reverse-proxy modules
 ```
 
+Install the **standalone Tailwind CLI** (no Node needed — the deploy script and
+first build use it to compile `static/css/tailwind.out.css`, which is gitignored):
+
+```bash
+sudo curl -fsSL -o /usr/local/bin/tailwindcss \
+  https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64
+sudo chmod +x /usr/local/bin/tailwindcss
+tailwindcss --help >/dev/null && echo "tailwindcss OK"
+```
+
 ### 2. PostgreSQL role + database
 
 ```bash
@@ -109,10 +119,14 @@ sudo chown ubuntu:www-data .env && chmod 640 .env
 Generate a secret key:
 `python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"`
 
-### 6. First migrate + collectstatic (also seeds all verified content)
+### 6. First build, migrate + collectstatic (also seeds all verified content)
+
+`manage.py` defaults to dev settings, so **export prod first** — otherwise
+`collectstatic` skips the manifest and the site 500s on `{% static %}`.
 
 ```bash
 export DJANGO_SETTINGS_MODULE=config.settings.prod
+tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.out.css --minify
 python manage.py migrate
 python manage.py collectstatic --noinput
 python manage.py createsuperuser    # your dashboard login
