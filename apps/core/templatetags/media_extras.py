@@ -57,6 +57,7 @@ def responsive_image(
     crop = bool(ratio)
     webp_set, fallback_set = [], []
     fallback_src = ""
+    width_attr = height_attr = None
     for width in widths:
         options = {"size": (width, _height_for(width, ratio)), "crop": crop, "upscale": False}
         try:
@@ -76,6 +77,10 @@ def responsive_image(
         webp_set.append(f"{webp.url} {width}w")
         fallback_set.append(f"{fallback.url} {width}w")
         fallback_src = fallback.url
+        # Intrinsic size of the largest derivative — emitted as width/height so
+        # the browser reserves the right aspect-ratio box and avoids layout
+        # shift (CLS) while the image loads.
+        width_attr, height_attr = fallback.width, fallback.height
 
     return {
         "sources": True,
@@ -87,4 +92,6 @@ def responsive_image(
         "img_class": img_class,
         "loading": loading,
         "fetchpriority": fetchpriority,
+        "width": width_attr,
+        "height": height_attr,
     }

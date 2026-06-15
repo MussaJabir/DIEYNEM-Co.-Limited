@@ -1,14 +1,16 @@
 {% comment %}
 Responsive <picture> rendered by the {% responsive_image %} tag.
 Context: sources (bool/None), webp_srcset, fallback_srcset, fallback_src,
-sizes, alt, img_class, loading, fetchpriority. With no usable image, sources
-is falsy and only a plain <img> (or nothing) is rendered.
+sizes, alt, img_class, loading, fetchpriority, width, height. With no usable
+image, sources is falsy and only a plain <img> (or nothing) is rendered.
+The width/height attrs give the intrinsic aspect ratio (CSS still sizes the
+rendered image) so the browser reserves space and avoids layout shift.
 {% endcomment %}
 {% if sources %}
 <picture>
   <source type="image/webp" srcset="{{ webp_srcset }}" sizes="{{ sizes }}">
   <img src="{{ fallback_src }}" srcset="{{ fallback_srcset }}" sizes="{{ sizes }}"
-       alt="{{ alt }}" loading="{{ loading }}" decoding="async"{% if fetchpriority %} fetchpriority="{{ fetchpriority }}"{% endif %} class="{{ img_class }}">
+       alt="{{ alt }}" loading="{{ loading }}" decoding="async"{% if width %} width="{{ width }}" height="{{ height }}"{% endif %}{% if fetchpriority %} fetchpriority="{{ fetchpriority }}"{% endif %} class="{{ img_class }}">
 </picture>
 {% elif fallback_src %}
 <img src="{{ fallback_src }}" alt="{{ alt }}" loading="{{ loading }}" decoding="async"{% if fetchpriority %} fetchpriority="{{ fetchpriority }}"{% endif %} class="{{ img_class }}">
