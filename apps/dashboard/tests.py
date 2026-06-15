@@ -552,6 +552,7 @@ class ClientDashboardTests(TestCase):
         self.assertFalse(Client.objects.filter(pk=obj.pk).exists())
 
     def test_type_filter(self):
+        Client.objects.all().delete()  # ignore the seeded clients band
         Client.objects.create(name="A Client", type=Client.Type.CLIENT)
         Client.objects.create(name="A Partner", type=Client.Type.PARTNER)
         response = self.client.get(reverse("dashboard:client_list"), {"type": "partner"})
@@ -595,6 +596,7 @@ class TeamMemberDashboardTests(TestCase):
         self.assertFalse(TeamMember.objects.filter(pk=member.pk).exists())
 
     def test_group_filter(self):
+        TeamMember.objects.all().delete()  # ignore the seeded leadership + engineers
         TeamMember.objects.create(name="Lead One", role="MD", group=TeamMember.Group.LEADERSHIP)
         TeamMember.objects.create(name="Eng One", role="Engineer", group=TeamMember.Group.ENGINEER)
         response = self.client.get(reverse("dashboard:team_list"), {"group": "engineer"})
