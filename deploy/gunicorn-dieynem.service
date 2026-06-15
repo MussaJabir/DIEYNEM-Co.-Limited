@@ -1,0 +1,46 @@
+# DIEYNEM — Gunicorn (Django) systemd service.
+#
+# Install:
+#   sudo cp deploy/gunicorn-dieynem.service /etc/systemd/system/gunicorn-dieynem.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now gunicorn-dieynem
+#   systemctl status gunicorn-dieynem
+#
+# Runs as www-data (the same user Apache uses) so the proxy socket and the
+# media/ directory share an owner. 2 workers + preload is tuned for the small
+# (~1 GB RAM) shared box — see deploy/README.md before raising it.
+
+[Unit]
+Description=DIEYNEM Django site (Gunicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/dieynem.bjptechnologies.co.tz
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+
+# systemd creates /run/dieynem (owned by www-data) for the proxy socket.
+RuntimeDirectory=dieynem
+RuntimeDirectoryMode=0755
+
+ExecStart=/var/www/dieynem.bjptechnologies.co.tz/venv/bin/gunicorn \
+    config.wsgi:application \
+    --bind unix:/run/dieynem/gunicorn.sock \
+    --workers 2 \
+    --preload \
+    --max-requests 500 --max-requests-jitter 50 \
+    --timeout 60 \
+    --access-logfile - --error-logfile -
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

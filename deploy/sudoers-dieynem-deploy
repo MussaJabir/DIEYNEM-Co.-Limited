@@ -1,0 +1,9 @@
+# Lets the deploy user restart Gunicorn without a password prompt, so the CI
+# deploy is non-interactive. Nothing else is granted.
+#
+# Install (validate before saving, or a broken sudoers locks you out):
+#   sudo install -m 0440 deploy/sudoers-dieynem-deploy /etc/sudoers.d/dieynem-deploy
+#   sudo visudo -cf /etc/sudoers.d/dieynem-deploy
+#
+# Replace `ubuntu` if you deploy as a different user.
+ubuntu ALL=(root) NOPASSWD: /usr/bin/systemctl restart gunicorn-dieynem, /usr/bin/systemctl reload gunicorn-dieynem, /usr/bin/systemctl status gunicorn-dieynem
