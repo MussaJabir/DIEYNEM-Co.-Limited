@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIEYNEM — Go-Live Report (The Website Is Live)</title>
+<style>
+  /* ---- Keep colours when printing / saving as PDF ---- */
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    size: A4;
+    margin: 14mm 13mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1F2937;
+    line-height: 1.55;
+    font-size: 10.5pt;
+    background: #f1f5f9;
+  }
+  .page {
+    max-width: 210mm;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 16mm 14mm;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    background: #0C1B30;
+    color: #fff;
+    border-radius: 12px;
+    border-left: 7px solid #F59E0B;
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .hero .brand { font-size: 26pt; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
+  .hero .brand .full { font-weight: 500; color: #8FB3DC; }
+  .hero .brand .dot { color: #F59E0B; }
+  .hero .brand-sub { font-size: 9.5pt; color: #8FB3DC; margin-top: 6px; }
+  .hero .meta { text-align: right; font-size: 9.5pt; color: #DCE8F5; }
+  .hero .meta .rep { font-size: 11pt; font-weight: 700; color: #fff; }
+  .badge-live {
+    display: inline-block; margin-top: 8px; padding: 4px 13px; border-radius: 9999px;
+    background: #16A34A; color: #fff; font-size: 8.5pt; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .05em;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  h2 {
+    font-size: 13.5pt; color: #1E4E86; margin: 26px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid #E2E8F0; font-weight: 800; letter-spacing: -0.2px;
+  }
+  p { margin-bottom: 8px; }
+
+  /* ---- Live URL banner ---- */
+  .urlbar {
+    margin-top: 16px; display: flex; align-items: center; gap: 12px;
+    background: #ECFDF5; border: 1px solid #A7F3D0; border-left: 5px solid #16A34A;
+    border-radius: 10px; padding: 13px 18px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .urlbar .pulse {
+    width: 11px; height: 11px; border-radius: 9999px; background: #16A34A; flex: 0 0 auto;
+    box-shadow: 0 0 0 4px rgba(22,163,74,.18);
+  }
+  .urlbar .label { font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; color: #15803D; font-weight: 800; }
+  .urlbar .addr { font-size: 13pt; font-weight: 800; color: #064E3B; letter-spacing: -0.2px; }
+  .urlbar .lock { margin-left: auto; font-size: 8.6pt; color: #15803D; font-weight: 700; text-align: right; }
+
+  /* ---- Executive summary ---- */
+  .summary {
+    background: linear-gradient(135deg, #EEF4FB 0%, #F8FAFC 100%);
+    border: 1px solid #DCE8F5; border-left: 5px solid #F59E0B; border-radius: 10px;
+    padding: 16px 18px; margin-top: 16px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .summary p { color: #12294A; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* ---- Stat grid ---- */
+  .stats { margin: 20px 0 4px; font-size: 0; }
+  .stat {
+    display: inline-block; width: 19%; margin-right: 1.1%; vertical-align: top;
+    background: #fff; border: 1px solid #E2E8F0; border-top: 3px solid #1E4E86;
+    border-radius: 8px; padding: 11px 12px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .stat.last { margin-right: 0; }
+  .stat .n { font-size: 19pt; font-weight: 800; color: #1E4E86; line-height: 1.05; }
+  .stat .n.green { color: #16A34A; }
+  .stat .n.amber { color: #D97706; }
+  .stat .l { font-size: 7.8pt; color: #64748B; text-transform: uppercase; letter-spacing: .04em; margin-top: 5px; }
+
+  /* ---- Two-column tick lists ---- */
+  .features { list-style: none; columns: 2; column-gap: 26px; margin-top: 4px; }
+  .features li {
+    position: relative; padding-left: 19px; font-size: 9.7pt; color: #1F2937;
+    margin-bottom: 7px; break-inside: avoid;
+  }
+  .features li::before {
+    content: "\2713"; position: absolute; left: 0; color: #16A34A; font-weight: 800;
+  }
+  .features strong { color: #12294A; }
+
+  /* ---- Module cards ---- */
+  .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .module {
+    border: 1px solid #E2E8F0; border-left: 4px solid #1E4E86; border-radius: 8px;
+    padding: 11px 13px; background: #fff; break-inside: avoid;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .head { display: flex; justify-content: space-between; align-items: center; }
+  .module .name { font-weight: 800; font-size: 10pt; color: #12294A; }
+  .module .chip {
+    font-size: 7.8pt; font-weight: 800; text-transform: uppercase; padding: 2px 8px;
+    border-radius: 9999px; background: #DCFCE7; color: #16A34A;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .desc { font-size: 9pt; color: #475569; margin-top: 4px; }
+
+  /* ---- Reliability cards ---- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .card {
+    border: 1px solid #E2E8F0; border-radius: 8px; padding: 11px 13px; background: #fff;
+    break-inside: avoid;
+  }
+  .card .t { font-weight: 800; color: #12294A; font-size: 9.8pt; margin-bottom: 3px; }
+  .card .d { font-size: 9pt; color: #475569; }
+
+  /* ---- Verification checklist ---- */
+  .checks { list-style: none; margin-top: 4px; }
+  .checks li {
+    display: flex; align-items: baseline; gap: 10px; padding: 8px 12px;
+    border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 7px; background: #fff;
+    font-size: 9.7pt; break-inside: avoid;
+  }
+  .checks .ok {
+    flex: 0 0 auto; font-size: 7.6pt; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .04em; padding: 2px 9px; border-radius: 9999px;
+    background: #DCFCE7; color: #16A34A;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .checks .what { font-weight: 700; color: #12294A; }
+  .checks .res { color: #475569; }
+
+  /* ---- Callout ---- */
+  .callout {
+    background: #FEF3C7; border: 1px solid #FBBF24; border-radius: 8px;
+    padding: 13px 15px; margin-top: 12px; font-size: 9.8pt; color: #92400E;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .callout strong { color: #78350F; }
+  .callout ul { margin: 6px 0 6px 18px; }
+  .callout li { margin-bottom: 2px; }
+
+  footer {
+    margin-top: 30px; padding-top: 14px; border-top: 1px solid #E2E8F0;
+    text-align: center; font-size: 8.8pt; color: #94A3B8;
+  }
+  footer strong { color: #1E4E86; }
+
+  @media print {
+    body { background: #fff; }
+    .page { padding: 0; margin: 0; max-width: none; }
+    .modules, .grid2, .stats, .features, .checks { page-break-inside: auto; }
+    .module, .card, .stat, .summary, .callout, .checks li { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="brand">DIEYNEM<span class="full"> Co. Limited</span><span class="dot">.</span></div>
+      <div class="brand-sub">Electrical &middot; ICT &middot; Fire &middot; HVAC &middot; Power Infrastructure</div>
+    </div>
+    <div class="meta">
+      <div class="rep">Go-Live Report &mdash; The Website Is Live</div>
+      <div style="margin-top:5px;">Date: <strong style="color:#fff;">16 June 2026</strong></div>
+      <div>Prepared for DIEYNEM Co. Limited</div>
+      <span class="badge-live">&bull; Live &amp; Operational</span>
+    </div>
+  </div>
+
+  <!-- LIVE URL BANNER -->
+  <div class="urlbar">
+    <span class="pulse"></span>
+    <div>
+      <div class="label">Now live at</div>
+      <div class="addr">dieynem.bjptechnologies.co.tz</div>
+    </div>
+    <div class="lock">&#128274; Secured with HTTPS<br>Valid certificate &middot; auto-renewing</div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <h2>Summary</h2>
+  <div class="summary">
+    <p><strong>Your website is live, secure and working as intended.</strong> It is published on the internet at the address above and can be opened by anyone, on any device, anywhere in the world. The connection is encrypted (the padlock in the browser), so visitor information travels safely.</p>
+    <p>The site went live already filled with your real company information &mdash; your services, headline figures, client and partner names, certifications and engineering team &mdash; so it looks complete and credible from day one. Your team can sign in to the dashboard at any time to add projects, photos, certificates and documents, and to follow up on enquiries.</p>
+    <p>Behind the scenes, every approved change is <strong>automatically tested and then published for you</strong> &mdash; no manual uploads, and nothing reaches the live site unless the full test suite passes first. This report confirms what is live, how it is hosted, and the few short steps that remain before the site is publicly promoted.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="n green">Live</div><div class="l">Public status</div></div>
+    <div class="stat"><div class="n">HTTPS</div><div class="l">Encrypted &amp; secured</div></div>
+    <div class="stat"><div class="n">8</div><div class="l">Public pages live</div></div>
+    <div class="stat"><div class="n amber">v1.0.0</div><div class="l">Production release</div></div>
+    <div class="stat last"><div class="n">100%</div><div class="l">Auto-tested deploys</div></div>
+  </div>
+
+  <!-- WHAT IS LIVE -->
+  <h2>What is live right now</h2>
+  <ul class="features">
+    <li><strong>Home</strong> &mdash; your headline figures, services and featured work in one credible first impression</li>
+    <li><strong>Services</strong> &mdash; electrical, ICT, fire, HVAC, solar and rural electrification, each clearly explained</li>
+    <li><strong>Projects</strong> &mdash; your portfolio with instant filtering by service, sector, country and status</li>
+    <li><strong>About</strong> &mdash; the company story, leadership and engineering team</li>
+    <li><strong>Certifications</strong> &mdash; your registrations and compliance, presented as clean cards</li>
+    <li><strong>Request a Quotation</strong> &mdash; a working enquiry form that reaches your team</li>
+    <li><strong>Downloads</strong> &mdash; company profile, capability statement and brochure for clients to download</li>
+    <li><strong>Gallery</strong> &mdash; a place to showcase site and project photography</li>
+  </ul>
+
+  <!-- HOSTING IN PLAIN LANGUAGE -->
+  <h2>How your website is hosted</h2>
+  <div class="modules">
+    <div class="module">
+      <div class="head"><span class="name">Your own web address</span><span class="chip">Live</span></div>
+      <div class="desc">The site runs on your server under <strong>dieynem.bjptechnologies.co.tz</strong>, alongside your other systems without disturbing them.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Secured connection (HTTPS)</span><span class="chip">Active</span></div>
+      <div class="desc">A valid security certificate encrypts every visit and <strong>renews itself automatically</strong>, so the padlock never lapses.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Always sends visitors to the safe address</span><span class="chip">Active</span></div>
+      <div class="desc">Anyone typing the old "http" address is automatically forwarded to the secure "https" version.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Professional database</span><span class="chip">Active</span></div>
+      <div class="desc">Your content is stored in a robust PostgreSQL database, kept fully separate from your existing systems.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Publish-on-approval</span><span class="chip">Active</span></div>
+      <div class="desc">When a change is approved, it is tested and then published to the live site for you &mdash; no manual file uploads.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Tested before it goes live</span><span class="chip">Active</span></div>
+      <div class="desc">The full automated test suite must pass first; if anything fails, the update is held back, not published.</div>
+    </div>
+  </div>
+
+  <!-- VERIFICATION -->
+  <h2>Confirmed working &mdash; checks we ran</h2>
+  <ul class="checks">
+    <li><span class="ok">Pass</span><span><span class="what">Website opens:</span> <span class="res">the live address responds correctly and loads the full site.</span></span></li>
+    <li><span class="ok">Pass</span><span><span class="what">Secure padlock:</span> <span class="res">the security certificate is valid and trusted, current through 13 September 2026, and renews on its own.</span></span></li>
+    <li><span class="ok">Pass</span><span><span class="what">Safe redirect:</span> <span class="res">visits to the unsecured address are automatically sent to the secure one.</span></span></li>
+    <li><span class="ok">Pass</span><span><span class="what">All main pages:</span> <span class="res">home, services, projects, about, certifications, request-a-quotation, downloads and gallery all load successfully.</span></span></li>
+    <li><span class="ok">Pass</span><span><span class="what">Dashboard reachable:</span> <span class="res">the private admin sign-in is online and protected behind a login.</span></span></li>
+    <li><span class="ok">Pass</span><span><span class="what">Automatic publishing:</span> <span class="res">the production release (v1.0.0) deployed cleanly through the tested, automated pipeline.</span></span></li>
+  </ul>
+
+  <!-- RELIABILITY -->
+  <h2>Built to stay reliable</h2>
+  <div class="grid2">
+    <div class="card"><div class="t">Nothing ships untested</div><div class="d">Every release runs the full automated test suite before it can reach the live site.</div></div>
+    <div class="card"><div class="t">Certificate that renews itself</div><div class="d">The HTTPS padlock is maintained automatically, so the site never silently becomes "not secure".</div></div>
+    <div class="card"><div class="t">Light on resources</div><div class="d">Tuned to share the server comfortably with your existing websites without slowing them down.</div></div>
+    <div class="card"><div class="t">Consistent brand</div><div class="d">The same navy &amp; amber identity runs across every public page and the dashboard.</div></div>
+    <div class="card"><div class="t">You control the content</div><div class="d">Projects, photos, certificates, downloads and enquiries are all managed from your own dashboard.</div></div>
+    <div class="card"><div class="t">Existing systems untouched</div><div class="d">The website was added beside your other services; none of them were changed or interrupted.</div></div>
+  </div>
+
+  <!-- NEXT -->
+  <h2>Before we promote it publicly</h2>
+  <div class="callout">
+    <strong>The website is live and fully usable today.</strong> Three short, non-technical steps remain before we actively promote the address to clients:
+    <ul>
+      <li><strong>Switch on enquiry emails</strong> &mdash; provide the mailbox details for <em>info@dieynem.co.tz</em> so quotation requests arrive straight in your inbox. Until then, enquiries are still safely recorded in the dashboard.</li>
+      <li><strong>Confirm the flagged figures</strong> &mdash; the VAT number, a few contract values and the office plot number. Until confirmed, they stay hidden rather than shown unverified.</li>
+      <li><strong>Add your images</strong> &mdash; company logo, project photos, client logos and certificate scans, all uploadable from the dashboard. The site works fully without them in the meantime.</li>
+    </ul>
+    On your word, we finalise these and the address is ready to share with clients and partners.
+  </div>
+
+  <footer>
+    Go-Live Report &middot; 16 June 2026 &middot; <strong>DIEYNEM Co. Limited</strong> &middot; Quality is our Motto
+  </footer>
+
+</div>
+</body>
+</html>
