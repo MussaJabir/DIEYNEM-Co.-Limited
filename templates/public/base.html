@@ -10,6 +10,7 @@
   <link rel="manifest" href="{% url 'manifest' %}">
   <meta name="theme-color" content="#0C1B30">
   <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+  <link rel="icon" href="{% static 'icons/favicon.svg' %}" type="image/svg+xml">
   <link rel="icon" href="{% static 'icons/icon-192.png' %}" type="image/png">
   <link rel="canonical" href="{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
 
@@ -108,8 +109,8 @@
   <footer class="bg-navy-950 text-navy-300 mt-20">
     <div class="max-w-6xl mx-auto px-4 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-sm">
       <div class="lg:col-span-2">
-        <p class="font-heading text-white font-extrabold text-xl">{{ site.company_name }}<span class="text-amber-500">.</span></p>
-        {% if site.motto %}<p class="mt-2 text-amber-500 font-medium">{{ site.motto }}</p>{% endif %}
+        <img src="{% static 'img/logo-dcltd-white.svg' %}" alt="{{ site.company_name }}" width="87" height="40" class="h-10 w-auto">
+        {% if site.motto %}<p class="mt-3 text-amber-500 font-medium">{{ site.motto }}</p>{% endif %}
         <p class="mt-3 max-w-sm text-navy-400">{% trans "Class One electrical, ICT, fire, HVAC, solar and power-infrastructure contractor serving government, institutional and corporate clients across Tanzania." %}</p>
         {% if site.social_links %}
         <p class="mt-4 flex flex-wrap gap-x-3">
