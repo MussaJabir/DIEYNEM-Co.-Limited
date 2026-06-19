@@ -246,3 +246,47 @@ class OngoingProjectsPublicTests(TestCase):
         project = Project.objects.create(title="Done Case", status=Project.Status.COMPLETED)
         response = self.client.get(project.get_absolute_url())
         self.assertNotContains(response, "Live status")
+
+
+class REAProjectSeedTests(TestCase):
+    """The 0005 migration seeds the REA project list and refreshes 2 existing."""
+
+    def test_new_rea_projects_seeded(self):
+        slugs = [
+            "rea-tz-lot5-northern-zone",
+            "rea-tz-lot6-southern-zone",
+            "rea-tz-lot2-kagera-peri-urban-2024",
+            "rea-tz-lot2-kagera-peri-urban-2023",
+            "rea-tz-lot4-health-water-facilities",
+            "rea-tz-hep-lot6-katavi",
+            "rea-tz-hep-lot11-mara",
+            "rea-tz-hep2b-lot5-rukwa",
+            "rea-tz-hep2b-lot9-mtwara",
+        ]
+        self.assertEqual(Project.objects.filter(slug__in=slugs).count(), len(slugs))
+
+    def test_two_kagera_lot2_kept_separate(self):
+        # Same contract no., different scope/date — both confirmed by DIEYNEM.
+        a = Project.objects.get(slug="rea-tz-lot2-kagera-peri-urban-2024")
+        b = Project.objects.get(slug="rea-tz-lot2-kagera-peri-urban-2023")
+        self.assertEqual(a.year_end, 2024)
+        self.assertEqual(b.year_end, 2023)
+        self.assertIn("59.112 km", a.scope_of_work)
+        self.assertIn("72.22 km", b.scope_of_work)
+
+    def test_ongoing_projects_carry_progress(self):
+        mara = Project.objects.get(slug="rea-tz-hep-lot11-mara")
+        self.assertEqual(mara.status, Project.Status.ONGOING)
+        self.assertEqual(mara.progress_percent, 93)
+
+    def test_msalato_refreshed_not_duplicated(self):
+        msalato = Project.objects.filter(slug="msalato-international-airport")
+        self.assertEqual(msalato.count(), 1)
+        self.assertEqual(msalato.get().progress_percent, 85)
+
+    def test_uganda_updated_to_lot13_with_value_hidden(self):
+        uganda = Project.objects.get(slug="rea-uganda-kakumiro-kamwenge")
+        self.assertIn("Lot 13", uganda.title)
+        self.assertEqual(uganda.country, "Uganda")
+        # Value hidden: confirmed source states none and scope changed.
+        self.assertFalse(uganda.contract_value_visible)
