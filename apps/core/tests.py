@@ -40,6 +40,17 @@ class HomePageTests(TestCase):
         self.assertContains(response, "info@dieynem.co.tz")
         self.assertContains(response, "P.O. Box 38075")
 
+    def test_footer_shows_brand_logo(self):
+        response = self.client.get(reverse("home"))
+        # Footer brand block renders the white DCLtd logo (visible on navy).
+        self.assertContains(response, "img/logo-dcltd-white.svg")
+
+    def test_head_links_svg_favicon(self):
+        response = self.client.get(reverse("home"))
+        # Crisp vector favicon, with the PNG kept as a fallback.
+        self.assertContains(response, "icons/favicon.svg")
+        self.assertContains(response, 'type="image/svg+xml"')
+
     def test_home_exposes_credibility_stats(self):
         # Clear the seeded numbers band so the computed fallback renders.
         Statistic.objects.all().delete()
