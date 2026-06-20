@@ -71,7 +71,10 @@
   <a href="#main" class="skip-link">{% trans "Skip to content" %}</a>
   <header x-data="{ open: false }" class="sticky top-0 z-40 bg-navy-900/95 backdrop-blur text-white border-b border-navy-800">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="{% url 'home' %}" class="font-heading text-xl tracking-tight whitespace-nowrap"><span class="font-extrabold">DIEYNEM</span><span class="font-medium text-navy-300"> Co. Limited</span><span class="font-extrabold text-amber-500">.</span></a>
+      <a href="{% url 'home' %}" class="flex items-center gap-2.5 whitespace-nowrap">
+        <img src="{% static 'img/logo-dcltd-white.svg' %}" alt="" aria-hidden="true" width="52" height="24" class="h-6 w-auto shrink-0">
+        <span class="font-heading text-lg sm:text-xl tracking-tight"><span class="font-extrabold">DIEYNEM</span><span class="font-medium text-navy-300"> CO. LIMITED</span><span class="font-extrabold text-amber-500">.</span></span>
+      </a>
       <nav class="hidden md:flex gap-7 text-sm text-navy-100">
         <a href="{% url 'home' %}" class="hover:text-white transition-colors">{% trans "Home" %}</a>
         <a href="{% url 'about' %}" class="hover:text-white transition-colors">{% trans "About" %}</a>

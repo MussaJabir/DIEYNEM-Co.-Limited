@@ -31,8 +31,13 @@ class HomePageTests(TestCase):
     def test_home_shows_brand(self):
         response = self.client.get(reverse("home"))
         self.assertContains(response, "DIEYNEM")
-        # Header shows the full company name, not just the short wordmark.
-        self.assertContains(response, "Co. Limited")
+        # Header shows the full company name in all-caps (client request).
+        self.assertContains(response, "CO. LIMITED")
+
+    def test_header_shows_brand_logo(self):
+        response = self.client.get(reverse("home"))
+        # The white DCLtd mark renders in both the header lockup and the footer.
+        self.assertContains(response, "img/logo-dcltd-white.svg", count=2)
 
     def test_footer_uses_site_settings(self):
         response = self.client.get(reverse("home"))
