@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIEYNEM — Update Report (Branding &amp; Portfolio Expansion)</title>
+<style>
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { size: A4; margin: 14mm 13mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1F2937; line-height: 1.55; font-size: 10.5pt; background: #f1f5f9;
+  }
+  .page { max-width: 210mm; margin: 0 auto; background: #ffffff; padding: 16mm 14mm; }
+
+  /* Hero */
+  .hero {
+    background: #0C1B30; color: #fff; border-radius: 12px; border-left: 7px solid #F59E0B;
+    padding: 22px 24px; display: flex; justify-content: space-between; align-items: flex-start;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .hero .brand { font-size: 26pt; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
+  .hero .brand .full { font-weight: 500; color: #8FB3DC; }
+  .hero .brand .dot { color: #F59E0B; }
+  .hero .brand-sub { font-size: 9.5pt; color: #8FB3DC; margin-top: 6px; }
+  .hero .meta { text-align: right; font-size: 9.5pt; color: #DCE8F5; }
+  .hero .meta .rep { font-size: 11pt; font-weight: 700; color: #fff; }
+  .badge {
+    display: inline-block; margin-top: 8px; padding: 4px 13px; border-radius: 9999px;
+    background: #F59E0B; color: #0C1B30; font-size: 8.5pt; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .05em;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  h2 {
+    font-size: 13.5pt; color: #1E4E86; margin: 26px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid #E2E8F0; font-weight: 800; letter-spacing: -0.2px;
+  }
+  p { margin-bottom: 8px; }
+
+  .summary {
+    background: linear-gradient(135deg, #EEF4FB 0%, #F8FAFC 100%);
+    border: 1px solid #DCE8F5; border-left: 5px solid #F59E0B; border-radius: 10px;
+    padding: 16px 18px; margin-top: 18px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .summary p { color: #12294A; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  .stats { margin: 20px 0 4px; font-size: 0; }
+  .stat {
+    display: inline-block; width: 19%; margin-right: 1.1%; vertical-align: top;
+    background: #fff; border: 1px solid #E2E8F0; border-top: 3px solid #1E4E86;
+    border-radius: 8px; padding: 11px 12px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .stat.last { margin-right: 0; }
+  .stat .n { font-size: 19pt; font-weight: 800; color: #1E4E86; line-height: 1.05; }
+  .stat .n.amber { color: #D97706; }
+  .stat .l { font-size: 7.8pt; color: #64748B; text-transform: uppercase; letter-spacing: .04em; margin-top: 5px; }
+
+  .features { list-style: none; columns: 2; column-gap: 26px; margin-top: 4px; }
+  .features li {
+    position: relative; padding-left: 19px; font-size: 9.7pt; color: #1F2937;
+    margin-bottom: 7px; break-inside: avoid;
+  }
+  .features li::before { content: "\2713"; position: absolute; left: 0; color: #1E4E86; font-weight: 800; }
+  .features.amber li::before { color: #F59E0B; }
+  .features strong { color: #12294A; }
+
+  .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .module {
+    border: 1px solid #E2E8F0; border-left: 4px solid #1E4E86; border-radius: 8px;
+    padding: 11px 13px; background: #fff; break-inside: avoid;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .module .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .module .name { font-weight: 800; font-size: 9.6pt; color: #12294A; }
+  .module .chip {
+    font-size: 7.5pt; font-weight: 800; text-transform: uppercase; padding: 2px 8px;
+    border-radius: 9999px; white-space: nowrap;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .chip.done { background: #DCFCE7; color: #16A34A; }
+  .chip.live { background: #DBEAFE; color: #2563EB; }
+  .module .desc { font-size: 8.9pt; color: #475569; margin-top: 4px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .card { border: 1px solid #E2E8F0; border-radius: 8px; padding: 11px 13px; background: #fff; break-inside: avoid; }
+  .card .t { font-weight: 800; color: #12294A; font-size: 9.8pt; margin-bottom: 3px; }
+  .card .d { font-size: 9pt; color: #475569; }
+
+  .callout {
+    background: #FEF3C7; border: 1px solid #FBBF24; border-radius: 8px;
+    padding: 13px 15px; margin-top: 12px; font-size: 9.8pt; color: #92400E;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .callout strong { color: #78350F; }
+  .callout ul { margin: 6px 0 6px 18px; }
+  .callout li { margin-bottom: 3px; }
+
+  footer {
+    margin-top: 30px; padding-top: 14px; border-top: 1px solid #E2E8F0;
+    text-align: center; font-size: 8.8pt; color: #94A3B8;
+  }
+  footer strong { color: #1E4E86; }
+
+  @media print {
+    body { background: #fff; }
+    .page { padding: 0; margin: 0; max-width: none; }
+    .modules, .grid2, .stats, .features { page-break-inside: auto; }
+    .module, .card, .stat, .summary, .callout { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="brand">DIEYNEM<span class="full"> Co. Limited</span><span class="dot">.</span></div>
+      <div class="brand-sub">Electrical &middot; ICT &middot; Fire &middot; HVAC &middot; Power Infrastructure</div>
+    </div>
+    <div class="meta">
+      <div class="rep">Update Report &mdash; Branding &amp; Portfolio Expansion</div>
+      <div style="margin-top:5px;">Date: <strong style="color:#fff;">19 June 2026</strong></div>
+      <div>Prepared for DIEYNEM Co. Limited</div>
+      <span class="badge">&bull; Post-Launch Update</span>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <h2>Summary</h2>
+  <div class="summary">
+    <p><strong>Since the site went live, we have applied your company logo across the website and your documents, and significantly expanded your project portfolio.</strong> The live site now carries your brand mark everywhere it matters, and showcases far more of your delivered and ongoing work.</p>
+    <p>Your <strong>DIEYNEM logo</strong> now appears in the browser tab, as the installed-app icon, in the site footer, and as the letterhead on your downloadable documents &mdash; reproduced cleanly from the artwork you supplied. At the same time, we added your <strong>Rural Energy Agency (REA) and rural-electrification project list</strong>, taking the portfolio from 16 to <strong>25 projects</strong>.</p>
+    <p>Everything was delivered as <strong>two reviewed, automatically-tested updates</strong>, plus three re-issued branded documents. As always, nothing reached the live site until the full test suite passed, and no existing content was lost.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="n amber">2</div><div class="l">Reviewed updates</div></div>
+    <div class="stat"><div class="n">9</div><div class="l">New projects added</div></div>
+    <div class="stat"><div class="n">25</div><div class="l">Projects now shown</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">Branded documents</div></div>
+    <div class="stat last"><div class="n">229</div><div class="l">Automated tests</div></div>
+  </div>
+
+  <!-- BRANDING -->
+  <h2>Your logo — now across the site</h2>
+  <ul class="features">
+    <li>Reproduced <strong>cleanly from your supplied artwork</strong> into a sharp, scalable version &mdash; not a redraw</li>
+    <li>Appears as the <strong>browser-tab icon (favicon)</strong> on every page</li>
+    <li>Becomes the <strong>app icon</strong> when the site is installed on a phone or computer</li>
+    <li>Shown in the <strong>site footer</strong> as the brand mark</li>
+    <li>Prepared in <strong>both dark and light versions</strong> so it always reads on any background</li>
+    <li>Kept as <strong>reusable brand files</strong> for documents, email signatures and social media</li>
+  </ul>
+
+  <!-- PORTFOLIO -->
+  <h2>Portfolio expanded — REA &amp; rural electrification</h2>
+  <p style="font-size:9.6pt;color:#475569;margin-bottom:11px;">Nine new projects added and two existing ones refreshed with the latest figures (no duplicates), all from your confirmed June 2026 project list.</p>
+  <div class="modules">
+    <div class="module">
+      <div class="head"><span class="name">REA Lots 2, 4, 5 &amp; 6 (Tanzania)</span><span class="chip done">Completed</span></div>
+      <div class="desc">Medium- and low-voltage lines, distribution transformers and customer connections across Kagera, the Lake Zone, the northern and southern regions.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Hamlets Electrification — Lots 6 &amp; 11</span><span class="chip done">Done / Ongoing</span></div>
+      <div class="desc">Katavi (completed) and Mara (93% complete) &mdash; low-voltage networks, transformers and thousands of new connections.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">HEP-IIB — Lots 5 &amp; 9</span><span class="chip live">Ongoing</span></div>
+      <div class="desc">Rukwa and Mtwara hamlets electrification, in progress (35%), planned for completion in 2029.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Uganda — Lot 13 (refreshed)</span><span class="chip done">Completed</span></div>
+      <div class="desc">Updated in place to the fuller Lot 13 scope across six districts in the Rwenzori &amp; Western territories.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Msalato International Airport (refreshed)</span><span class="chip live">Ongoing</span></div>
+      <div class="desc">Progress updated to 85% complete as at 30 April 2026 &mdash; not duplicated.</div>
+    </div>
+    <div class="module">
+      <div class="head"><span class="name">Live progress &amp; filtering</span><span class="chip done">Automatic</span></div>
+      <div class="desc">New projects flow straight into the existing filters and ongoing-progress bars &mdash; no extra setup.</div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <h2>Branded documents</h2>
+  <p style="font-size:9.6pt;color:#475569;margin-bottom:11px;">Your three downloadable documents were re-issued with the logo set as a letterhead on the cover &mdash; ready to upload to the website&rsquo;s Downloads area.</p>
+  <div class="grid2">
+    <div class="card"><div class="t">Company Profile</div><div class="d">Eight-page profile &mdash; story, services, certifications and selected projects.</div></div>
+    <div class="card"><div class="t">Capability Statement</div><div class="d">Two-page summary of registrations, disciplines and headline track record.</div></div>
+    <div class="card"><div class="t">Brochure</div><div class="d">Three-page marketing overview of services and landmark works.</div></div>
+    <div class="card"><div class="t">Consistent letterhead</div><div class="d">The same logo treatment on every cover, matching the live site&rsquo;s identity.</div></div>
+  </div>
+
+  <!-- QUALITY -->
+  <h2>How we kept it safe &amp; consistent</h2>
+  <div class="grid2">
+    <div class="card"><div class="t">Tested before going live</div><div class="d">229 automated checks pass on every update; each change is reviewed before it can reach the live site.</div></div>
+    <div class="card"><div class="t">No duplicates</div><div class="d">Existing projects (Msalato, Uganda) were refreshed in place, not added again.</div></div>
+    <div class="card"><div class="t">Only verified facts</div><div class="d">Where the source stated no contract value, none is shown &mdash; figures are never invented.</div></div>
+    <div class="card"><div class="t">Nothing lost</div><div class="d">All earlier content, projects and settings were preserved throughout.</div></div>
+  </div>
+
+  <!-- WHAT'S NEXT -->
+  <h2>What needs your input</h2>
+  <div class="callout">
+    <strong>Two quick decisions will let us finish the portfolio polish:</strong>
+    <ul>
+      <li><strong>Uganda contract value</strong> &mdash; the previously-shown value was tied to the old project scope. The new, confirmed Lot 13 scope states no value, so we have <strong>hidden it for now</strong>. Send us the correct value (or ask us to restore the old one) and we&rsquo;ll show it.</li>
+      <li><strong>Headline figures</strong> &mdash; with these projects added, your homepage statistics (kilometres of line, transformers, connections) now <strong>understate your real totals</strong>. Confirm the numbers you&rsquo;d like shown and we&rsquo;ll update the figures band.</li>
+    </ul>
+    Still pending from before going public: switch on enquiry emails (SMTP), confirm the flagged figures, and add your photos &mdash; all from the dashboard.
+  </div>
+
+  <footer>
+    Update Report &middot; 19 June 2026 &middot; <strong>DIEYNEM Co. Limited</strong> &middot; Quality is our Motto
+  </footer>
+
+</div>
+</body>
+</html>
